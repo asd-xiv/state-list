@@ -1,0 +1,1 @@
+# redux-all-is-list
