@@ -1,0 +1,20 @@
+{
+    "presets": [
+        [
+            "env", {
+                "useBuiltIns": false,
+                "debug": false,
+                "targets": {
+                    "browsers": [
+                        "last 2 chrome versions",
+                        "last 2 firefox versions",
+                        "last 1 ie versions"
+                    ]
+                }
+            }
+        ],
+
+        // js features with non-final specs
+        "stage-1"
+    ],
+}
