@@ -1,12 +1,15 @@
 {
   "root"    : true,
+  "parser": "babel-eslint",
   "extends" : [
-    "@codemachiner/eslint-config/rules/backend"
+    "@codemachiner/eslint-config/targets/node"
   ],
   "settings": {
-    "import/resolver": "node"
-  },
-  "rules": {
-    "indent": [ "error", 2 ]
+    "import/resolver": "node",
+
+    // Recommended if you use eslint_d
+    "import/cache": {
+      "lifetime": 5,
+    }
   }
 }
