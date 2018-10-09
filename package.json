@@ -1,6 +1,6 @@
 {
   "name": "redux-all-is-list",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "omelette du fromage, omelette du fromage, all state is list",
   "main": "dist/list.js",
   "scripts": {
