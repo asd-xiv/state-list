@@ -1,6 +1,41 @@
-const debug = require("debug")("ReduxAllIsList:DeleteReducers")
+const debug = require("debug")("ReduxAllIsList:Delete")
 
 import { has, remove, filterBy } from "@codemachiner/m"
+
+/**
+ * Call API to create a new item, dispatch events before and after
+ *
+ * @param  {Function}  dispatch         Redux dispatch function
+ * @param  {Function}  apiMethod        API interaction functions
+ * @param  {string}    actionStartName  Action name to dispatch before API
+ * @param  {string}    actionEndName    Action name to dispatch after API
+ *
+ * @return {Object}
+ */
+export const deleteAction = ({
+  dispatch,
+  apiMethod,
+  actionStartName,
+  actionEndName,
+}) => async id => {
+  dispatch({
+    type: actionStartName,
+    payload: {
+      id,
+    },
+  })
+
+  await apiMethod(id)
+
+  dispatch({
+    type: actionEndName,
+    payload: {
+      id,
+    },
+  })
+
+  return id
+}
 
 /**
  * Enable UI flag for removing item
@@ -11,7 +46,7 @@ import { has, remove, filterBy } from "@codemachiner/m"
  *
  * @return {Object}
  */
-export const deleteStart = (state, { id }) => {
+export const deleteStartReducer = (state, { id }) => {
   const isDeleting = has(id)(state.itemsDeletingIds)
 
   isDeleting &&
@@ -40,7 +75,7 @@ export const deleteStart = (state, { id }) => {
  *
  * @return {Object}
  */
-export const deleteEnd = (state, { id }) => ({
+export const deleteEndReducer = (state, { id }) => ({
   ...state,
   itemsDeletingIds: remove(id)(state.itemsDeletingIds),
   items: filterBy({ "!id": id })(state.items),
