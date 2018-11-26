@@ -1,6 +1,6 @@
 const debug = require("debug")("ReduxAllIsList:Create")
 
-import { map, hasWith } from "@codemachiner/m"
+import { map, hasWith } from "@asd14/m"
 
 /**
  * Call API to create a new item, dispatch events before and after

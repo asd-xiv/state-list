@@ -1,6 +1,6 @@
 const debug = require("debug")("ReduxAllIsList:Delete")
 
-import { has, remove, filterBy } from "@codemachiner/m"
+import { has, remove, filterBy } from "@asd14/m"
 
 /**
  * Call API to create a new item, dispatch events before and after

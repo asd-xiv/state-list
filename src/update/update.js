@@ -1,6 +1,6 @@
 const debug = require("debug")("ReduxAllIsList:ListUpdate")
 
-import { map, filterBy, merge, hasWith } from "@codemachiner/m"
+import { map, filterBy, merge, hasWith } from "@asd14/m"
 
 /**
  * Call API to update an item, dispatch events before and after
@@ -80,9 +80,8 @@ export const updateEndReducer = (state, { item }) => ({
   ...state,
   items:
     state.items
-    |> map(
-      itemsMapElm =>
-        itemsMapElm.id === item.id ? merge(itemsMapElm, item) : itemsMapElm
+    |> map(itemsMapElm =>
+      itemsMapElm.id === item.id ? merge(itemsMapElm, item) : itemsMapElm
     ),
   itemsUpdating: filterBy({ "!id": item.id })(state.itemsUpdating),
 })
