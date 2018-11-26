@@ -28,7 +28,8 @@ npm i --save-exact @asd14/redux-all-is-list
 
 ```js
 // totos.state.js
-const TodosList = buildList({
+//
+export const TodosList = buildList({
   name: "SOME-PAGE__TODOS",
   methods: {
     create: data => POST("/todos", data),
@@ -39,6 +40,7 @@ const TodosList = buildList({
 })
 
 // store.js
+//
 import { createStore, combineReducers } from "redux"
 import { TodosList } from "./todos.state"
 
@@ -47,6 +49,24 @@ const store = createStore(
     [TodosList.name]: TodosList.reducer,
   }),
 )
+
+// todos.container.jsx
+//
+import React from "react"
+import { connect } from "react-redux"
+
+import { TodosList } from "./todos.state"
+
+@connect(store => ({
+  todos: store[TodosList.name].items,
+}))
+class TodosContainer extends React.Component {
+  render = () => {
+    const { todos } = this.props
+
+    return <div>{todos |> map(todo => <div>{todo.name}</div>)}</div>
+  }
+}
 ```
 
 ## Develop
