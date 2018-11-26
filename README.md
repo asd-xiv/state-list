@@ -20,9 +20,48 @@
 
 ## Install
 
+```bash
+npm i --save-exact @asd14/redux-all-is-list
+```
+
 ## Use
 
+```js
+// totos.state.js
+const TodosList = buildList({
+  name: "SOME-PAGE__TODOS",
+  methods: {
+    create: data => POST("/todos", data),
+    find: () => GET("/todos"),
+    update: (id, data) => PATCH(`/todos/${id}`, date),
+    delete: id => DELETE(`/todos/${id}`),
+  },
+})
+
+// store.js
+import { createStore, combineReducers } from "redux"
+import { TodosList } from "./todos.state"
+
+const store = createStore(
+  combineReducers({
+    [TodosList.name]: TodosList.reducer,
+  }),
+)
+```
+
 ## Develop
+
+```bash
+git clone git@github.com:asd14/redux-all-is-list.git && \
+  cd redux-all-is-list && \
+  npm run setup
+
+# run tests (any `*.test.js`) once
+npm test
+
+# watch `src` folder for changes and run test automatically
+npm run tdd
+```
 
 ## Changelog
 
