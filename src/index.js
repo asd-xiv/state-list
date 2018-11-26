@@ -1,30 +1,22 @@
 const debug = require("debug")("ReduxAllIsList:Main")
 
-import {
-  findBy,
-  has,
-  hasWith,
-  is,
-  isEmpty,
-  type as typeOf,
-} from "@codemachiner/m"
-
-import {
+const { findBy, has, hasWith, is, isEmpty, type: typeOf } = require("@asd14/m")
+const {
   createAction,
   createStartReducer,
   createEndReducer,
-} from "./create/create"
-import { findAction, findStartReducer, findEndReducer } from "./find/find"
-import {
+} = require("./create/create")
+const { findAction, findStartReducer, findEndReducer } = require("./find/find")
+const {
   updateAction,
   updateStartReducer,
   updateEndReducer,
-} from "./update/update"
-import {
+} = require("./update/update")
+const {
   deleteAction,
   deleteStartReducer,
   deleteEndReducer,
-} from "./delete/delete"
+} = require("./delete/delete")
 
 const collectionNames = Object.create(null)
 
@@ -53,6 +45,8 @@ export const buildList = ({ name, methods = {} }) => {
   const deleteEndActionName = `${name}_DELETE_END`
 
   return {
+    name,
+
     create: dispatch =>
       typeOf(methods.create) === "Function"
         ? createAction({
@@ -189,7 +183,7 @@ export const buildList = ({ name, methods = {} }) => {
      *
      * @return {Object}
      */
-    reducers: (
+    reducer: (
       state = {
         items: [],
         itemsUpdating: [],
