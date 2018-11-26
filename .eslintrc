@@ -2,7 +2,7 @@
   "root"    : true,
   "parser": "babel-eslint",
   "extends" : [
-    "@codemachiner/eslint-config/targets/node"
+    "@asd14/eslint-config/targets/node"
   ],
   "settings": {
     "import/resolver": "node",
