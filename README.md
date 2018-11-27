@@ -29,6 +29,8 @@ npm i --save-exact @asd14/redux-all-is-list
 ```js
 // totos.state.js
 //
+import { buildList } from "@asd14/redux-all-is-list"
+
 export const TodosList = buildList({
   name: "SOME-PAGE__TODOS",
   methods: {
@@ -38,7 +40,9 @@ export const TodosList = buildList({
     delete: id => DELETE(`/todos/${id}`),
   },
 })
+```
 
+```js
 // store.js
 //
 import { createStore, combineReducers } from "redux"
@@ -49,22 +53,49 @@ const store = createStore(
     [TodosList.name]: TodosList.reducer,
   }),
 )
+```
 
+```js
 // todos.container.jsx
 //
 import React from "react"
+import cx from "classnames"
 import { connect } from "react-redux"
+import { listSelector } from "@asd14/redux-all-is-list"
 
 import { TodosList } from "./todos.state"
 
-@connect(store => ({
-  todos: store[TodosList.name].items,
-}))
-class TodosContainer extends React.Component {
-  render = () => {
-    const { todos } = this.props
+@connect(
+  store => {
+    const todosSelector = listSelector(store[TodosList.name])
 
-    return <div>{todos |> map(todo => <div>{todo.name}</div>)}</div>
+    return {
+      todos: todosSelector.items(),
+      todosIsLoading: todosSelector.isLoading(),
+    }
+  },
+  dispatch => ({
+    xHandleTodosFind: TodosList.find(dispatch),
+  })
+)
+class TodosContainer extends React.Component {
+  componentDidMount = () => {
+    const { xHandleTodosFind } = this.props
+
+    xHandleTodosFind()
+  }
+
+  render = () => {
+    const { todos, todosIsLoading } = this.props
+
+    return (
+      <div
+        className={cx({
+          [css.loading]: todosIsLoading,
+        })}>
+        {todos |> map(todo => <div>{todo.name}</div>)}
+      </div>
+    )
   }
 }
 ```
