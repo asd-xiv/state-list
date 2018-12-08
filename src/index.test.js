@@ -1,91 +1,75 @@
 import test from "tape"
 import { createStore, combineReducers } from "redux"
-import { random } from "@asd14/m"
 
 import { buildList } from "."
 
-test("buildList", t => {
-  /**
-   * List without any methods defined
-   */
-  const emptyList = buildList({
-    name: "test",
+test("List without API methods", t => {
+  const todoList = buildList({
+    name: "TODOS",
     methods: {},
   })
 
-  const emptyStore = createStore(
+  // Redux store
+  const store = createStore(
     combineReducers({
-      [emptyList.name]: emptyList.reducer,
+      [todoList.name]: todoList.reducer,
     })
   )
 
-  const emptyListCreate = emptyList.create(emptyStore.dispatch)
-  const emptyListFind = emptyList.find(emptyStore.dispatch)
-  const emptyListUpdate = emptyList.update(emptyStore.dispatch)
-  const emptyListDelete = emptyList.delete(emptyStore.dispatch)
+  // Link lists's actions to store
+  const listCreate = todoList.create(store.dispatch)
+  const listFind = todoList.find(store.dispatch)
+  const listUpdate = todoList.update(store.dispatch)
+  const listDelete = todoList.delete(store.dispatch)
 
-  t.throws(
-    () => {
-      emptyListCreate({ id: 2 })
+  t.equals(todoList.name, "TODOS", "New list created with unique name")
+
+  t.deepEquals(
+    store.getState()[todoList.name],
+    {
+      items: [],
+      itemsUpdating: [],
+      itemsDeletingIds: [],
+      errors: [],
+      loadDate: null,
+      isLoading: false,
+      isReloading: false,
+      isCreating: false,
     },
-    /ReduxAllIsList - "test": Expected "create" action of type Function, got "Undefined"/,
-    'Run "create" on list without methods'
+    "Default state initialized in redux store"
   )
 
   t.throws(
     () => {
-      emptyListFind()
+      listCreate({ id: 2 })
     },
-    /ReduxAllIsList - "test": Expected "find" action of type Function, got "Undefined"/,
-    'Run "find" on list without methods'
+    /ReduxAllIsList - "TODOS": Expected "create" action of type Function, got "Undefined"/,
+    'Throw exception when calling "create" on list without methods'
   )
 
   t.throws(
     () => {
-      emptyListUpdate(1, { test: 2 })
+      listFind()
     },
-    /ReduxAllIsList - "test": Expected "update" action of type Function, got "Undefined"/,
-    'Run "update" on list without methods'
+    /ReduxAllIsList - "TODOS": Expected "find" action of type Function, got "Undefined"/,
+    'Throw exception when calling "find" on list without methods'
   )
 
   t.throws(
     () => {
-      emptyListDelete(1, { test: 2 })
+      listUpdate(1, { test: 2 })
     },
-    /ReduxAllIsList - "test": Expected "delete" action of type Function, got "Undefined"/,
-    'Run "delete" on list without methods'
+    /ReduxAllIsList - "TODOS": Expected "update" action of type Function, got "Undefined"/,
+    'Throw exception when calling "update" on list without methods'
   )
 
-  /**
-   * Empty list
-   */
-  const testList = buildList({
-    name: "test",
-    methods: {
-      create: data => ({
-        id: random({ min: 0, max: 1000 }),
-        ...data,
-      }),
-      find: () => [
-        {
-          id: 1,
-          name: "lorem ipsum",
-        },
-        {
-          id: 2,
-          name: "foo bar",
-        },
-      ],
+  t.throws(
+    () => {
+      listDelete(1, { test: 2 })
     },
-  })
-
-  createStore(
-    combineReducers({
-      [testList.name]: testList.reducer,
-    })
+    /ReduxAllIsList - "TODOS": Expected "delete" action of type Function, got "Undefined"/,
+    'Throw exception when calling "delete" on list without methods'
   )
-
-  t.equals(testList.name, "test", "New list created with unique name")
 
   t.end()
 })

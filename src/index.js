@@ -21,7 +21,7 @@ const {
 const collectionNames = Object.create(null)
 
 /**
- * Creates a colection
+ * List factory function
  *
  * @param  {Object}  arg1       Collection props
  * @param  {string}  arg1.name  Unique name so actions dont overlap
@@ -47,13 +47,49 @@ export const buildList = ({ name, methods = {} }) => {
   return {
     name,
 
+    /**
+     * Selector over the list's state slice
+     *
+     * @param  {Object}  state  The parent state slice
+     *
+     * @return {Object<string, Function>}
+     */
+    selector: state => ({
+      head: () => state[name].items[0],
+      byId: id => findBy({ id })(state[name].items),
+
+      items: () => state[name].items,
+      itemsUpdating: () => state[name].itemsUpdating,
+      itemsDeletingIds: () => state[name].itemsDeletingIds,
+
+      isLoaded: () => is(state[name].lastLoadAt),
+      isLoading: () => state[name].isLoading || state[name].isReloading,
+      isCreating: () => state[name].isCreating,
+      isUpdating: id =>
+        id
+          ? hasWith({ id })(state[name].itemsUpdating)
+          : !isEmpty(state[name].itemsUpdating),
+      isDeleting: id =>
+        id
+          ? has(id)(state[name].itemsDeletingIds)
+          : !isEmpty(state[name].itemsDeletingIds),
+    }),
+
+    /**
+     * Create an item, dispatch events before and after API call
+     *
+     * @param  {Function}  dispatch  Redux dispatch function
+     * @param  {Array}     args      API method parameters
+     *
+     * @return {void}
+     */
     create: dispatch =>
       typeOf(methods.create) === "Function"
         ? createAction({
             dispatch,
             apiMethod: methods.create,
-            startAction: createStartActionName,
-            endAction: createEndActionName,
+            actionStartName: createStartActionName,
+            actionEndName: createEndActionName,
           })
         : () => {
             throw new TypeError(
@@ -190,7 +226,7 @@ export const buildList = ({ name, methods = {} }) => {
         itemsDeletingIds: [],
 
         errors: [],
-        lastLoadAt: null,
+        loadDate: null,
 
         isLoading: false,
         isReloading: false,
@@ -200,7 +236,7 @@ export const buildList = ({ name, methods = {} }) => {
     ) => {
       switch (type) {
         /*
-         * C
+         * Create
          */
         case createStartActionName:
           return createStartReducer(state, payload)
@@ -208,7 +244,7 @@ export const buildList = ({ name, methods = {} }) => {
           return createEndReducer(state, payload)
 
         /*
-         * R
+         * Read
          */
         case loadStartActionName:
           return findStartReducer(state, payload)
@@ -216,7 +252,7 @@ export const buildList = ({ name, methods = {} }) => {
           return findEndReducer(state, payload)
 
         /*
-         * U
+         * Update
          */
         case updateStartActionName:
           return updateStartReducer(state, payload)
@@ -224,7 +260,7 @@ export const buildList = ({ name, methods = {} }) => {
           return updateEndReducer(state, payload)
 
         /*
-         * D
+         * Delete
          */
         case deleteStartActionName:
           return deleteStartReducer(state, payload)
@@ -237,27 +273,3 @@ export const buildList = ({ name, methods = {} }) => {
     },
   }
 }
-
-/**
- * { lambda_description }
- *
- * @param {Object}  slice  The slice
- *
- * @return {Object}
- */
-export const listSelector = slice => ({
-  head: () => slice.items[0],
-  byId: id => findBy({ id })(slice.items),
-
-  items: () => slice.items,
-  itemsUpdating: () => slice.itemsUpdating,
-  itemsDeletingIds: () => slice.itemsDeletingIds,
-
-  isLoaded: () => is(slice.lastLoadAt),
-  isLoading: () => slice.isLoading || slice.isReloading,
-  isCreating: () => slice.isCreating,
-  isUpdating: id =>
-    id ? hasWith({ id })(slice.itemsUpdating) : !isEmpty(slice.itemsUpdating),
-  isDeleting: id =>
-    id ? has(id)(slice.itemsDeletingIds) : !isEmpty(slice.itemsDeletingIds),
-})
