@@ -15,21 +15,21 @@ export const findAction = ({
   apiMethod,
   actionStartName,
   actionEndName,
-}) => async (...args) => {
+}) => (...args) => {
   dispatch({
     type: actionStartName,
   })
 
-  const items = await apiMethod(...args)
+  return apiMethod(...args).then(items => {
+    dispatch({
+      type: actionEndName,
+      payload: {
+        items: Array.isArray(items) ? items : [items],
+      },
+    })
 
-  dispatch({
-    type: actionEndName,
-    payload: {
-      items: Array.isArray(items) ? items : [items],
-    },
+    return items
   })
-
-  return items
 }
 
 /**

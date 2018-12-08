@@ -17,7 +17,7 @@ export const deleteAction = ({
   apiMethod,
   actionStartName,
   actionEndName,
-}) => async id => {
+}) => id => {
   dispatch({
     type: actionStartName,
     payload: {
@@ -25,16 +25,16 @@ export const deleteAction = ({
     },
   })
 
-  await apiMethod(id)
+  return apiMethod(id).then(() => {
+    dispatch({
+      type: actionEndName,
+      payload: {
+        id,
+      },
+    })
 
-  dispatch({
-    type: actionEndName,
-    payload: {
-      id,
-    },
+    return id
   })
-
-  return id
 }
 
 /**

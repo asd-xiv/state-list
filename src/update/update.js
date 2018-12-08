@@ -6,7 +6,7 @@ import { map, filterBy, merge, hasWith } from "@asd14/m"
  * Call API to update an item, dispatch events before and after
  *
  * @param  {Function}  dispatch         Redux dispatch function
- * @param  {Function}  updateMethod     API interaction functions
+ * @param  {Function}  apiMethod        API interaction functions
  * @param  {string}    actionStartName  Action name to dispatch before API
  * @param  {string}    actionEndName    Action name to dispatch after API
  *
@@ -14,10 +14,10 @@ import { map, filterBy, merge, hasWith } from "@asd14/m"
  */
 export const updateAction = ({
   dispatch,
-  updateMethod,
+  apiMethod,
   actionStartName,
   actionEndName,
-}) => async (id, data) => {
+}) => (id, data) => {
   dispatch({
     type: actionStartName,
     payload: {
@@ -26,7 +26,7 @@ export const updateAction = ({
     },
   })
 
-  return updateMethod(id, data).then(itemUpdated => {
+  return apiMethod(id, data).then(itemUpdated => {
     dispatch({
       type: actionEndName,
       payload: {

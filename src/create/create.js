@@ -17,21 +17,21 @@ export const createAction = ({
   apiMethod,
   actionStartName,
   actionEndName,
-}) => async (...args) => {
+}) => (...args) => {
   dispatch({
     type: actionStartName,
   })
 
-  const item = await apiMethod(...args)
+  return apiMethod(...args).then(itemCreated => {
+    dispatch({
+      type: actionEndName,
+      payload: {
+        item: itemCreated,
+      },
+    })
 
-  dispatch({
-    type: actionEndName,
-    payload: {
-      item,
-    },
+    return itemCreated
   })
-
-  return item
 }
 
 /**
