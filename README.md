@@ -4,7 +4,7 @@
 
 # redux-all-is-list
 
-> Omelette du fromage, omelette du fromage, all state is list
+> Reduce Redux boilerplate when mapping data from API endpoints.
 
 ---
 
@@ -14,7 +14,7 @@
 - [Use](#use)
 - [Develop](#develop)
 - [Changelog](#changelog)
-  - [\[0.1.0\] - 26 November 2018](#010---26-november-2018)
+  - [\[0.2.0\] - 8 December 2018](#020---8-december-2018)
 
 <!-- /MarkdownTOC -->
 
@@ -26,13 +26,13 @@ npm i --save-exact @asd14/redux-all-is-list
 
 ## Use
 
+`totos.lists.js`
+
 ```js
-// totos.state.js
-//
 import { buildList } from "@asd14/redux-all-is-list"
 
 export const TodosList = buildList({
-  name: "SOME-PAGE__TODOS",
+  name: "SOME-PAGE__WHATEVER-SECTION__TODOS",
   methods: {
     create: data => POST("/todos", data),
     find: () => GET("/todos"),
@@ -42,9 +42,9 @@ export const TodosList = buildList({
 })
 ```
 
+`store.js`
+
 ```js
-// store.js
-//
 import { createStore, combineReducers } from "redux"
 import { TodosList } from "./todos.state"
 
@@ -55,19 +55,18 @@ const store = createStore(
 )
 ```
 
+`todos.container.jsx`
+
 ```js
-// todos.container.jsx
-//
 import React from "react"
 import cx from "classnames"
 import { connect } from "react-redux"
-import { listSelector } from "@asd14/redux-all-is-list"
 
 import { TodosList } from "./todos.state"
 
 @connect(
   store => {
-    const todosSelector = listSelector(store[TodosList.name])
+    const todosSelector = listSelector.selector(store)
 
     return {
       todos: todosSelector.items(),
@@ -98,6 +97,8 @@ class TodosContainer extends React.Component {
     )
   }
 }
+
+export { TodosContainer }
 ```
 
 ## Develop
@@ -118,6 +119,12 @@ npm run tdd
 
 History of all changes in [CHANGELOG.md](CHANGELOG.md)
 
-### [0.1.0] - 26 November 2018
+### [0.2.0] - 8 December 2018
 
-First
+#### Add
+
+- Add state selector to [`buildList`](src/index.js#L57) export
+- Add test for [`create action`](src/create/create/create.test)
+- Add test for [`find action`](src/find/find/find.test)
+- Add test for [`create action`](src/create/create.test)
+- Add test for [`delete action`](src/delete/delete.test)
