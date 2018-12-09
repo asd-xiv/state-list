@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.2.2] - 9 December 2018
+
+### Change
+
+- Fix `isLoaded` selector not checking corect date property
+
 ## [0.2.0] - 8 December 2018
 
 ### Add
@@ -22,5 +28,6 @@ First
 
 [Unreleased]: https://github.com/asd14/redux-all-is-list/compare/v0.1.0...HEAD
 
+[0.2.2]: https://github.com/asd14/redux-all-is-list/compare/v0.2.0...v0.2.2
 [0.2.0]: https://github.com/asd14/redux-all-is-list/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/asd14/redux-all-is-list/compare/v0.1.0

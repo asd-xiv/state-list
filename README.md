@@ -14,7 +14,7 @@
 - [Use](#use)
 - [Develop](#develop)
 - [Changelog](#changelog)
-  - [0.2.0 - 8 December 2018](#020---8-december-2018)
+  - [0.2.2 - 9 December 2018](#022---9-december-2018)
 
 <!-- /MarkdownTOC -->
 
@@ -119,9 +119,8 @@ npm run tdd
 
 History of all changes in [CHANGELOG.md](CHANGELOG.md)
 
-### 0.2.0 - 8 December 2018
+### 0.2.2 - 9 December 2018
 
-#### Add
+#### Change
 
-- Add state selector to [`buildList`](src/index.js#L57) export
-- Add test for [`create`](src/create/create.test.js), [`find`](src/find/find.test.js), [`update`](src/update/update.test.js) and [`delete`](src/delete/delete.test.js) actions
+- Fix `isLoaded` selector not checking corect date property
