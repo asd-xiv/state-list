@@ -14,7 +14,7 @@
 - [Use](#use)
 - [Develop](#develop)
 - [Changelog](#changelog)
-  - [\[0.2.0\] - 8 December 2018](#020---8-december-2018)
+  - [0.2.0 - 8 December 2018](#020---8-december-2018)
 
 <!-- /MarkdownTOC -->
 
@@ -26,7 +26,7 @@ npm i --save-exact @asd14/redux-all-is-list
 
 ## Use
 
-`totos.lists.js`
+`todos.state.js`
 
 ```js
 import { buildList } from "@asd14/redux-all-is-list"
@@ -119,12 +119,9 @@ npm run tdd
 
 History of all changes in [CHANGELOG.md](CHANGELOG.md)
 
-### [0.2.0] - 8 December 2018
+### 0.2.0 - 8 December 2018
 
 #### Add
 
 - Add state selector to [`buildList`](src/index.js#L57) export
-- Add test for [`create action`](src/create/create/create.test)
-- Add test for [`find action`](src/find/find/find.test)
-- Add test for [`create action`](src/create/create.test)
-- Add test for [`delete action`](src/delete/delete.test)
+- Add test for [`create`](src/create/create.test.js), [`find`](src/find/find.test.js), [`update`](src/update/update.test.js) and [`delete`](src/delete/delete.test.js) actions

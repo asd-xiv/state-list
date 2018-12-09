@@ -14,10 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Add
 
 - Add state selector to [`buildList`](src/index.js#L57) export
-- Add test for [`create action`](src/create/create/create.test)
-- Add test for [`find action`](src/find/find/find.test)
-- Add test for [`create action`](src/create/create.test)
-- Add test for [`delete action`](src/delete/delete.test)
+- Add test for [`create`](src/create/create.test.js), [`find`](src/find/find.test.js), [`update`](src/update/update.test.js) and [`delete`](src/delete/delete.test.js) actions
 
 ## [0.1.0] - 26 November 2018
 
