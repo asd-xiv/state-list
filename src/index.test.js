@@ -4,6 +4,7 @@ import { createStore, combineReducers } from "redux"
 import { buildList } from "."
 
 test("List without API methods", t => {
+  // WHAT TO TEST
   const todoList = buildList({
     name: "TODOS",
     methods: {},
@@ -16,7 +17,7 @@ test("List without API methods", t => {
     })
   )
 
-  // Link lists's actions to store
+  // Link lists's action to store's dispatch
   const listCreate = todoList.create(store.dispatch)
   const listFind = todoList.find(store.dispatch)
   const listUpdate = todoList.update(store.dispatch)
@@ -24,19 +25,40 @@ test("List without API methods", t => {
 
   t.equals(todoList.name, "TODOS", "New list created with unique name")
 
+  t.throws(
+    () => {
+      buildList({ name: "TODOS" })
+    },
+    /ReduxAllIsList: List with name "TODOS" already exists/,
+    "Throw exception when creating a list with a duplicate name"
+  )
+
+  const todosSelector = todoList.selector(store.getState())
+
   t.deepEquals(
-    store.getState()[todoList.name],
     {
+      head: todosSelector.head(),
+      items: todosSelector.items(),
+      itemsUpdating: todosSelector.itemsUpdating(),
+      itemsDeletingIds: todosSelector.itemsDeletingIds(),
+      isCreating: todosSelector.isCreating(),
+      isLoaded: todosSelector.isLoaded(),
+      isLoading: todosSelector.isLoading(),
+      isUpdating: todosSelector.isUpdating(),
+      isDeleting: todosSelector.isDeleting(),
+    },
+    {
+      head: undefined,
       items: [],
       itemsUpdating: [],
       itemsDeletingIds: [],
-      errors: [],
-      loadDate: null,
       isLoading: false,
-      isReloading: false,
+      isLoaded: false,
       isCreating: false,
+      isUpdating: false,
+      isDeleting: false,
     },
-    "Default state initialized in redux store"
+    "Default state initialized in redux store via list selector"
   )
 
   t.throws(

@@ -4,19 +4,11 @@ import { createStore, combineReducers } from "redux"
 import { buildList } from ".."
 
 test("Update", t => {
+  // WHAT TO TEST
   const todoList = buildList({
-    name: "TODOS",
+    name: "UPDATE_TODOS",
     methods: {
-      find: () => [
-        {
-          id: 1,
-          name: "lorem ipsum",
-        },
-        {
-          id: 2,
-          name: "foo bar",
-        },
-      ],
+      find: () => [{ id: 1, name: "lorem ipsum" }, { id: 2, name: "foo bar" }],
       update: (id, data) => ({
         id,
         ...data,
@@ -31,25 +23,46 @@ test("Update", t => {
     })
   )
 
-  // Link lists's actions to store
+  // Link lists's action to store's dispatch
   const listFind = todoList.find(store.dispatch)
   const listUpdate = todoList.update(store.dispatch)
 
   listFind()
-    .then(() => listUpdate(2, { name: "Updated foo" }))
-    .then(itemUpdated => {
-      const listState = store.getState()[todoList.name]
+    .then(() => {
+      // Trigger update action and check intermediate state
+      const updatePromise = listUpdate(2, { name: "Updated foo" })
+      const todosSelector = todoList.selector(store.getState())
 
       t.equals(
-        listState.items.length,
-        2,
-        "list.update didnt remove or add any new elements"
+        todosSelector.isUpdating(2),
+        true,
+        "isUpdating by id flag should be true while updating"
       )
+      t.equals(
+        todosSelector.isUpdating(),
+        true,
+        "isUpdating flag should be true while updating"
+      )
+      t.deepEquals(
+        todosSelector.itemsUpdating(),
+        [{ id: 2, data: { name: "Updated foo" } }],
+        "array with updating items should contain current updating item"
+      )
+
+      return updatePromise
+    })
+    .then(itemUpdated => {
+      const todosSelector = todoList.selector(store.getState())
 
       t.deepEquals(
         itemUpdated,
         { id: 2, name: "Updated foo" },
-        "list.update resolves with created item"
+        "list.update resolves with updated item"
+      )
+      t.deepEquals(
+        todosSelector.items(),
+        [{ id: 1, name: "lorem ipsum" }, { id: 2, name: "Updated foo" }],
+        "element should be updated in items array"
       )
     })
     .then(() => t.end())

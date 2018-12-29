@@ -1,18 +1,16 @@
 import test from "tape"
 import { createStore, combineReducers } from "redux"
-import { random } from "@asd14/m"
 
 import { buildList } from ".."
 
 test("Create", t => {
-  t.plan(2)
-
-  // sample List to test
+  // WHAT TO TEST
   const todoList = buildList({
-    name: "TODOS",
+    name: "CREATE_TODOS",
     methods: {
+      find: () => [],
       create: data => ({
-        id: random({ min: 0, max: 1000 }),
+        id: 1,
         ...data,
       }),
     },
@@ -27,22 +25,42 @@ test("Create", t => {
 
   // Link lists's action to store's dispatch
   const listCreate = todoList.create(store.dispatch)
+  const listFind = todoList.find(store.dispatch)
 
-  listCreate({ name: "New foo" })
-    .then(itemCreated => {
-      const state = store.getState()[todoList.name]
+  listFind()
+    .then(() => {
+      // Trigger create action and check intermediate state
+      const createPromise = listCreate({ name: "New foo" })
+      const todosSelector = todoList.selector(store.getState())
 
       t.equals(
-        itemCreated.name,
-        "New foo",
+        todosSelector.isCreating(),
+        true,
+        "isCreating flag should be true while creating"
+      )
+
+      return createPromise
+    })
+    .then(itemCreated => {
+      // Check state after create
+      const todosSelector = todoList.selector(store.getState())
+
+      t.deepEquals(
+        itemCreated,
+        { id: 1, name: "New foo" },
         "list.create resolves with created item"
       )
-
       t.equals(
-        state.items.length,
-        1,
-        "list.create added new item to slice.items"
+        todosSelector.isCreating(),
+        false,
+        "isCreating flag should be false after creating"
+      )
+      t.deepEquals(
+        todosSelector.items(),
+        [{ id: 1, name: "New foo" }],
+        "element should be added to items array"
       )
     })
+    .then(() => t.end())
     .catch()
 })

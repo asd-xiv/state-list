@@ -18,7 +18,7 @@ const {
   deleteEndReducer,
 } = require("./delete/delete")
 
-const collectionNames = Object.create(null)
+const collectionNames = []
 
 /**
  * List factory function
@@ -29,9 +29,11 @@ const collectionNames = Object.create(null)
  * @return {Object}
  */
 export const buildList = ({ name, methods = {} }) => {
-  if (collectionNames[name]) {
+  if (has(name)(collectionNames)) {
     throw new Error(`ReduxAllIsList: List with name "${name}" already exists`)
   }
+
+  collectionNames.push(name)
 
   const createStartActionName = `${name}_CREATE_START`
   const createEndActionName = `${name}_CREATE_END`
@@ -53,7 +55,8 @@ export const buildList = ({ name, methods = {} }) => {
      * @return {Object<string, Function>}
      */
     selector: state => ({
-      head: () => state[name].items[0],
+      head: () =>
+        state[name].items.length === 0 ? undefined : state[name].items[0],
       byId: id => findBy({ id })(state[name].items),
 
       items: () => state[name].items,
