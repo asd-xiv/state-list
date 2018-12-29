@@ -121,17 +121,8 @@
      * Triggered if there are multiple headers in the document that have the
      * same text.
      */
-
     "no-duplicate-header": true,
 
-    /*
-     * MD033 - Inline HTML
-     *
-     * Triggered whenever raw HTML is used in a markdown document. Allowing
-     * summary and details to support github dropdown
-     *
-     */
-    "no-inline-html": {
-        "allowed_elements": ["summary", "details"]
-    }
+    // MD032 - Lists should be surrounded by blank lines
+    "blanks-around-lists": false
 }
