@@ -7,14 +7,14 @@ import { buildList } from ".."
 test("Create", t => {
   t.plan(2)
 
+  // sample List to test
   const todoList = buildList({
     name: "TODOS",
     methods: {
-      create: data =>
-        Promise.resolve({
-          id: random({ min: 0, max: 1000 }),
-          ...data,
-        }),
+      create: data => ({
+        id: random({ min: 0, max: 1000 }),
+        ...data,
+      }),
     },
   })
 
@@ -25,7 +25,7 @@ test("Create", t => {
     })
   )
 
-  // Link lists's actions to store
+  // Link lists's action to store's dispatch
   const listCreate = todoList.create(store.dispatch)
 
   listCreate({ name: "New foo" })

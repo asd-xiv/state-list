@@ -5,10 +5,10 @@ import { map, filterBy, merge, hasWith } from "@asd14/m"
 /**
  * Call API to update an item, dispatch events before and after
  *
- * @param  {Function}  dispatch         Redux dispatch function
- * @param  {Function}  apiMethod        API interaction functions
- * @param  {string}    actionStartName  Action name to dispatch before API
- * @param  {string}    actionEndName    Action name to dispatch after API
+ * @param  {Function}  dispatch         Redux dispatch
+ * @param  {Function}  apiMethod        API call
+ * @param  {string}    actionStartName  Action dispatched before API
+ * @param  {string}    actionEndName    Action dispatched after API
  *
  * @return {Promise<Object>}
  */
@@ -26,11 +26,11 @@ export const updateAction = ({
     },
   })
 
-  return apiMethod(id, data).then(itemUpdated => {
+  return Promise.resolve(apiMethod(id, data)).then(itemUpdated => {
     dispatch({
       type: actionEndName,
       payload: {
-        item: itemUpdated,
+        itemUpdated,
       },
     })
 
@@ -76,12 +76,10 @@ export const updateStartReducer = (state, { id, data }) => {
  *
  * @return {Object}
  */
-export const updateEndReducer = (state, { item }) => ({
+export const updateEndReducer = (state, { itemUpdated }) => ({
   ...state,
-  items:
-    state.items
-    |> map(itemsMapElm =>
-      itemsMapElm.id === item.id ? merge(itemsMapElm, item) : itemsMapElm
-    ),
-  itemsUpdating: filterBy({ "!id": item.id })(state.itemsUpdating),
+  items: map(item =>
+    item.id === itemUpdated.id ? merge(item, itemUpdated) : item
+  )(state.items),
+  itemsUpdating: filterBy({ "!id": itemUpdated.id })(state.itemsUpdating),
 })

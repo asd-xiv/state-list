@@ -3,10 +3,10 @@ const debug = require("debug")("ReduxAllIsList:Find")
 /**
  * Call API to fetch items, dispatch events before and after
  *
- * @param  {Function}  dispatch         Redux dispatch function
- * @param  {Function}  apiMethod        API interaction functions
- * @param  {string}    actionStartName  Action name to dispatch before API
- * @param  {string}    actionEndName    Action name to dispatch after API
+ * @param  {Function}  dispatch         Redux dispatch
+ * @param  {Function}  apiMethod        API call
+ * @param  {string}    actionStartName  Action dispatched before API
+ * @param  {string}    actionEndName    Action dispatched after API
  *
  * @returns {Object[]}
  */
@@ -20,7 +20,7 @@ export const findAction = ({
     type: actionStartName,
   })
 
-  return apiMethod(...args).then(items => {
+  return Promise.resolve(apiMethod(...args)).then(items => {
     dispatch({
       type: actionEndName,
       payload: {

@@ -7,21 +7,19 @@ test("Delete", t => {
   const todoList = buildList({
     name: "TODOS",
     methods: {
-      find: () =>
-        Promise.resolve([
-          {
-            id: 1,
-            name: "lorem ipsum",
-          },
-          {
-            id: 2,
-            name: "foo bar",
-          },
-        ]),
-      delete: id =>
-        Promise.resolve({
-          id,
-        }),
+      find: () => [
+        {
+          id: 1,
+          name: "lorem ipsum",
+        },
+        {
+          id: 2,
+          name: "foo bar",
+        },
+      ],
+      delete: id => ({
+        id,
+      }),
     },
   })
 

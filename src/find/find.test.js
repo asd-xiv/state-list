@@ -8,17 +8,16 @@ test("Find", t => {
   const todoList = buildList({
     name: "TODOS",
     methods: {
-      find: () =>
-        Promise.resolve([
-          {
-            id: 1,
-            name: "lorem ipsum",
-          },
-          {
-            id: 2,
-            name: "foo bar",
-          },
-        ]),
+      find: () => [
+        {
+          id: 1,
+          name: "lorem ipsum",
+        },
+        {
+          id: 2,
+          name: "foo bar",
+        },
+      ],
     },
   })
 

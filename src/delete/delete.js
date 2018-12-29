@@ -3,12 +3,12 @@ const debug = require("debug")("ReduxAllIsList:Delete")
 import { has, remove, filterBy } from "@asd14/m"
 
 /**
- * Call API to create a new item, dispatch events before and after
+ * Call API to delete an item, dispatch events before and after
  *
- * @param  {Function}  dispatch         Redux dispatch function
- * @param  {Function}  apiMethod        API interaction functions
- * @param  {string}    actionStartName  Action name to dispatch before API
- * @param  {string}    actionEndName    Action name to dispatch after API
+ * @param  {Function}  dispatch         Redux dispatch
+ * @param  {Function}  apiMethod        API call
+ * @param  {string}    actionStartName  Action dispatched before API
+ * @param  {string}    actionEndName    Action dispatched after API
  *
  * @return {Object}
  */
@@ -25,7 +25,7 @@ export const deleteAction = ({
     },
   })
 
-  return apiMethod(id).then(() => {
+  return Promise.resolve(apiMethod(id)).then(() => {
     dispatch({
       type: actionEndName,
       payload: {
@@ -51,7 +51,7 @@ export const deleteStartReducer = (state, { id }) => {
 
   isDeleting &&
     debug(
-      "listDeleteStart: ID already deleting ... doing nothing (will still trigger a rerender)",
+      "listDeleteStart: ID already deleting, doing nothing (will still trigger a rerender)",
       {
         id,
         itemsDeletingIds: state.itemsDeletingIds,

@@ -5,10 +5,10 @@ import { map, hasWith } from "@asd14/m"
 /**
  * Call API to create a new item, dispatch events before and after
  *
- * @param  {Function}  dispatch         Redux dispatch function
- * @param  {Function}  apiMethod        API interaction functions
- * @param  {string}    actionStartName  Action name to dispatch before API
- * @param  {string}    actionEndName    Action name to dispatch after API
+ * @param  {Function}  dispatch         Redux dispatch
+ * @param  {Function}  apiMethod        API call
+ * @param  {string}    actionStartName  Action dispatched before API
+ * @param  {string}    actionEndName    Action dispatched after API
  *
  * @return {Object}
  */
@@ -22,11 +22,11 @@ export const createAction = ({
     type: actionStartName,
   })
 
-  return apiMethod(...args).then(itemCreated => {
+  return Promise.resolve(apiMethod(...args)).then(itemCreated => {
     dispatch({
       type: actionEndName,
       payload: {
-        item: itemCreated,
+        itemCreated,
       },
     })
 
@@ -49,27 +49,28 @@ export const createStartReducer = state => ({
 /**
  * Add newly created item to list
  *
- * @param  {Object}  state      Old state
- * @param  {Object}  arg2       The argument 2
- * @param  {Object}  arg2.item  Newly created item
+ * @param  {Object}  state             Old state
+ * @param  {Object}  arg2              The argument 2
+ * @param  {Object}  arg2.itemCreated  Newly created item
  *
  * @return {Object} New state
  */
-export const createEndReducer = (state, { item }) => {
-  const exists = hasWith({ id: item.id })(state.items)
+export const createEndReducer = (state, { itemCreated }) => {
+  const exists = hasWith({ id: itemCreated.id })(state.items)
 
   exists &&
-    debug("createEndReducer: element ID already exists ... replacing", {
-      item,
+    debug("createEndReducer: element ID already exists, replacing", {
+      itemCreated,
       items: state.items,
     })
 
   return {
     ...state,
     items: exists
-      ? state.items
-        |> map(itemsMapElm => (itemsMapElm.id === item.id ? item : itemsMapElm))
-      : [...state.items, item],
+      ? map(item => (item.id === itemCreated.id ? itemCreated : item))(
+          state.items
+        )
+      : [...state.items, itemCreated],
     isCreating: false,
   }
 }

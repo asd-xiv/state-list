@@ -7,22 +7,20 @@ test("Update", t => {
   const todoList = buildList({
     name: "TODOS",
     methods: {
-      find: () =>
-        Promise.resolve([
-          {
-            id: 1,
-            name: "lorem ipsum",
-          },
-          {
-            id: 2,
-            name: "foo bar",
-          },
-        ]),
-      update: (id, data) =>
-        Promise.resolve({
-          id,
-          ...data,
-        }),
+      find: () => [
+        {
+          id: 1,
+          name: "lorem ipsum",
+        },
+        {
+          id: 2,
+          name: "foo bar",
+        },
+      ],
+      update: (id, data) => ({
+        id,
+        ...data,
+      }),
     },
   })
 
