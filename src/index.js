@@ -1,6 +1,6 @@
 const debug = require("debug")("ReduxAllIsList:Main")
 
-const { findBy, has, hasWith, is, isEmpty, type: typeOf } = require("@asd14/m")
+const { findBy, has, hasWith, is, isEmpty } = require("@asd14/m")
 const {
   createAction,
   createStartReducer,
@@ -30,9 +30,7 @@ const collectionNames = Object.create(null)
  */
 export const buildList = ({ name, methods = {} }) => {
   if (collectionNames[name]) {
-    throw new Error(
-      `ReduxAllIsList: Redux actions collision, "${name}" collection already exists`
-    )
+    throw new Error(`ReduxAllIsList: List with name "${name}" already exists`)
   }
 
   const createStartActionName = `${name}_CREATE_START`
@@ -84,7 +82,7 @@ export const buildList = ({ name, methods = {} }) => {
      * @return {void}
      */
     create: dispatch =>
-      typeOf(methods.create) === "Function"
+      typeof methods.create === "function"
         ? createAction({
             dispatch,
             apiMethod: methods.create,
@@ -93,9 +91,7 @@ export const buildList = ({ name, methods = {} }) => {
           })
         : () => {
             throw new TypeError(
-              `ReduxAllIsList - "${name}": Expected "create" action of type Function, got "${typeOf(
-                methods.create
-              )}"`
+              `ReduxAllIsList: "${name}"."create" should be a function, got "${typeof methods.create}"`
             )
           },
 
@@ -108,7 +104,7 @@ export const buildList = ({ name, methods = {} }) => {
      * @return {void}
      */
     find: dispatch =>
-      typeOf(methods.find) === "Function"
+      typeof methods.find === "function"
         ? findAction({
             dispatch,
             apiMethod: methods.find,
@@ -117,9 +113,7 @@ export const buildList = ({ name, methods = {} }) => {
           })
         : () => {
             throw new TypeError(
-              `ReduxAllIsList - "${name}": Expected "find" action of type Function, got "${typeOf(
-                methods.find
-              )}"`
+              `ReduxAllIsList: "${name}"."find" should be a function, got "${typeof methods.find}"`
             )
           },
 
@@ -133,7 +127,7 @@ export const buildList = ({ name, methods = {} }) => {
      * @return {void}
      */
     update: dispatch =>
-      typeOf(methods.update) === "Function"
+      typeof methods.update === "function"
         ? updateAction({
             dispatch,
             apiMethod: methods.update,
@@ -142,9 +136,7 @@ export const buildList = ({ name, methods = {} }) => {
           })
         : () => {
             throw new TypeError(
-              `ReduxAllIsList - "${name}": Expected "update" action of type Function, got "${typeOf(
-                methods.update
-              )}"`
+              `ReduxAllIsList: "${name}"."update" should be a function, got "${typeof methods.update}"`
             )
           },
 
@@ -158,7 +150,7 @@ export const buildList = ({ name, methods = {} }) => {
      * @return {void}
      */
     delete: dispatch =>
-      typeOf(methods.delete) === "Function"
+      typeof methods.delete === "function"
         ? deleteAction({
             dispatch,
             apiMethod: methods.delete,
@@ -167,9 +159,7 @@ export const buildList = ({ name, methods = {} }) => {
           })
         : () => {
             throw new TypeError(
-              `ReduxAllIsList - "${name}": Expected "delete" action of type Function, got "${typeOf(
-                methods.delete
-              )}"`
+              `ReduxAllIsList: "${name}"."delete" should be a function, got "${typeof methods.delete}"`
             )
           },
 
@@ -180,7 +170,7 @@ export const buildList = ({ name, methods = {} }) => {
      *
      * @return {void}
      */
-    clear: dispatch => async () => {
+    clear: dispatch => () => {
       dispatch({
         type: loadEndActionName,
         payload: {
@@ -188,7 +178,7 @@ export const buildList = ({ name, methods = {} }) => {
         },
       })
 
-      return []
+      return Promise.resolve([])
     },
 
     /**
@@ -198,7 +188,7 @@ export const buildList = ({ name, methods = {} }) => {
      *
      * @return {void}
      */
-    add: dispatch => async item => {
+    add: dispatch => item => {
       dispatch({
         type: createEndActionName,
         payload: {
@@ -206,7 +196,7 @@ export const buildList = ({ name, methods = {} }) => {
         },
       })
 
-      return item
+      return Promise.resolve(item)
     },
 
     /**

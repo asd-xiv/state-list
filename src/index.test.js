@@ -43,7 +43,7 @@ test("List without API methods", t => {
     () => {
       listCreate({ id: 2 })
     },
-    /ReduxAllIsList - "TODOS": Expected "create" action of type Function, got "Undefined"/,
+    /ReduxAllIsList: "TODOS"."create" should be a function, got "undefined"/,
     'Throw exception when calling "create" on list without methods'
   )
 
@@ -51,7 +51,7 @@ test("List without API methods", t => {
     () => {
       listFind()
     },
-    /ReduxAllIsList - "TODOS": Expected "find" action of type Function, got "Undefined"/,
+    /ReduxAllIsList: "TODOS"."find" should be a function, got "undefined"/,
     'Throw exception when calling "find" on list without methods'
   )
 
@@ -59,7 +59,7 @@ test("List without API methods", t => {
     () => {
       listUpdate(1, { test: 2 })
     },
-    /ReduxAllIsList - "TODOS": Expected "update" action of type Function, got "Undefined"/,
+    /ReduxAllIsList: "TODOS"."update" should be a function, got "undefined"/,
     'Throw exception when calling "update" on list without methods'
   )
 
@@ -67,7 +67,7 @@ test("List without API methods", t => {
     () => {
       listDelete(1, { test: 2 })
     },
-    /ReduxAllIsList - "TODOS": Expected "delete" action of type Function, got "Undefined"/,
+    /ReduxAllIsList: "TODOS"."delete" should be a function, got "undefined"/,
     'Throw exception when calling "delete" on list without methods'
   )
 
