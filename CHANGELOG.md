@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.3.0] - 29 December 2018
+
+### Add
+
+- Tests for selector
+
+### Change
+
+- Resolve API call inside action. List methods no longer needs to explicitly return a Promise.
+
 ## [0.2.2] - 9 December 2018
 
 ### Change
@@ -26,8 +36,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 First
 
-[Unreleased]: https://github.com/asd14/redux-all-is-list/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/asd14/redux-all-is-list/compare/v0.3.0...HEAD
 
+[0.3.0]: https://github.com/asd14/redux-all-is-list/compare/v0.2.2...v0.3.0
 [0.2.2]: https://github.com/asd14/redux-all-is-list/compare/v0.2.0...v0.2.2
 [0.2.0]: https://github.com/asd14/redux-all-is-list/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/asd14/redux-all-is-list/compare/v0.1.0

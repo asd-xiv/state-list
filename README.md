@@ -1,3 +1,5 @@
+<!-- markdownlint-disable first-line-h1 line-length -->
+
 [![npm package version](https://badge.fury.io/js/%40asd14%2Fm.svg)](https://badge.fury.io/js/%40asd14%2Fredux-all-is-list)
 [![dev-badge](https://david-dm.org/asd14/redux-all-is-list.svg)](https://david-dm.org/asd14/redux-all-is-list)
 [![Coverage Status](https://coveralls.io/repos/github/asd14/redux-all-is-list/badge.svg)](https://coveralls.io/github/asd14/redux-all-is-list)
@@ -8,13 +10,13 @@
 
 ---
 
-<!-- MarkdownTOC levels="1,2,3" autolink="true" indent="  " -->
+<!-- MarkdownTOC levels="1,2,3" autolink="true" indent="    " -->
 
 - [Install](#install)
 - [Use](#use)
 - [Develop](#develop)
 - [Changelog](#changelog)
-  - [0.2.2 - 9 December 2018](#022---9-december-2018)
+    - [0.3.0 - 29 December 2018](#030---29-december-2018)
 
 <!-- /MarkdownTOC -->
 
@@ -35,7 +37,7 @@ export const TodosList = buildList({
   name: "SOME-PAGE__WHATEVER-SECTION__TODOS",
   methods: {
     create: data => POST("/todos", data),
-    find: () => GET("/todos"),
+    find: () => [{id: 1, title: "lorem ipsum"}],
     update: (id, data) => PATCH(`/todos/${id}`, date),
     delete: id => DELETE(`/todos/${id}`),
   },
@@ -92,7 +94,7 @@ class TodosContainer extends React.Component {
         className={cx({
           [css.loading]: todosIsLoading,
         })}>
-        {todos |> map(todo => <div>{todo.name}</div>)}
+        {todos |> map(todo => <div>{todo.title}</div>)}
       </div>
     )
   }
@@ -119,8 +121,12 @@ npm run tdd
 
 History of all changes in [CHANGELOG.md](CHANGELOG.md)
 
-### 0.2.2 - 9 December 2018
+### 0.3.0 - 29 December 2018
+
+#### Add
+
+- Tests for selector
 
 #### Change
 
-- Fix `isLoaded` selector not checking corect date property
+- Resolve API call inside action. List methods no longer needs to explicitly return a Promise.
