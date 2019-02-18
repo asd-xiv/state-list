@@ -17,12 +17,15 @@ export const createAction = ({
   apiMethod,
   actionStartName,
   actionEndName,
-}) => (...args) => {
+}) => data => {
   dispatch({
     type: actionStartName,
+    payload: {
+      itemCreating: data,
+    },
   })
 
-  return Promise.resolve(apiMethod(...args)).then(itemCreated => {
+  return Promise.resolve(apiMethod(data)).then(itemCreated => {
     dispatch({
       type: actionEndName,
       payload: {
@@ -41,8 +44,9 @@ export const createAction = ({
  *
  * @return {Object} New state
  */
-export const createStartReducer = state => ({
+export const createStartReducer = (state, { itemCreating }) => ({
   ...state,
+  itemCreating,
   isCreating: true,
 })
 
@@ -71,6 +75,7 @@ export const createEndReducer = (state, { itemCreated }) => {
           state.items
         )
       : [...state.items, itemCreated],
+    itemCreating: {},
     isCreating: false,
   }
 }

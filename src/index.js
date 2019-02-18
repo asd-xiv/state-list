@@ -62,6 +62,7 @@ export const buildList = ({ name, methods = {} }) => {
       items: () => state[name].items,
       itemsUpdating: () => state[name].itemsUpdating,
       itemsDeletingIds: () => state[name].itemsDeletingIds,
+      itemCreating: () => state[name].itemCreating,
 
       isLoaded: () => is(state[name].loadDate),
       isLoading: () => state[name].isLoading || state[name].isReloading,
@@ -217,6 +218,7 @@ export const buildList = ({ name, methods = {} }) => {
         items: [],
         itemsUpdating: [],
         itemsDeletingIds: [],
+        itemCreating: {},
 
         errors: [],
         loadDate: null,

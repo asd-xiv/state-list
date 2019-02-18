@@ -33,10 +33,16 @@ test("Create", t => {
       const createPromise = listCreate({ name: "New foo" })
       const todosSelector = todoList.selector(store.getState())
 
+      t.deepEquals(
+        todosSelector.itemCreating(),
+        { name: "New foo" },
+        "before - itemCreating should contain the create data"
+      )
+
       t.equals(
         todosSelector.isCreating(),
         true,
-        "isCreating flag should be true while creating"
+        "before - isCreating flag should be true while creating"
       )
 
       return createPromise
@@ -46,19 +52,24 @@ test("Create", t => {
       const todosSelector = todoList.selector(store.getState())
 
       t.deepEquals(
+        todosSelector.itemCreating(),
+        {},
+        "after - itemCreating is empty"
+      )
+      t.deepEquals(
         itemCreated,
         { id: 1, name: "New foo" },
-        "list.create resolves with created item"
+        "after - list.create resolves with created item"
       )
       t.equals(
         todosSelector.isCreating(),
         false,
-        "isCreating flag should be false after creating"
+        "after - isCreating flag should be false after creating"
       )
       t.deepEquals(
         todosSelector.items(),
         [{ id: 1, name: "New foo" }],
-        "element should be added to items array"
+        "after - element should be added to items array"
       )
     })
     .then(() => t.end())

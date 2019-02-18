@@ -42,7 +42,6 @@ export const findAction = ({
 export const findStartReducer = state => ({
   ...state,
   isLoading: true,
-  isReloading: !state.loadDate,
 })
 
 /**
@@ -58,5 +57,4 @@ export const findEndReducer = (state, { items }) => ({
   items,
   loadDate: new Date(),
   isLoading: false,
-  isReloading: false,
 })
