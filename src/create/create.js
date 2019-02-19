@@ -3,14 +3,16 @@ const debug = require("debug")("ReduxAllIsList:Create")
 import { map, hasWith } from "@asd14/m"
 
 /**
- * Call API to create a new item, dispatch events before and after
+ * Call API to create a new item, dispatch actions before and after
  *
- * @param  {Function}  dispatch         Redux dispatch
- * @param  {Function}  api              API method
- * @param  {string}    actionStartName  Action dispatched before API call
- * @param  {string}    actionEndName    Action dispatched after API call
+ * @param  {Function}  dispatch     Redux dispatch
+ * @param  {Function}  api          API method
+ * @param  {string}    actionStart  Action dispatched before API call
+ * @param  {string}    actionEnd    Action dispatched after API call
  *
- * @return {Object}
+ * @param  {Object}    data         Model data
+ *
+ * @return {Promise<Object>}
  */
 export const createAction = ({
   dispatch,
@@ -53,9 +55,9 @@ export const createStartReducer = (state, { itemCreating }) => ({
 /**
  * Add newly created item to list
  *
- * @param  {Object}  state             Old state
- * @param  {Object}  arg2              The argument 2
- * @param  {Object}  arg2.itemCreated  Newly created item
+ * @param  {Object}  state                Old state
+ * @param  {Object}  payload              Data comming from action
+ * @param  {Object}  payload.itemCreated  Newly created item
  *
  * @return {Object} New state
  */
