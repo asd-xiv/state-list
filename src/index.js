@@ -32,7 +32,6 @@ export const buildList = ({ name, methods = {} }) => {
   if (has(name)(collectionNames)) {
     throw new Error(`ReduxAllIsList: List with name "${name}" already exists`)
   }
-
   collectionNames.push(name)
 
   const createStartActionName = `${name}_CREATE_START`
@@ -89,9 +88,9 @@ export const buildList = ({ name, methods = {} }) => {
       typeof methods.create === "function"
         ? createAction({
             dispatch,
-            apiMethod: methods.create,
-            actionStartName: createStartActionName,
-            actionEndName: createEndActionName,
+            api: methods.create,
+            actionStart: createStartActionName,
+            actionEnd: createEndActionName,
           })
         : () => {
             throw new TypeError(
@@ -111,9 +110,9 @@ export const buildList = ({ name, methods = {} }) => {
       typeof methods.find === "function"
         ? findAction({
             dispatch,
-            apiMethod: methods.find,
-            actionStartName: loadStartActionName,
-            actionEndName: loadEndActionName,
+            api: methods.find,
+            actionStart: loadStartActionName,
+            actionEnd: loadEndActionName,
           })
         : () => {
             throw new TypeError(
@@ -134,9 +133,9 @@ export const buildList = ({ name, methods = {} }) => {
       typeof methods.update === "function"
         ? updateAction({
             dispatch,
-            apiMethod: methods.update,
-            actionStartName: updateStartActionName,
-            actionEndName: updateEndActionName,
+            api: methods.update,
+            actionStart: updateStartActionName,
+            actionEnd: updateEndActionName,
           })
         : () => {
             throw new TypeError(
@@ -157,9 +156,9 @@ export const buildList = ({ name, methods = {} }) => {
       typeof methods.delete === "function"
         ? deleteAction({
             dispatch,
-            apiMethod: methods.delete,
-            actionStartName: deleteStartActionName,
-            actionEndName: deleteEndActionName,
+            api: methods.delete,
+            actionStart: deleteStartActionName,
+            actionEnd: deleteEndActionName,
           })
         : () => {
             throw new TypeError(

@@ -6,34 +6,34 @@ import { map, hasWith } from "@asd14/m"
  * Call API to create a new item, dispatch events before and after
  *
  * @param  {Function}  dispatch         Redux dispatch
- * @param  {Function}  apiMethod        API call
- * @param  {string}    actionStartName  Action dispatched before API
- * @param  {string}    actionEndName    Action dispatched after API
+ * @param  {Function}  api              API method
+ * @param  {string}    actionStartName  Action dispatched before API call
+ * @param  {string}    actionEndName    Action dispatched after API call
  *
  * @return {Object}
  */
 export const createAction = ({
   dispatch,
-  apiMethod,
-  actionStartName,
-  actionEndName,
+  api,
+  actionStart,
+  actionEnd,
 }) => data => {
   dispatch({
-    type: actionStartName,
+    type: actionStart,
     payload: {
       itemCreating: data,
     },
   })
 
-  return Promise.resolve(apiMethod(data)).then(itemCreated => {
+  return Promise.resolve(api(data)).then(result => {
     dispatch({
-      type: actionEndName,
+      type: actionEnd,
       payload: {
-        itemCreated,
+        itemCreated: result,
       },
     })
 
-    return itemCreated
+    return result
   })
 }
 

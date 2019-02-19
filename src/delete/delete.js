@@ -6,28 +6,28 @@ import { has, remove, filterBy } from "@asd14/m"
  * Call API to delete an item, dispatch events before and after
  *
  * @param  {Function}  dispatch         Redux dispatch
- * @param  {Function}  apiMethod        API call
- * @param  {string}    actionStartName  Action dispatched before API
- * @param  {string}    actionEndName    Action dispatched after API
+ * @param  {Function}  api              API method
+ * @param  {string}    actionStartName  Action dispatched before API call
+ * @param  {string}    actionEndName    Action dispatched after API call
  *
  * @return {Object}
  */
 export const deleteAction = ({
   dispatch,
-  apiMethod,
-  actionStartName,
-  actionEndName,
+  api,
+  actionStart,
+  actionEnd,
 }) => id => {
   dispatch({
-    type: actionStartName,
+    type: actionStart,
     payload: {
       id,
     },
   })
 
-  return Promise.resolve(apiMethod(id)).then(() => {
+  return Promise.resolve(api(id)).then(() => {
     dispatch({
-      type: actionEndName,
+      type: actionEnd,
       payload: {
         id,
       },

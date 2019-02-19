@@ -1,4 +1,4 @@
-const debug = require("debug")("ReduxAllIsList:ListUpdate")
+const debug = require("debug")("ReduxAllIsList:Update")
 
 import { map, filterBy, merge, hasWith } from "@asd14/m"
 
@@ -6,29 +6,27 @@ import { map, filterBy, merge, hasWith } from "@asd14/m"
  * Call API to update an item, dispatch events before and after
  *
  * @param  {Function}  dispatch         Redux dispatch
- * @param  {Function}  apiMethod        API call
- * @param  {string}    actionStartName  Action dispatched before API
- * @param  {string}    actionEndName    Action dispatched after API
+ * @param  {Function}  api              API method
+ * @param  {string}    actionStartName  Action dispatched before API call
+ * @param  {string}    actionEndName    Action dispatched after API call
  *
  * @return {Promise<Object>}
  */
-export const updateAction = ({
-  dispatch,
-  apiMethod,
-  actionStartName,
-  actionEndName,
-}) => (id, data) => {
+export const updateAction = ({ dispatch, api, actionStart, actionEnd }) => (
+  id,
+  data
+) => {
   dispatch({
-    type: actionStartName,
+    type: actionStart,
     payload: {
       id,
       data,
     },
   })
 
-  return Promise.resolve(apiMethod(id, data)).then(itemUpdated => {
+  return Promise.resolve(api(id, data)).then(itemUpdated => {
     dispatch({
-      type: actionEndName,
+      type: actionEnd,
       payload: {
         itemUpdated,
       },
