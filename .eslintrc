@@ -9,5 +9,8 @@
     "import/cache": {
       "lifetime": 5,
     }
-  }
+  },
+  "rules": {
+    "multiline-comment-style": "off"
+  },
 }
