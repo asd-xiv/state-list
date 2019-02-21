@@ -1,5 +1,10 @@
 const debug = require("debug")("ReduxAllIsList:Find")
 
+import { is } from "@asd14/m"
+import { buildQueue } from "../../lib/queue"
+
+const actionQueuesByCollectionName = {}
+
 /**
  * Call API to fetch items, dispatch events before and after
  *
@@ -10,22 +15,38 @@ const debug = require("debug")("ReduxAllIsList:Find")
  *
  * @returns {Object[]}
  */
-export const findAction = ({ dispatch, api, actionStart, actionEnd }) => (
-  ...args
-) => {
-  dispatch({
-    type: actionStart,
-  })
+export const findAction = ({
+  name,
+  dispatch,
+  method,
+  actionStart,
+  actionEnd,
+}) => (...args) => {
+  const actionsQueue = is(actionQueuesByCollectionName[name])
+    ? actionQueuesByCollectionName[name]
+    : (actionQueuesByCollectionName[name] = buildQueue())
 
-  return Promise.resolve(api(...args)).then(results => {
-    dispatch({
-      type: actionEnd,
-      payload: {
-        items: Array.isArray(results) ? results : [results],
-      },
-    })
+  return actionsQueue.enqueue(args, {
+    job: method,
+    before: () => {
+      dispatch({
+        type: actionStart,
+      })
+    },
+    onSuccess: results => {
+      dispatch({
+        type: actionEnd,
+        payload: {
+          items: Array.isArray(results) ? results : [results],
+        },
+      })
 
-    return results
+      return results
+    },
+    onError: error => {
+      //
+      console.log("ERROR", error)
+    },
   })
 }
 

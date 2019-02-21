@@ -7,6 +7,7 @@ test("List without API methods", t => {
   // WHAT TO TEST
   const todoList = buildList({
     name: "TODOS",
+    cache: 1,
     methods: {},
   })
 

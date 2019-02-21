@@ -1,6 +1,6 @@
 const debug = require("debug")("ReduxAllIsList:Main")
 
-const { findBy, has, hasWith, is, isEmpty } = require("@asd14/m")
+const { findBy, has, hasKey, hasWith, is, isEmpty } = require("@asd14/m")
 const {
   createAction,
   createStartReducer,
@@ -18,7 +18,7 @@ const {
   deleteEndReducer,
 } = require("./delete/delete")
 
-const collectionNames = []
+const collections = Object.create(null)
 
 /**
  * List factory function
@@ -29,10 +29,11 @@ const collectionNames = []
  * @return {Object}
  */
 export const buildList = ({ name, methods = {} }) => {
-  if (has(name)(collectionNames)) {
+  if (hasKey(name)(collections)) {
     throw new Error(`ReduxAllIsList: List with name "${name}" already exists`)
   }
-  collectionNames.push(name)
+
+  collections[name] = {}
 
   const createStartActionName = `${name}_CREATE_START`
   const createEndActionName = `${name}_CREATE_END`
@@ -106,19 +107,23 @@ export const buildList = ({ name, methods = {} }) => {
      *
      * @return {void}
      */
-    find: dispatch =>
-      typeof methods.find === "function"
-        ? findAction({
-            dispatch,
-            api: methods.find,
-            actionStart: loadStartActionName,
-            actionEnd: loadEndActionName,
-          })
-        : () => {
-            throw new TypeError(
-              `ReduxAllIsList: "${name}"."find" should be a function, got "${typeof methods.find}"`
-            )
-          },
+    find: dispatch => {
+      if (typeof methods.find === "function") {
+        return findAction({
+          name,
+          dispatch,
+          method: methods.find,
+          actionStart: loadStartActionName,
+          actionEnd: loadEndActionName,
+        })
+      }
+
+      return () => {
+        throw new TypeError(
+          `ReduxAllIsList: "${name}"."find" should be a function, got "${typeof methods.find}"`
+        )
+      }
+    },
 
     /**
      * Update an item, dispatch events before and after
