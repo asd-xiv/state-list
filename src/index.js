@@ -1,48 +1,63 @@
 const debug = require("debug")("ReduxAllIsList:Main")
 
-const { findBy, has, hasKey, hasWith, is, isEmpty } = require("@asd14/m")
-const {
+import { findBy, has, hasKey, hasWith, is, isEmpty } from "@asd14/m"
+import {
   createAction,
   createStartReducer,
   createEndReducer,
-} = require("./create/create")
-const { findAction, findStartReducer, findEndReducer } = require("./find/find")
-const {
+} from "./create/create"
+import { findAction, findStartReducer, findEndReducer } from "./find/find"
+import {
   updateAction,
   updateStartReducer,
   updateEndReducer,
-} = require("./update/update")
-const {
+} from "./update/update"
+import {
   deleteAction,
   deleteStartReducer,
   deleteEndReducer,
-} = require("./delete/delete")
+} from "./delete/delete"
+
+import { buildQueue } from "../lib/queue"
+import { buildCacheStore } from "../lib/cache"
 
 const collections = Object.create(null)
 
 /**
  * List factory function
  *
- * @param  {Object}  arg1       Collection props
- * @param  {string}  arg1.name  Unique name so actions dont overlap
+ * @param  {Object}  props           Collection props
+ * @param  {string}  props.name      Unique name so actions dont overlap
+ * @param  {number}  props.cacheTTL  If present, all .find requests are cached
+ *                                   for this amount of milliseconds
  *
  * @return {Object}
  */
-export const buildList = ({ name, methods = {} }) => {
+export const buildList = ({ name, cacheTTL = 0, methods = {} }) => {
   if (hasKey(name)(collections)) {
     throw new Error(`ReduxAllIsList: List with name "${name}" already exists`)
   }
 
-  collections[name] = {}
-
-  const createStartActionName = `${name}_CREATE_START`
-  const createEndActionName = `${name}_CREATE_END`
-  const loadStartActionName = `${name}_LOAD_START`
-  const loadEndActionName = `${name}_LOAD_END`
-  const updateStartActionName = `${name}_UPDATE_START`
-  const updateEndActionName = `${name}_UPDATE_END`
-  const deleteStartActionName = `${name}_DELETE_START`
-  const deleteEndActionName = `${name}_DELETE_END`
+  const hasCache = isEmpty(cacheTTL)
+  const collection = (collections[name] = {
+    cache: hasCache ? buildCacheStore() : undefined,
+    queues: {
+      create: buildQueue(),
+      find: buildQueue(),
+      update: buildQueue(),
+      delete: buildQueue(),
+    },
+    actions: {
+      createStart: `${name}_CREATE_START`,
+      createEnd: `${name}_CREATE_END`,
+      loadStart: `${name}_LOAD_START`,
+      loadEnd: `${name}_LOAD_END`,
+      updateStart: `${name}_UPDATE_START`,
+      updateEnd: `${name}_UPDATE_END`,
+      deleteStart: `${name}_DELETE_START`,
+      deleteEnd: `${name}_DELETE_END`,
+    },
+  })
 
   return {
     name,
@@ -87,12 +102,17 @@ export const buildList = ({ name, methods = {} }) => {
      */
     create: dispatch =>
       typeof methods.create === "function"
-        ? createAction({
-            dispatch,
-            api: methods.create,
-            actionStart: createStartActionName,
-            actionEnd: createEndActionName,
-          })
+        ? (...args) =>
+            collection.queues.create.enqueue(
+              createAction({
+                cache: collection.cache,
+                dispatch,
+                api: methods.create,
+                actionStart: collection.actions.createStart,
+                actionEnd: collection.actions.createEnd,
+              }),
+              { args }
+            )
         : () => {
             throw new TypeError(
               `ReduxAllIsList: "${name}"."create" should be a function, got "${typeof methods.create}"`
@@ -109,13 +129,18 @@ export const buildList = ({ name, methods = {} }) => {
      */
     find: dispatch => {
       if (typeof methods.find === "function") {
-        return findAction({
-          name,
-          dispatch,
-          method: methods.find,
-          actionStart: loadStartActionName,
-          actionEnd: loadEndActionName,
-        })
+        return (...args) =>
+          collection.queues.find.enqueue(
+            findAction({
+              cache: collection.cache,
+              cacheTTL,
+              dispatch,
+              method: methods.find,
+              actionStart: collection.actions.loadStart,
+              actionEnd: collection.actions.loadEnd,
+            }),
+            { args }
+          )
       }
 
       return () => {
@@ -136,12 +161,16 @@ export const buildList = ({ name, methods = {} }) => {
      */
     update: dispatch =>
       typeof methods.update === "function"
-        ? updateAction({
-            dispatch,
-            api: methods.update,
-            actionStart: updateStartActionName,
-            actionEnd: updateEndActionName,
-          })
+        ? (...args) =>
+            collection.queues.update.enqueue(
+              updateAction({
+                dispatch,
+                api: methods.update,
+                actionStart: collection.actions.updateStart,
+                actionEnd: collection.actions.updateEnd,
+              }),
+              { args }
+            )
         : () => {
             throw new TypeError(
               `ReduxAllIsList: "${name}"."update" should be a function, got "${typeof methods.update}"`
@@ -159,12 +188,16 @@ export const buildList = ({ name, methods = {} }) => {
      */
     delete: dispatch =>
       typeof methods.delete === "function"
-        ? deleteAction({
-            dispatch,
-            api: methods.delete,
-            actionStart: deleteStartActionName,
-            actionEnd: deleteEndActionName,
-          })
+        ? (...args) =>
+            collection.queues.delete.enqueue(
+              deleteAction({
+                dispatch,
+                api: methods.delete,
+                actionStart: collection.actions.deleteStart,
+                actionEnd: collection.actions.deleteEnd,
+              }),
+              { args }
+            )
         : () => {
             throw new TypeError(
               `ReduxAllIsList: "${name}"."delete" should be a function, got "${typeof methods.delete}"`
@@ -179,8 +212,10 @@ export const buildList = ({ name, methods = {} }) => {
      * @return {void}
      */
     clear: dispatch => () => {
+      hasCache && collection.cache.clear()
+
       dispatch({
-        type: loadEndActionName,
+        type: collection.acitons.loadEnd,
         payload: {
           items: [],
         },
@@ -197,8 +232,10 @@ export const buildList = ({ name, methods = {} }) => {
      * @return {void}
      */
     add: dispatch => item => {
+      hasCache && collection.cache.clear()
+
       dispatch({
-        type: createEndActionName,
+        type: collection.actions.createEnd,
         payload: {
           item,
         },
@@ -237,33 +274,33 @@ export const buildList = ({ name, methods = {} }) => {
         /*
          * Create
          */
-        case createStartActionName:
+        case collection.actions.createStart:
           return createStartReducer(state, payload)
-        case createEndActionName:
+        case collection.actions.createEnd:
           return createEndReducer(state, payload)
 
         /*
          * Read
          */
-        case loadStartActionName:
+        case collection.actions.loadStart:
           return findStartReducer(state, payload)
-        case loadEndActionName:
+        case collection.actions.loadEnd:
           return findEndReducer(state, payload)
 
         /*
          * Update
          */
-        case updateStartActionName:
+        case collection.actions.updateStart:
           return updateStartReducer(state, payload)
-        case updateEndActionName:
+        case collection.actions.updateEnd:
           return updateEndReducer(state, payload)
 
         /*
          * Delete
          */
-        case deleteStartActionName:
+        case collection.actions.deleteStart:
           return deleteStartReducer(state, payload)
-        case deleteEndActionName:
+        case collection.actions.deleteEnd:
           return deleteEndReducer(state, payload)
 
         default:

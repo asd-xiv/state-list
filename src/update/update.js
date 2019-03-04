@@ -1,6 +1,6 @@
 const debug = require("debug")("ReduxAllIsList:Update")
 
-import { map, filterBy, merge, hasWith } from "@asd14/m"
+import { map, filterBy, merge, hasWith, is } from "@asd14/m"
 
 /**
  * Call API to update an item, dispatch events before and after
@@ -12,10 +12,13 @@ import { map, filterBy, merge, hasWith } from "@asd14/m"
  *
  * @return {Promise<Object>}
  */
-export const updateAction = ({ dispatch, api, actionStart, actionEnd }) => (
-  id,
-  data
-) => {
+export const updateAction = ({
+  cache,
+  dispatch,
+  api,
+  actionStart,
+  actionEnd,
+}) => (id, data) => {
   dispatch({
     type: actionStart,
     payload: {
@@ -25,6 +28,8 @@ export const updateAction = ({ dispatch, api, actionStart, actionEnd }) => (
   })
 
   return Promise.resolve(api(id, data)).then(itemUpdated => {
+    is(cache) && cache.clear()
+
     dispatch({
       type: actionEnd,
       payload: {

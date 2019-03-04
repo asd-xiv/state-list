@@ -1,6 +1,6 @@
 const debug = require("debug")("ReduxAllIsList:Create")
 
-import { map, hasWith } from "@asd14/m"
+import { map, hasWith, is } from "@asd14/m"
 
 /**
  * Call API to create a new item, dispatch actions before and after
@@ -15,6 +15,7 @@ import { map, hasWith } from "@asd14/m"
  * @return {Promise<Object>}
  */
 export const createAction = ({
+  cache,
   dispatch,
   api,
   actionStart,
@@ -28,6 +29,8 @@ export const createAction = ({
   })
 
   return Promise.resolve(api(data)).then(result => {
+    is(cache) && cache.clear()
+
     dispatch({
       type: actionEnd,
       payload: {

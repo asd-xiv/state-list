@@ -1,6 +1,6 @@
 const debug = require("debug")("ReduxAllIsList:Delete")
 
-import { has, remove, filterBy } from "@asd14/m"
+import { has, remove, filterBy, is } from "@asd14/m"
 
 /**
  * Call API to delete an item, dispatch events before and after
@@ -13,6 +13,7 @@ import { has, remove, filterBy } from "@asd14/m"
  * @return {Object}
  */
 export const deleteAction = ({
+  cache,
   dispatch,
   api,
   actionStart,
@@ -26,6 +27,8 @@ export const deleteAction = ({
   })
 
   return Promise.resolve(api(id)).then(() => {
+    is(cache) && cache.clear()
+
     dispatch({
       type: actionEnd,
       payload: {

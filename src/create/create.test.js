@@ -7,6 +7,7 @@ test("Create", t => {
   // WHAT TO TEST
   const todoList = buildList({
     name: "CREATE_TODOS",
+    cacheTTL: 100,
     methods: {
       find: () => [],
       create: data => ({
@@ -72,6 +73,5 @@ test("Create", t => {
         "after - element should be added to items array"
       )
     })
-    .then(() => t.end())
-    .catch()
+    .finally(() => t.end())
 })

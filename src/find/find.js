@@ -1,13 +1,12 @@
 const debug = require("debug")("ReduxAllIsList:Find")
 
 import { is } from "@asd14/m"
-import { buildQueue } from "../../lib/queue"
-
-const actionQueuesByCollectionName = {}
 
 /**
  * Call API to fetch items, dispatch events before and after
  *
+ * @param  {Object}    cache            Cache store used when cacheTTL is set
+ * @param  {number}    cacheTTL         Valid duration (milliseconds)
  * @param  {Function}  dispatch         Redux dispatch
  * @param  {Function}  api              API method
  * @param  {string}    actionStartName  Action dispatched before API call
@@ -16,37 +15,42 @@ const actionQueuesByCollectionName = {}
  * @returns {Object[]}
  */
 export const findAction = ({
-  name,
+  cache,
   dispatch,
   method,
   actionStart,
   actionEnd,
 }) => (...args) => {
-  const actionsQueue = is(actionQueuesByCollectionName[name])
-    ? actionQueuesByCollectionName[name]
-    : (actionQueuesByCollectionName[name] = buildQueue())
+  const cachedValue = is(cache) ? cache.get({ args }) : undefined
 
-  return actionsQueue.enqueue(args, {
-    job: method,
-    before: () => {
-      dispatch({
-        type: actionStart,
-      })
-    },
-    onSuccess: results => {
-      dispatch({
-        type: actionEnd,
-        payload: {
-          items: Array.isArray(results) ? results : [results],
-        },
-      })
+  if (cachedValue !== undefined) {
+    const results = cache.get({ args })
 
-      return results
-    },
-    onError: error => {
-      //
-      console.log("ERROR", error)
-    },
+    dispatch({
+      type: actionEnd,
+      payload: {
+        items: Array.isArray(results) ? results : [results],
+      },
+    })
+
+    return Promise.resolve(results)
+  }
+
+  dispatch({
+    type: actionStart,
+  })
+
+  return Promise.resolve(method(...args)).then(results => {
+    dispatch({
+      type: actionEnd,
+      payload: {
+        items: Array.isArray(results) ? results : [results],
+      },
+    })
+
+    is(cache) && cache.set(args, results)
+
+    return results
   })
 }
 
