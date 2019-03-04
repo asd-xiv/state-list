@@ -28,6 +28,7 @@ test("Create", t => {
   const listCreate = todoList.create(store.dispatch)
   const listFind = todoList.find(store.dispatch)
 
+  // eslint-disable-next-line promise/catch-or-return
   listFind()
     .then(() => {
       // Trigger create action and check intermediate state

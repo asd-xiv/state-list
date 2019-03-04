@@ -1,3 +1,5 @@
+/* eslint-disable no-multi-assign */
+
 const debug = require("debug")("ReduxAllIsList:Main")
 
 import { findBy, has, hasKey, hasWith, is, isEmpty } from "@asd14/m"
