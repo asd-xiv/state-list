@@ -7,7 +7,6 @@ test("Create", t => {
   // WHAT TO TEST
   const todoList = buildList({
     name: "CREATE_TODOS",
-    cacheTTL: 100,
     methods: {
       find: () => [],
       create: data => ({
@@ -30,27 +29,27 @@ test("Create", t => {
 
   // eslint-disable-next-line promise/catch-or-return
   listFind()
-    .then(() => {
-      // Trigger create action and check intermediate state
-      const createPromise = listCreate({ name: "New foo" })
-      const todosSelector = todoList.selector(store.getState())
+    .then(() => listCreate({ name: "New foo" }))
+    // .then(() => {
+    //   // Trigger create action and check intermediate state
+    //   const createPromise = listCreate({ name: "New foo" })
+    //   const todosSelector = todoList.selector(store.getState())
 
-      t.deepEquals(
-        todosSelector.itemCreating(),
-        { name: "New foo" },
-        "before - itemCreating should contain the create data"
-      )
+    //   t.deepEquals(
+    //     todosSelector.itemCreating(),
+    //     { name: "New foo" },
+    //     "before - itemCreating should contain the create data"
+    //   )
 
-      t.equals(
-        todosSelector.isCreating(),
-        true,
-        "before - isCreating flag should be true while creating"
-      )
+    //   t.equals(
+    //     todosSelector.isCreating(),
+    //     true,
+    //     "before - isCreating flag should be true while creating"
+    //   )
 
-      return createPromise
-    })
+    //   return createPromise
+    // })
     .then(itemCreated => {
-      // Check state after create
       const todosSelector = todoList.selector(store.getState())
 
       t.deepEquals(
@@ -58,16 +57,19 @@ test("Create", t => {
         {},
         "after - itemCreating is empty"
       )
+
       t.deepEquals(
         itemCreated,
         { id: 1, name: "New foo" },
         "after - list.create resolves with created item"
       )
+
       t.equals(
         todosSelector.isCreating(),
         false,
         "after - isCreating flag should be false after creating"
       )
+
       t.deepEquals(
         todosSelector.items(),
         [{ id: 1, name: "New foo" }],
