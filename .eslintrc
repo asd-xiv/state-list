@@ -11,6 +11,9 @@
     }
   },
   "rules": {
-    "multiline-comment-style": "off"
-  },
+    "multiline-comment-style": "off",
+    "promise/catch-or-return": ["error", {
+      terminationMethod: ["catch",  "finally"]
+    }]
+  }
 }
