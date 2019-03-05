@@ -21,19 +21,17 @@ export const findAction = ({
   actionStart,
   actionEnd,
 }) => (...args) => {
-  const cachedValue = is(cache) ? cache.get({ args }) : undefined
+  const cachedResults = is(cache) ? cache.get(args) : undefined
 
-  if (cachedValue !== undefined) {
-    const results = cache.get({ args })
-
+  if (cachedResults !== undefined) {
     dispatch({
       type: actionEnd,
       payload: {
-        items: Array.isArray(results) ? results : [results],
+        items: Array.isArray(cachedResults) ? cachedResults : [cachedResults],
       },
     })
 
-    return Promise.resolve(results)
+    return Promise.resolve(cachedResults)
   }
 
   dispatch({
