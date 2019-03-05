@@ -77,6 +77,5 @@ test("Find", t => {
         "byId selector returns element from items array"
       )
     })
-    .then(() => t.end())
-    .catch()
+    .finally(() => t.end())
 })

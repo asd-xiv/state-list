@@ -3,7 +3,7 @@ import { createStore, combineReducers } from "redux"
 
 import { buildList } from ".."
 
-test("Find - throttling", t => {
+test("Find - race conditions", t => {
   let callCount = 0
 
   // WHAT TO TEST
