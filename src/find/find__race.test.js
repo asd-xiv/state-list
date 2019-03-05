@@ -1,13 +1,13 @@
 import test from "tape"
 import { createStore, combineReducers } from "redux"
 
-import { buildList } from ".."
+import { buildCollection } from ".."
 
-test("Find - throttling", t => {
+test("Find - race conditions", t => {
   let callCount = 0
 
   // WHAT TO TEST
-  const todoList = buildList({
+  const todoList = buildCollection({
     name: "FIND_RACE_TODOS",
     methods: {
       find: () => {

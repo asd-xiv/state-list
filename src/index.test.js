@@ -1,11 +1,11 @@
 import test from "tape"
 import { createStore, combineReducers } from "redux"
 
-import { buildList } from "."
+import { buildCollection } from "."
 
 test("List without API methods", t => {
   // WHAT TO TEST
-  const todoList = buildList({
+  const todoList = buildCollection({
     name: "TODOS",
     cache: 1,
     methods: {},
@@ -28,9 +28,9 @@ test("List without API methods", t => {
 
   t.throws(
     () => {
-      buildList({ name: "TODOS" })
+      buildCollection({ name: "TODOS" })
     },
-    /ReduxAllIsList: List with name "TODOS" already exists/,
+    /ReduxCollections: List with name "TODOS" already exists/,
     "Throw exception when creating a list with a duplicate name"
   )
 
@@ -68,7 +68,7 @@ test("List without API methods", t => {
     () => {
       listCreate({ id: 2 })
     },
-    /ReduxAllIsList: "TODOS"."create" should be a function, got "undefined"/,
+    /ReduxCollections: "TODOS"."create" should be a function, got "undefined"/,
     'Throw exception when calling "create" on list without methods'
   )
 
@@ -76,7 +76,7 @@ test("List without API methods", t => {
     () => {
       listFind()
     },
-    /ReduxAllIsList: "TODOS"."find" should be a function, got "undefined"/,
+    /ReduxCollections: "TODOS"."find" should be a function, got "undefined"/,
     'Throw exception when calling "find" on list without methods'
   )
 
@@ -84,7 +84,7 @@ test("List without API methods", t => {
     () => {
       listUpdate(1, { test: 2 })
     },
-    /ReduxAllIsList: "TODOS"."update" should be a function, got "undefined"/,
+    /ReduxCollections: "TODOS"."update" should be a function, got "undefined"/,
     'Throw exception when calling "update" on list without methods'
   )
 
@@ -92,7 +92,7 @@ test("List without API methods", t => {
     () => {
       listDelete(1, { test: 2 })
     },
-    /ReduxAllIsList: "TODOS"."delete" should be a function, got "undefined"/,
+    /ReduxCollections: "TODOS"."delete" should be a function, got "undefined"/,
     'Throw exception when calling "delete" on list without methods'
   )
 

@@ -1,11 +1,11 @@
 import test from "tape"
 import { createStore, combineReducers } from "redux"
 
-import { buildList } from ".."
+import { buildCollection } from ".."
 
 test("Find", t => {
   // WHAT TO TEST
-  const todoList = buildList({
+  const todoList = buildCollection({
     name: "FIND_TODOS",
     methods: {
       find: () => [{ id: 1, name: "lorem ipsum" }, { id: 2, name: "foo bar" }],

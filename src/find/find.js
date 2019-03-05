@@ -1,6 +1,6 @@
-const debug = require("debug")("ReduxAllIsList:Find")
+const debug = require("debug")("ReduxCollections:Find")
 
-import { is } from "@asd14/m"
+import { is } from "@leeruniek/functies"
 
 /**
  * Call API to fetch items, dispatch events before and after
@@ -21,19 +21,17 @@ export const findAction = ({
   actionStart,
   actionEnd,
 }) => (...args) => {
-  const cachedValue = is(cache) ? cache.get({ args }) : undefined
+  const cachedResults = is(cache) ? cache.get(args) : undefined
 
-  if (cachedValue !== undefined) {
-    const results = cache.get({ args })
-
+  if (cachedResults !== undefined) {
     dispatch({
       type: actionEnd,
       payload: {
-        items: Array.isArray(results) ? results : [results],
+        items: Array.isArray(cachedResults) ? cachedResults : [cachedResults],
       },
     })
 
-    return Promise.resolve(results)
+    return Promise.resolve(cachedResults)
   }
 
   dispatch({

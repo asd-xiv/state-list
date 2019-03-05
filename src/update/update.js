@@ -1,6 +1,6 @@
-const debug = require("debug")("ReduxAllIsList:Update")
+const debug = require("debug")("ReduxCollections:Update")
 
-import { map, filterBy, merge, hasWith, is } from "@asd14/m"
+import { map, filterBy, merge, hasWith, is } from "@leeruniek/functies"
 
 /**
  * Call API to update an item, dispatch events before and after

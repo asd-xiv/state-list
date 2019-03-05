@@ -1,6 +1,6 @@
-const debug = require("debug")("ReduxAllIsList:Delete")
+const debug = require("debug")("ReduxCollections:Delete")
 
-import { has, remove, filterBy, is } from "@asd14/m"
+import { has, remove, filterBy, is } from "@leeruniek/functies"
 
 /**
  * Call API to delete an item, dispatch events before and after

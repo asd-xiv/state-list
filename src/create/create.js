@@ -1,6 +1,6 @@
-const debug = require("debug")("ReduxAllIsList:Create")
+const debug = require("debug")("ReduxCollections:Create")
 
-import { map, hasWith, is } from "@asd14/m"
+import { map, hasWith, is } from "@leeruniek/functies"
 
 /**
  * Call API to create a new item, dispatch actions before and after
