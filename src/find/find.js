@@ -31,7 +31,7 @@ export const findAction = ({
       },
     })
 
-    return Promise.resolve(cachedResults)
+    return cachedResults
   }
 
   dispatch({
