@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "@babel/runtime": "7.3.4",
-    "@leeruniek/functies": "0.31.0",
+    "@leeruniek/functies": "0.32.0",
     "redux": "4.0.1"
   },
   "devDependencies": {
