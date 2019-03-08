@@ -49,17 +49,17 @@ test("Create", t => {
 
     //   return createPromise
     // })
-    .then(itemCreated => {
+    .then(({ result }) => {
       const todosSelector = todoList.selector(store.getState())
 
       t.deepEquals(
-        todosSelector.itemCreating(),
+        todosSelector.creating(),
         {},
         "after - itemCreating is empty"
       )
 
       t.deepEquals(
-        itemCreated,
+        result,
         { id: 1, name: "New foo" },
         "after - list.create resolves with created item"
       )
@@ -79,7 +79,7 @@ test("Create", t => {
     .finally(() => t.end())
 })
 
-test("Create with cache enabled", t => {
+test("Create - caching", t => {
   // WHAT TO TEST
   const todoList = buildCollection({
     name: "CREATE-CACHE_TODOS",
@@ -107,11 +107,11 @@ test("Create with cache enabled", t => {
   // eslint-disable-next-line promise/catch-or-return
   listFind()
     .then(() => listCreate({ name: "New foo" }))
-    .then(itemCreated => {
+    .then(({ result }) => {
       const todosSelector = todoList.selector(store.getState())
 
       t.deepEquals(
-        itemCreated,
+        result,
         { id: 2, name: "New foo" },
         "after - list.create resolves with created item"
       )

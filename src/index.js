@@ -2,11 +2,21 @@
 
 const debug = require("debug")("ReduxCollections:Main")
 
-import { findBy, has, hasWith, is, isEmpty } from "@leeruniek/functies"
+import {
+  pipe,
+  findBy,
+  has,
+  hasWith,
+  sortBy,
+  head,
+  is,
+  isEmpty,
+} from "@leeruniek/functies"
 import {
   createAction,
   createStartReducer,
-  createEndReducer,
+  createSuccessReducer,
+  createErrorReducer,
 } from "./create/create"
 import { findAction, findStartReducer, findEndReducer } from "./find/find"
 import {
@@ -52,7 +62,8 @@ export const buildCollection = ({ name, cacheTTL = 0, methods = {} }) => {
     queue: buildQueue(),
     actions: {
       createStart: `${name}_CREATE_START`,
-      createEnd: `${name}_CREATE_END`,
+      createSuccess: `${name}_CREATE_SUCCESS`,
+      createError: `${name}_CREATE_ERROR`,
       loadStart: `${name}_LOAD_START`,
       loadEnd: `${name}_LOAD_END`,
       updateStart: `${name}_UPDATE_START`,
@@ -80,8 +91,15 @@ export const buildCollection = ({ name, cacheTTL = 0, methods = {} }) => {
       items: () => state[name].items,
       itemsUpdating: () => state[name].itemsUpdating,
       itemsDeletingIds: () => state[name].itemsDeletingIds,
-      itemCreating: () => state[name].itemCreating,
-
+      creating: () => state[name].creating,
+      error: action =>
+        isEmpty(action)
+          ? pipe(
+              Object.entries,
+              sortBy("date"),
+              head
+            )(state[name].errors)
+          : state[name].errors[action],
       isLoaded: () => is(state[name].loadDate),
       isLoading: () => state[name].isLoading || state[name].isReloading,
       isCreating: () => state[name].isCreating,
@@ -112,7 +130,8 @@ export const buildCollection = ({ name, cacheTTL = 0, methods = {} }) => {
                 dispatch,
                 api: methods.create,
                 actionStart: collection.actions.createStart,
-                actionEnd: collection.actions.createEnd,
+                actionSuccess: collection.actions.createSuccess,
+                actionError: collection.actions.createError,
               }),
               args,
             })
@@ -239,7 +258,7 @@ export const buildCollection = ({ name, cacheTTL = 0, methods = {} }) => {
       hasCache && collection.cache.clear()
 
       dispatch({
-        type: collection.actions.createEnd,
+        type: collection.actions.createSuccess,
         payload: {
           item,
         },
@@ -263,7 +282,7 @@ export const buildCollection = ({ name, cacheTTL = 0, methods = {} }) => {
         items: [],
         itemsUpdating: [],
         itemsDeletingIds: [],
-        itemCreating: {},
+        creating: {},
 
         errors: [],
         loadDate: null,
@@ -280,8 +299,10 @@ export const buildCollection = ({ name, cacheTTL = 0, methods = {} }) => {
          */
         case collection.actions.createStart:
           return createStartReducer(state, payload)
-        case collection.actions.createEnd:
-          return createEndReducer(state, payload)
+        case collection.actions.createSuccess:
+          return createSuccessReducer(state, payload)
+        case collection.actions.createError:
+          return createErrorReducer(state, payload)
 
         /*
          * Read
