@@ -5,12 +5,11 @@ const debug = require("debug")("ReduxCollections:Main")
 import {
   pipe,
   findBy,
-  has,
-  hasWith,
   sortBy,
   head,
   is,
   isEmpty,
+  hasWith,
 } from "@leeruniek/functies"
 import {
   createAction,
@@ -27,7 +26,8 @@ import {
 import {
   deleteAction,
   deleteStartReducer,
-  deleteEndReducer,
+  deleteSuccessReducer,
+  deleteErrorReducer,
 } from "./delete/delete"
 
 import { buildQueue } from "../lib/queue"
@@ -69,7 +69,8 @@ export const buildCollection = ({ name, cacheTTL = 0, methods = {} }) => {
       updateStart: `${name}_UPDATE_START`,
       updateEnd: `${name}_UPDATE_END`,
       deleteStart: `${name}_DELETE_START`,
-      deleteEnd: `${name}_DELETE_END`,
+      deleteSuccess: `${name}_DELETE_SUCCESS`,
+      deleteError: `${name}_DELETE_ERROR`,
     },
   })
 
@@ -89,9 +90,10 @@ export const buildCollection = ({ name, cacheTTL = 0, methods = {} }) => {
       byId: id => findBy({ id })(state[name].items),
 
       items: () => state[name].items,
-      itemsUpdating: () => state[name].itemsUpdating,
-      itemsDeletingIds: () => state[name].itemsDeletingIds,
       creating: () => state[name].creating,
+      updating: () => state[name].updating,
+      deleting: () => state[name].deleting,
+
       error: action =>
         isEmpty(action)
           ? pipe(
@@ -100,17 +102,18 @@ export const buildCollection = ({ name, cacheTTL = 0, methods = {} }) => {
               head
             )(state[name].errors)
           : state[name].errors[action],
+
+      isCreating: () => !isEmpty(state[name].creating),
       isLoaded: () => is(state[name].loadDate),
-      isLoading: () => state[name].isLoading || state[name].isReloading,
-      isCreating: () => state[name].isCreating,
+      isLoading: () => state[name].isLoading,
       isUpdating: id =>
         id
-          ? hasWith({ id })(state[name].itemsUpdating)
-          : !isEmpty(state[name].itemsUpdating),
+          ? hasWith({ id })(state[name].updating)
+          : !isEmpty(state[name].updating),
       isDeleting: id =>
         id
-          ? has(id)(state[name].itemsDeletingIds)
-          : !isEmpty(state[name].itemsDeletingIds),
+          ? hasWith({ id })(state[name].deleting)
+          : !isEmpty(state[name].deleting),
     }),
 
     /**
@@ -204,7 +207,8 @@ export const buildCollection = ({ name, cacheTTL = 0, methods = {} }) => {
      *
      * @param  {Function}       dispatch  Redux dispatch function
      * @param  {Number|string}  id        Item id
-     * @param  {Array}          rest      API method parameters
+     *
+     * @param  {Array}  args  API method parameters
      *
      * @return {void}
      */
@@ -217,7 +221,8 @@ export const buildCollection = ({ name, cacheTTL = 0, methods = {} }) => {
                 dispatch,
                 api: methods.delete,
                 actionStart: collection.actions.deleteStart,
-                actionEnd: collection.actions.deleteEnd,
+                actionSuccess: collection.actions.deleteSuccess,
+                actionError: collection.actions.deleteError,
               }),
               args,
             })
@@ -280,23 +285,19 @@ export const buildCollection = ({ name, cacheTTL = 0, methods = {} }) => {
     reducer: (
       state = {
         items: [],
-        itemsUpdating: [],
-        itemsDeletingIds: [],
-        creating: {},
+        creating: [],
+        updating: [],
+        deleting: [],
 
-        errors: [],
+        errors: {},
         loadDate: null,
 
         isLoading: false,
-        isReloading: false,
-        isCreating: false,
       },
       { type, payload }
     ) => {
       switch (type) {
-        /*
-         * Create
-         */
+        // Create
         case collection.actions.createStart:
           return createStartReducer(state, payload)
         case collection.actions.createSuccess:
@@ -304,29 +305,25 @@ export const buildCollection = ({ name, cacheTTL = 0, methods = {} }) => {
         case collection.actions.createError:
           return createErrorReducer(state, payload)
 
-        /*
-         * Read
-         */
+        // Read
         case collection.actions.loadStart:
           return findStartReducer(state, payload)
         case collection.actions.loadEnd:
           return findEndReducer(state, payload)
 
-        /*
-         * Update
-         */
+        // Update
         case collection.actions.updateStart:
           return updateStartReducer(state, payload)
         case collection.actions.updateEnd:
           return updateEndReducer(state, payload)
 
-        /*
-         * Delete
-         */
+        // Delete
         case collection.actions.deleteStart:
           return deleteStartReducer(state, payload)
-        case collection.actions.deleteEnd:
-          return deleteEndReducer(state, payload)
+        case collection.actions.deleteSuccess:
+          return deleteSuccessReducer(state, payload)
+        case collection.actions.deleteError:
+          return deleteErrorReducer(state, payload)
 
         default:
           return state

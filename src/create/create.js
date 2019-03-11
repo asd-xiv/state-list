@@ -119,8 +119,7 @@ export const createSuccessReducer = (state, item) => {
       create: null,
     },
 
-    creating: {},
-    isCreating: false,
+    creating: [],
   }
 }
 
@@ -130,6 +129,5 @@ export const createErrorReducer = (state, error = {}) => ({
     ...state.errors,
     create: error,
   },
-  creating: {},
-  isCreating: false,
+  creating: [],
 })

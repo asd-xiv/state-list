@@ -32,9 +32,7 @@ export const updateAction = ({
 
     dispatch({
       type: actionEnd,
-      payload: {
-        itemUpdated,
-      },
+      payload: itemUpdated,
     })
 
     return itemUpdated
@@ -51,22 +49,22 @@ export const updateAction = ({
  * @return {Object} New state
  */
 export const updateStartReducer = (state, { id, data }) => {
-  const isAlreadyUpdating = hasWith({ id })(state.itemsUpdating)
+  const isAlreadyUpdating = hasWith({ id })(state.updating)
 
   isAlreadyUpdating &&
     debug(
       "updateStartReducer: ID already updating, doing nothing (will still trigger a rerender)",
       {
         id,
-        itemsUpdating: state.itemsUpdating,
+        updating: state.updating,
       }
     )
 
   return {
     ...state,
-    itemsUpdating: isAlreadyUpdating
-      ? state.itemsUpdating
-      : [...state.itemsUpdating, { id, data }],
+    updating: isAlreadyUpdating
+      ? state.updating
+      : [...state.updating, { id, data }],
   }
 }
 
@@ -74,15 +72,38 @@ export const updateStartReducer = (state, { id, data }) => {
  * Add newly created item to list
  *
  * @param {Object}  state        Current state
- * @param {Object}  arg2         Payload
- * @param {Object}  arg2.update  API response
+ * @param {Object}  itemUpdated  API response with item data
  *
  * @return {Object}
  */
-export const updateEndReducer = (state, { itemUpdated }) => ({
-  ...state,
-  items: map(item =>
-    item.id === itemUpdated.id ? merge(item, itemUpdated) : item
-  )(state.items),
-  itemsUpdating: filterBy({ "!id": itemUpdated.id })(state.itemsUpdating),
-})
+export const updateEndReducer = (state, itemUpdated) => {
+  const hasId = Object.prototype.hasOwnProperty.call(itemUpdated, "id")
+
+  if (!hasId) {
+    throw new TypeError(
+      `deleteSuccessReducer: cannot update item "${itemUpdated}" without id property`
+    )
+  }
+
+  const exists = hasWith({ id: itemUpdated.id })(state.items)
+
+  if (!exists) {
+    debug(
+      `updateSuccessReducer: ID "${
+        itemUpdated.id
+      }" does not exist, doint nothing (will still trigger a rerender)`,
+      {
+        itemUpdated,
+        existingItems: state.items,
+      }
+    )
+  }
+
+  return {
+    ...state,
+    items: map(item =>
+      item.id === itemUpdated.id ? merge(item, itemUpdated) : item
+    )(state.items),
+    updating: filterBy({ "!id": itemUpdated.id })(state.updating),
+  }
+}
