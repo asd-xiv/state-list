@@ -1,14 +1,18 @@
 const debug = require("debug")("ReduxCollections:Delete")
 
-import { has, remove, filterBy, is } from "@leeruniek/functies"
+import { filterBy, findBy, is, hasWith } from "@leeruniek/functies"
 
 /**
  * Call API to delete an item, dispatch events before and after
  *
- * @param  {Function}  dispatch         Redux dispatch
- * @param  {Function}  api              API method
- * @param  {string}    actionStartName  Action dispatched before API call
- * @param  {string}    actionEndName    Action dispatched after API call
+ * @param  {Object}     cache          Cache store
+ * @param  {Function}  dispatch       Redux dispatch
+ * @param  {Function}  api            API method
+ * @param  {string}    actionStart    Action before API call
+ * @param  {string}    actionSuccess  Action after success
+ * @param  {string}    actionError    Action after error
+ *
+ * @param  {string|number} id  Id of item to delete
  *
  * @return {Object}
  */
@@ -17,55 +21,75 @@ export const deleteAction = ({
   dispatch,
   api,
   actionStart,
-  actionEnd,
+  actionSuccess,
+  actionError,
 }) => id => {
   dispatch({
     type: actionStart,
-    payload: {
-      id,
-    },
+    payload: id,
   })
 
-  return Promise.resolve(api(id)).then(() => {
+  // Resolve promise on both success and error with {result, error} obj
+  return new Promise(async resolve => {
+    try {
+      const result = await api(id)
+
+      dispatch({
+        type: actionSuccess,
+        payload: result,
+      })
+
+      resolve({ result })
+    } catch (error) {
+      // wrapping here and not in the reducer so that both resolved error and
+      // state error match
+      const stateError = {
+        date: new Date(),
+        data: {
+          name: error.name,
+          message: error.message,
+          status: error.status,
+          body: error.body,
+        },
+      }
+
+      dispatch({
+        type: actionError,
+        payload: stateError,
+      })
+
+      resolve({ error: stateError })
+    }
+  }).finally(() => {
     is(cache) && cache.clear()
-
-    dispatch({
-      type: actionEnd,
-      payload: {
-        id,
-      },
-    })
-
-    return id
   })
 }
 
 /**
  * Enable UI flag for removing item
  *
- * @param  {Object}  state    The state
- * @param  {Object}  arg2     Payload
- * @param  {Object}  arg2.id  Item id
+ * @param  {Object}  state  The state
+ * @param  {Object}  id     Deleting item id
  *
- * @return {Object}
+ * @return {Object}  New slice state
  */
-export const deleteStartReducer = (state, { id }) => {
-  const isDeleting = has(id)(state.itemsDeletingIds)
+export const deleteStartReducer = (state, id) => {
+  const deletingItem = findBy({ id })(state.deleting)
 
-  isDeleting &&
+  is(deletingItem) &&
     debug(
-      "listDeleteStart: ID already deleting, doing nothing (will still trigger a rerender)",
+      "deleteStartReducer: ID already deleting, doing nothing (will still trigger a rerender)",
       {
-        id,
-        itemsDeletingIds: state.itemsDeletingIds,
+        deletingItem,
+        deleting: state.deleting,
       }
     )
 
   return {
     ...state,
-    itemsDeletingIds: isDeleting
-      ? state.itemsDeletingIds
-      : [...state.itemsDeletingIds, id],
+    deleting: is(deletingItem)
+      ? state.deleting
+      : [...state.deleting, findBy({ id })(state.items)],
   }
 }
 
@@ -73,13 +97,47 @@ export const deleteStartReducer = (state, { id }) => {
  * Remove item from items array
  *
  * @param  {Object}  state    The state
- * @param  {Object}  arg2     Payload
- * @param  {Object}  arg2.id  Item id
+ * @param  {Object}  item     Payload
  *
  * @return {Object}
  */
-export const deleteEndReducer = (state, { id }) => ({
+export const deleteSuccessReducer = (state, item) => {
+  const hasId = Object.prototype.hasOwnProperty.call(item, "id")
+
+  if (!hasId) {
+    throw new TypeError(
+      `deleteSuccessReducer: cannot delete item "${item}" without id property`
+    )
+  }
+
+  if (!hasWith({ id: item.id })(state.items)) {
+    debug(
+      `deleteSuccessReducer: ID "${
+        item.id
+      }" does not exist, doing nothing (will still trigger a rerender)`,
+      {
+        deletedItem: item,
+        existingItems: state.items,
+      }
+    )
+  }
+
+  return {
+    ...state,
+    items: filterBy({ "!id": item.id })(state.items),
+    deleting: filterBy({ "!id": item.id })(state.deleting),
+    errors: {
+      ...state.errors,
+      delete: null,
+    },
+  }
+}
+
+export const deleteErrorReducer = (state, error = {}) => ({
   ...state,
-  itemsDeletingIds: remove(id)(state.itemsDeletingIds),
-  items: filterBy({ "!id": id })(state.items),
+  errors: {
+    ...state.errors,
+    delete: error,
+  },
+  deleting: [],
 })

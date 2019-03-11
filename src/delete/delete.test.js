@@ -53,10 +53,10 @@ test("Delete", t => {
 
     //   return deletePromise
     // })
-    .then(id => {
+    .then(({ result }) => {
       const todosSelector = todoList.selector(store.getState())
 
-      t.equals(id, 2, "list.delete resolves with element id")
+      t.equals(result.id, 2, "list.delete resolves with element id")
 
       t.deepEquals(
         todosSelector.items(),
@@ -65,7 +65,7 @@ test("Delete", t => {
       )
 
       t.equals(
-        todosSelector.isDeleting(id),
+        todosSelector.isDeleting(result.id),
         false,
         "isDeleting by id flag should be false after deleting"
       )

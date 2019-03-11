@@ -29,10 +29,10 @@ test("Delete - caching", t => {
 
   listFind()
     .then(() => listDelete(2))
-    .then(id => {
+    .then(({ result }) => {
       const todosSelector = todoList.selector(store.getState())
 
-      t.equals(id, 2, "list.delete resolves with element id")
+      t.equals(result.id, 2, "list.delete resolves with element id")
 
       t.deepEquals(
         todosSelector.items(),
