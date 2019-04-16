@@ -1,4 +1,4 @@
-import { findBy, last, deepEqual, is, isEmpty } from "@leeruniek/functies"
+import { findBy, last, deepEqual, is, isEmpty } from "@asd14/m"
 
 /**
  * Unieq, sequential, promise based job queue

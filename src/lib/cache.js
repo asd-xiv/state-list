@@ -1,13 +1,13 @@
 import {
   pipe,
-  prop,
-  ifThen,
+  get,
+  when,
   deepEqual,
   findBy,
   findIndexBy,
   remove,
   is,
-} from "@leeruniek/functies"
+} from "@asd14/m"
 
 // check if item exists and is not expired
 const isValid = item => is(item) && new Date() < item.validUntil
@@ -45,7 +45,7 @@ export const buildCacheStore = ({ ttl = 100 } = {}) => {
     get(key) {
       return pipe(
         findBy({ key: deepEqual(key) }),
-        ifThen(isValid, prop("value"), item => {
+        when(isValid, get("value"), item => {
           // if item exists, its expired
           if (is(item)) {
             items = remove(item)(items)
@@ -65,7 +65,7 @@ export const buildCacheStore = ({ ttl = 100 } = {}) => {
     set(key, value) {
       if (!is(key)) {
         throw new TypeError(
-          `ReduxCollections: Cache can not store "${value}" under key "${key}"`
+          `ReduxAllIsList: Cache can not store "${value}" under key "${key}"`
         )
       }
 
