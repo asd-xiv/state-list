@@ -1,7 +1,7 @@
 import test from "tape"
 import { createStore, combineReducers } from "redux"
 
-import { buildCollection } from ".."
+import { buildList } from ".."
 
 // Dummy Error with api data inside
 class RequestError extends Error {
@@ -16,7 +16,7 @@ class RequestError extends Error {
 
 test("Delete - error", t => {
   // WHAT TO TEST
-  const todoList = buildCollection({
+  const todoList = buildList({
     name: "DELETE-ERROR_TODOS",
     methods: {
       find: () => [{ id: 1, name: "build gdpr startup" }, { id: 2 }],

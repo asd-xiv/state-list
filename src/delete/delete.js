@@ -1,11 +1,11 @@
-const debug = require("debug")("ReduxCollections:Delete")
+const debug = require("debug")("ReduxAllIsList:Delete")
 
-import { filterBy, findBy, is, hasWith } from "@leeruniek/functies"
+import { filterBy, findBy, is, hasWith } from "@asd14/m"
 
 /**
  * Call API to delete an item, dispatch events before and after
  *
- * @param  {Object}     cache          Cache store
+ * @param  {Object}    cache          Cache store
  * @param  {Function}  dispatch       Redux dispatch
  * @param  {Function}  api            API method
  * @param  {string}    actionStart    Action before API call
@@ -41,8 +41,8 @@ export const deleteAction = ({
 
       resolve({ result })
     } catch (error) {
-      // wrapping here and not in the reducer so that both resolved error and
-      // state error match
+      // wrapping here so that both reducer and this current promise
+      // resolve/pass the same data
       const stateError = {
         date: new Date(),
         data: {

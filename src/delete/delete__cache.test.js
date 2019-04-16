@@ -1,11 +1,11 @@
 import test from "tape"
 import { createStore, combineReducers } from "redux"
 
-import { buildCollection } from ".."
+import { buildList } from ".."
 
 test("Delete - caching", t => {
   // WHAT TO TEST
-  const todoList = buildCollection({
+  const todoList = buildList({
     name: "DELETE-CACHE_TODOS",
     cacheTTL: 1000,
     methods: {
