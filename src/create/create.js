@@ -1,16 +1,18 @@
 const debug = require("debug")("ReduxAllIsList:Create")
 
-import { map, hasWith, is } from "@asd14/m"
+import { forEach, map, reduce, hasWith, is } from "@asd14/m"
 
 /**
- * Call API to create a new item, dispatch actions before and after
+ * Call API to create item. Dispatch actions before, after success and after
+ * error
  *
- * @param  {Function}  dispatch     Redux dispatch
- * @param  {Function}  api          API method
- * @param  {string}    actionStart  Action dispatched before API call
- * @param  {string}    actionEnd    Action dispatched after API call
+ * @param  {Function}  dispatch       Redux dispatch
+ * @param  {Function}  api            API method
+ * @param  {string}    actionStart    Action before API call
+ * @param  {string}    actionSuccess  Action after success
+ * @param  {string}    actionError    Action after error
  *
- * @param  {Object}    data         Model data
+ * @param  {Object}  data  Model data
  *
  * @return {Promise<Object>}
  */
@@ -19,26 +21,47 @@ export const createAction = ({
   dispatch,
   api,
   actionStart,
-  actionEnd,
+  actionSuccess,
+  actionError,
 }) => data => {
   dispatch({
     type: actionStart,
-    payload: {
-      itemCreating: data,
-    },
+    payload: Array.isArray(data) ? data : [data],
   })
 
-  return Promise.resolve(api(data)).then(result => {
+  // Resolve promise on both success and error with {result, error} obj
+  return new Promise(async resolve => {
+    try {
+      const result = await api(data)
+
+      dispatch({
+        type: actionSuccess,
+        payload: Array.isArray(result) ? result : [result],
+      })
+
+      resolve({ result })
+    } catch (error) {
+      // wrapping here and not in the reducer so that both resolved error and
+      // state error match
+      const stateError = {
+        date: new Date(),
+        data: {
+          name: error.name,
+          message: error.message,
+          status: error.status,
+          body: error.body,
+        },
+      }
+
+      dispatch({
+        type: actionError,
+        payload: stateError,
+      })
+
+      resolve({ error: stateError })
+    }
+  }).finally(() => {
     is(cache) && cache.clear()
-
-    dispatch({
-      type: actionEnd,
-      payload: {
-        itemCreated: result,
-      },
-    })
-
-    return result
   })
 }
 
@@ -46,41 +69,72 @@ export const createAction = ({
  * Modify state to indicate an item is being created
  *
  * @param {Object}  state  Old state
+ * @param {Object}  items  Items to be created
  *
  * @return {Object} New state
  */
-export const createStartReducer = (state, { itemCreating }) => ({
+export const createStartReducer = (state, items) => ({
   ...state,
-  itemCreating,
+  creating: items,
   isCreating: true,
 })
 
 /**
  * Add newly created item to list
  *
- * @param  {Object}  state                Old state
- * @param  {Object}  payload              Data comming from action
- * @param  {Object}  payload.itemCreated  Newly created item
+ * @param  {Object}  state  Old state
+ * @param  {Object}  items  Newly created items
  *
  * @return {Object} New state
  */
-export const createEndReducer = (state, { itemCreated }) => {
-  const exists = hasWith({ id: itemCreated.id })(state.items)
+export const createSuccessReducer = (state, items) => {
+  forEach(item => {
+    const hasId = Object.prototype.hasOwnProperty.call(item, "id")
 
-  exists &&
-    debug("createEndReducer: element ID already exists, replacing", {
-      itemCreated,
-      items: state.items,
-    })
+    if (!hasId) {
+      throw new TypeError(
+        `createSuccessReducer: trying to create item "${item}" without id property`
+      )
+    }
+  })(items)
 
   return {
     ...state,
-    items: exists
-      ? map(item => (item.id === itemCreated.id ? itemCreated : item))(
-          state.items
+
+    // if exists, replace, else add to end of array
+    items: reduce((acc, item) => {
+      const exists = hasWith({ id: item.id })(state.items)
+
+      if (exists) {
+        debug(
+          `createSuccessReducer: ID "${item.id}" already exists, replacing`,
+          {
+            createdItem: item,
+            existingItems: state.items,
+          }
         )
-      : [...state.items, itemCreated],
-    itemCreating: {},
-    isCreating: false,
+      }
+
+      return exists
+        ? map(mItem => (mItem.id === item.id ? item : mItem))(acc)
+        : [...acc, item]
+    }, state.items)(items),
+
+    // reset action error
+    errors: {
+      ...state.errors,
+      create: null,
+    },
+
+    creating: [],
   }
 }
+
+export const createErrorReducer = (state, error = {}) => ({
+  ...state,
+  errors: {
+    ...state.errors,
+    create: error,
+  },
+  creating: [],
+})

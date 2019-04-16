@@ -1,3 +1,4 @@
+
 import test from "tape"
 import { createStore, combineReducers } from "redux"
 
@@ -29,16 +30,17 @@ test("Delete - caching", t => {
 
   listFind()
     .then(() => listDelete(2))
-    .then(id => {
+    .then(({ result }) => {
       const todosSelector = todoList.selector(store.getState())
 
-      t.equals(id, 2, "list.delete resolves with element id")
+      t.equals(result.id, 2, "list.delete resolves with element id")
 
       t.deepEquals(
         todosSelector.items(),
         [{ id: 1, name: "lorem ipsum" }],
         "element should be removed from items array"
       )
+
+      t.end()
     })
-    .finally(() => t.end())
 })

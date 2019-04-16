@@ -24,6 +24,9 @@ test("List without API methods", t => {
   const listUpdate = todoList.update(store.dispatch)
   const listDelete = todoList.delete(store.dispatch)
 
+  const listAdd = todoList.add(store.dispatch)
+  const listClear = todoList.clear(store.dispatch)
+
   t.equals(todoList.name, "TODOS", "New list created with unique name")
 
   t.throws(
@@ -40,9 +43,9 @@ test("List without API methods", t => {
     {
       head: todosSelector.head(),
       items: todosSelector.items(),
-      itemsUpdating: todosSelector.itemsUpdating(),
-      itemsDeletingIds: todosSelector.itemsDeletingIds(),
-      itemCreating: todosSelector.itemCreating(),
+      creating: todosSelector.creating(),
+      updating: todosSelector.updating(),
+      deleting: todosSelector.deleting(),
       isCreating: todosSelector.isCreating(),
       isLoaded: todosSelector.isLoaded(),
       isLoading: todosSelector.isLoading(),
@@ -52,9 +55,9 @@ test("List without API methods", t => {
     {
       head: undefined,
       items: [],
-      itemsUpdating: [],
-      itemsDeletingIds: [],
-      itemCreating: {},
+      updating: [],
+      deleting: [],
+      creating: [],
       isLoading: false,
       isLoaded: false,
       isCreating: false,
@@ -96,5 +99,41 @@ test("List without API methods", t => {
     'Throw exception when calling "delete" on list without methods'
   )
 
-  t.end()
+  listAdd({ id: 1, foo: "bar" })
+    .then(result => {
+      const selector = todoList.selector(store.getState())
+
+      t.deepEquals(
+        { id: 1, foo: "bar" },
+        result,
+        "Builtin .add should resolve with passed item"
+      )
+
+      t.deepEquals(
+        selector.items(),
+        [result],
+        "Builtin .add should add item to state"
+      )
+    })
+    .then(() => listClear())
+    .then(() => {
+      const selector = todoList.selector(store.getState())
+
+      t.deepEquals(
+        selector.items(),
+        [],
+        "Builtin .clear should remove all items from state"
+      )
+    })
+    .then(() => listAdd([{ id: 1, foo: "bar" }, { id: 2, foo: "bar2" }]))
+    .then(() => {
+      const selector = todoList.selector(store.getState())
+
+      t.deepEquals(
+        selector.items(),
+        [{ id: 1, foo: "bar" }, { id: 2, foo: "bar2" }],
+        "Builtin .add should add items to state"
+      )
+    })
+    .then(() => t.end())
 })

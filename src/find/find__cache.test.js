@@ -69,6 +69,7 @@ test("Find - caching", t => {
         1,
         "Running find 4 times in batches of 2. Should run only once due to the queue and cache"
       )
+
+      t.end()
     })
-    .finally(() => t.end())
 })
