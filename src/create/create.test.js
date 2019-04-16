@@ -1,14 +1,13 @@
 import test from "tape"
 import { createStore, combineReducers } from "redux"
 
-import { buildCollection } from ".."
+import { buildList } from ".."
 
 test("Create", t => {
   // WHAT TO TEST
-  const todoList = buildCollection({
+  const todoList = buildList({
     name: "CREATE_TODOS",
     methods: {
-      find: () => [],
       create: data => ({
         id: 1,
         ...data,
@@ -25,63 +24,81 @@ test("Create", t => {
 
   // Link lists's action to store's dispatch
   const listCreate = todoList.create(store.dispatch)
-  const listFind = todoList.find(store.dispatch)
 
-  // eslint-disable-next-line promise/catch-or-return
-  listFind()
-    .then(() => listCreate({ name: "New foo" }))
-    // .then(() => {
-    //   // Trigger create action and check intermediate state
-    //   const createPromise = listCreate({ name: "New foo" })
-    //   const todosSelector = todoList.selector(store.getState())
+  listCreate({ name: "New foo" }).then(({ result }) => {
+    const selector = todoList.selector(store.getState())
 
-    //   t.deepEquals(
-    //     todosSelector.itemCreating(),
-    //     { name: "New foo" },
-    //     "before - itemCreating should contain the create data"
-    //   )
+    t.deepEquals(
+      selector.creating(),
+      [],
+      "selector.creating should be empty array"
+    )
 
-    //   t.equals(
-    //     todosSelector.isCreating(),
-    //     true,
-    //     "before - isCreating flag should be true while creating"
-    //   )
+    t.equals(
+      selector.isCreating(),
+      false,
+      "selector.isCreating should be false after creating"
+    )
 
-    //   return createPromise
-    // })
-    .then(({ result }) => {
-      const todosSelector = todoList.selector(store.getState())
+    t.deepEquals(
+      result,
+      { id: 1, name: "New foo" },
+      "list.create resolves with created item"
+    )
 
-      t.deepEquals(
-        todosSelector.creating(),
-        {},
-        "after - itemCreating is empty"
-      )
+    t.deepEquals(
+      selector.items(),
+      [result],
+      "Created element should be added to items array"
+    )
+
+    t.end()
+  })
+})
+
+test("Create - multiple", t => {
+  // WHAT TO TEST
+  const todoList = buildList({
+    name: "CREATE-MULTIPLE_TODOS",
+    methods: {
+      create: items => items.map((item, index) => ({ id: index, ...item })),
+    },
+  })
+
+  // Redux store
+  const store = createStore(
+    combineReducers({
+      [todoList.name]: todoList.reducer,
+    })
+  )
+
+  // Link lists's action to store's dispatch
+  const listCreate = todoList.create(store.dispatch)
+
+  listCreate([{ name: "New foo" }, { name: "New foo 2" }]).then(
+    ({ result }) => {
+      const selector = todoList.selector(store.getState())
 
       t.deepEquals(
         result,
-        { id: 1, name: "New foo" },
-        "after - list.create resolves with created item"
-      )
-
-      t.equals(
-        todosSelector.isCreating(),
-        false,
-        "after - isCreating flag should be false after creating"
+        [{ id: 0, name: "New foo" }, { id: 1, name: "New foo 2" }],
+        "list.create resolves with created items"
       )
 
       t.deepEquals(
-        todosSelector.items(),
-        [{ id: 1, name: "New foo" }],
-        "after - element should be added to items array"
+        selector.items(),
+        result,
+        "Created elements should be added to items array"
       )
-    })
-    .finally(() => t.end())
+
+      t.end()
+    }
+  )
 })
 
 test("Create - caching", t => {
   // WHAT TO TEST
-  const todoList = buildCollection({
+  const todoList = buildList({
     name: "CREATE-CACHE_TODOS",
     cacheTTL: 100,
     methods: {
@@ -104,23 +121,23 @@ test("Create - caching", t => {
   const listCreate = todoList.create(store.dispatch)
   const listFind = todoList.find(store.dispatch)
 
-  // eslint-disable-next-line promise/catch-or-return
   listFind()
     .then(() => listCreate({ name: "New foo" }))
     .then(({ result }) => {
-      const todosSelector = todoList.selector(store.getState())
+      const selector = todoList.selector(store.getState())
 
       t.deepEquals(
         result,
         { id: 2, name: "New foo" },
-        "after - list.create resolves with created item"
+        "list.create resolves with created item"
       )
 
       t.deepEquals(
-        todosSelector.items(),
+        selector.items(),
         [{ id: 1, name: "foo" }, { id: 2, name: "New foo" }],
-        "after - element should be added to items array"
+        "Element should be added to items array"
       )
+
+      t.end()
     })
-    .finally(() => t.end())
 })

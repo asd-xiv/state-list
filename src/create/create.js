@@ -1,6 +1,6 @@
-const debug = require("debug")("ReduxCollections:Create")
+const debug = require("debug")("ReduxAllIsList:Create")
 
-import { map, hasWith, is } from "@leeruniek/functies"
+import { forEach, map, reduce, hasWith, is } from "@asd14/m"
 
 /**
  * Call API to create item. Dispatch actions before, after success and after
@@ -26,7 +26,7 @@ export const createAction = ({
 }) => data => {
   dispatch({
     type: actionStart,
-    payload: data,
+    payload: Array.isArray(data) ? data : [data],
   })
 
   // Resolve promise on both success and error with {result, error} obj
@@ -36,7 +36,7 @@ export const createAction = ({
 
       dispatch({
         type: actionSuccess,
-        payload: result,
+        payload: Array.isArray(result) ? result : [result],
       })
 
       resolve({ result })
@@ -69,13 +69,13 @@ export const createAction = ({
  * Modify state to indicate an item is being created
  *
  * @param {Object}  state  Old state
- * @param {Object}  item   Item to be created
+ * @param {Object}  items  Items to be created
  *
  * @return {Object} New state
  */
-export const createStartReducer = (state, item) => ({
+export const createStartReducer = (state, items) => ({
   ...state,
-  creating: item,
+  creating: items,
   isCreating: true,
 })
 
@@ -83,35 +83,42 @@ export const createStartReducer = (state, item) => ({
  * Add newly created item to list
  *
  * @param  {Object}  state  Old state
- * @param  {Object}  item   Newly created item
+ * @param  {Object}  items  Newly created items
  *
  * @return {Object} New state
  */
-export const createSuccessReducer = (state, item) => {
-  const hasId = Object.prototype.hasOwnProperty.call(item, "id")
+export const createSuccessReducer = (state, items) => {
+  forEach(item => {
+    const hasId = Object.prototype.hasOwnProperty.call(item, "id")
 
-  if (!hasId) {
-    throw new TypeError(
-      `createSuccessReducer: trying to create item "${item}" without id property`
-    )
-  }
-
-  const exists = hasWith({ id: item.id })(state.items)
-
-  if (exists) {
-    debug(`createSuccessReducer: ID "${item.id}" already exists, replacing`, {
-      createdItem: item,
-      existingItems: state.items,
-    })
-  }
+    if (!hasId) {
+      throw new TypeError(
+        `createSuccessReducer: trying to create item "${item}" without id property`
+      )
+    }
+  })(items)
 
   return {
     ...state,
 
     // if exists, replace, else add to end of array
-    items: exists
-      ? map(mItem => (mItem.id === item.id ? item : mItem))(state.items)
-      : [...state.items, item],
+    items: reduce((acc, item) => {
+      const exists = hasWith({ id: item.id })(state.items)
+
+      if (exists) {
+        debug(
+          `createSuccessReducer: ID "${item.id}" already exists, replacing`,
+          {
+            createdItem: item,
+            existingItems: state.items,
+          }
+        )
+      }
+
+      return exists
+        ? map(mItem => (mItem.id === item.id ? item : mItem))(acc)
+        : [...acc, item]
+    }, state.items)(items),
 
     // reset action error
     errors: {
