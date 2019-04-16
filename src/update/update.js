@@ -1,6 +1,6 @@
-const debug = require("debug")("ReduxCollections:Update")
+const debug = require("debug")("ReduxAllIsList:Update")
 
-import { map, filterBy, merge, hasWith, is } from "@leeruniek/functies"
+import { map, filterBy, merge, hasWith, is } from "@asd14/m"
 
 /**
  * Call API to update an item, dispatch events before and after
@@ -17,7 +17,8 @@ export const updateAction = ({
   dispatch,
   api,
   actionStart,
-  actionEnd,
+  actionSuccess,
+  actionError,
 }) => (id, data) => {
   dispatch({
     type: actionStart,
@@ -27,15 +28,39 @@ export const updateAction = ({
     },
   })
 
-  return Promise.resolve(api(id, data)).then(itemUpdated => {
+  // Resolve promise on both success and error with {result, error} obj
+  return new Promise(async resolve => {
+    try {
+      const result = await api(id, data)
+
+      dispatch({
+        type: actionSuccess,
+        payload: result,
+      })
+
+      resolve({ result })
+    } catch (error) {
+      // wrapping here so that both reducer and this current promise
+      // resolve/pass the same data
+      const stateError = {
+        date: new Date(),
+        data: {
+          name: error.name,
+          message: error.message,
+          status: error.status,
+          body: error.body,
+        },
+      }
+
+      dispatch({
+        type: actionError,
+        payload: stateError,
+      })
+
+      resolve({ error: stateError })
+    }
+  }).finally(() => {
     is(cache) && cache.clear()
-
-    dispatch({
-      type: actionEnd,
-      payload: itemUpdated,
-    })
-
-    return itemUpdated
   })
 }
 
@@ -69,31 +94,31 @@ export const updateStartReducer = (state, { id, data }) => {
 }
 
 /**
- * Add newly created item to list
+ * Update existing item by id in state list
  *
- * @param {Object}  state        Current state
- * @param {Object}  itemUpdated  API response with item data
+ * @param {Object}  state    Current state
+ * @param {Object}  payload  Updated item data (needs id field)
  *
  * @return {Object}
  */
-export const updateEndReducer = (state, itemUpdated) => {
-  const hasId = Object.prototype.hasOwnProperty.call(itemUpdated, "id")
+export const updateSuccessReducer = (state, payload) => {
+  const hasId = Object.prototype.hasOwnProperty.call(payload, "id")
 
   if (!hasId) {
     throw new TypeError(
-      `deleteSuccessReducer: cannot update item "${itemUpdated}" without id property`
+      `updateSuccessReducer: cannot update item "${JSON.stringify(
+        payload
+      )}" without id property`
     )
   }
 
-  const exists = hasWith({ id: itemUpdated.id })(state.items)
-
-  if (!exists) {
+  if (hasWith({ id: payload.id })(state.items)) {
     debug(
       `updateSuccessReducer: ID "${
-        itemUpdated.id
+        payload.id
       }" does not exist, doint nothing (will still trigger a rerender)`,
       {
-        itemUpdated,
+        payload,
         existingItems: state.items,
       }
     )
@@ -101,9 +126,22 @@ export const updateEndReducer = (state, itemUpdated) => {
 
   return {
     ...state,
-    items: map(item =>
-      item.id === itemUpdated.id ? merge(item, itemUpdated) : item
-    )(state.items),
-    updating: filterBy({ "!id": itemUpdated.id })(state.updating),
+    items: map(item => (item.id === payload.id ? merge(item, payload) : item))(
+      state.items
+    ),
+    updating: filterBy({ "!id": payload.id })(state.updating),
+    errors: {
+      ...state.errors,
+      update: null,
+    },
   }
 }
+
+export const updateErrorReducer = (state, error = {}) => ({
+  ...state,
+  errors: {
+    ...state.errors,
+    update: error,
+  },
+  updating: [],
+})
