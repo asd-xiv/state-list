@@ -1,16 +1,10 @@
 /* eslint-disable no-multi-assign */
+import "core-js/stable"
+import "regenerator-runtime/runtime"
 
-const debug = require("debug")("ReduxCollections:Main")
+const debug = require("debug")("ReduxAllIsList:Main")
 
-import {
-  pipe,
-  findBy,
-  sortBy,
-  head,
-  is,
-  isEmpty,
-  hasWith,
-} from "@leeruniek/functies"
+import { pipe, findBy, sortBy, head, is, isEmpty, hasWith } from "@asd14/m"
 import {
   createAction,
   createStartReducer,
@@ -21,7 +15,8 @@ import { findAction, findStartReducer, findEndReducer } from "./find/find"
 import {
   updateAction,
   updateStartReducer,
-  updateEndReducer,
+  updateSuccessReducer,
+  updateErrorReducer,
 } from "./update/update"
 import {
   deleteAction,
@@ -30,8 +25,8 @@ import {
   deleteErrorReducer,
 } from "./delete/delete"
 
-import { buildQueue } from "../lib/queue"
-import { buildCacheStore } from "../lib/cache"
+import { buildQueue } from "./lib/queue"
+import { buildCacheStore } from "./lib/cache"
 
 const collections = Object.create(null)
 
@@ -40,16 +35,16 @@ const hasKey = key => obj => Object.prototype.hasOwnProperty.call(obj, key)
 /**
  * List factory function
  *
- * @param  {Object}  props           Collection props
+ * @param  {Object}  props           List props
  * @param  {string}  props.name      Unique name so actions dont overlap
  * @param  {number}  props.cacheTTL  If present, all .find requests are cached
  *                                   for this amount of milliseconds
  *
  * @return {Object}
  */
-export const buildCollection = ({ name, cacheTTL = 0, methods = {} }) => {
+const buildList = ({ name, cacheTTL = 0, methods = {} }) => {
   if (hasKey(name)(collections)) {
-    throw new Error(`ReduxCollections: List with name "${name}" already exists`)
+    throw new Error(`ReduxAllIsList: List with name "${name}" already exists`)
   }
 
   const hasCache = !isEmpty(cacheTTL)
@@ -67,7 +62,8 @@ export const buildCollection = ({ name, cacheTTL = 0, methods = {} }) => {
       loadStart: `${name}_LOAD_START`,
       loadEnd: `${name}_LOAD_END`,
       updateStart: `${name}_UPDATE_START`,
-      updateEnd: `${name}_UPDATE_END`,
+      updateSuccess: `${name}_UPDATE_SUCCESS`,
+      updateError: `${name}_UPDATE_ERROR`,
       deleteStart: `${name}_DELETE_START`,
       deleteSuccess: `${name}_DELETE_SUCCESS`,
       deleteError: `${name}_DELETE_ERROR`,
@@ -140,7 +136,7 @@ export const buildCollection = ({ name, cacheTTL = 0, methods = {} }) => {
             })
         : () => {
             throw new TypeError(
-              `ReduxCollections: "${name}"."create" should be a function, got "${typeof methods.create}"`
+              `ReduxAllIsList: "${name}"."create" should be a function, got "${typeof methods.create}"`
             )
           },
 
@@ -169,7 +165,7 @@ export const buildCollection = ({ name, cacheTTL = 0, methods = {} }) => {
 
       return () => {
         throw new TypeError(
-          `ReduxCollections: "${name}"."find" should be a function, got "${typeof methods.find}"`
+          `ReduxAllIsList: "${name}"."find" should be a function, got "${typeof methods.find}"`
         )
       }
     },
@@ -192,18 +188,19 @@ export const buildCollection = ({ name, cacheTTL = 0, methods = {} }) => {
                 dispatch,
                 api: methods.update,
                 actionStart: collection.actions.updateStart,
-                actionEnd: collection.actions.updateEnd,
+                actionSuccess: collection.actions.updateSuccess,
+                actionError: collection.actions.updateError,
               }),
               args,
             })
         : () => {
             throw new TypeError(
-              `ReduxCollections: "${name}"."update" should be a function, got "${typeof methods.update}"`
+              `ReduxAllIsList: "${name}"."update" should be a function, got "${typeof methods.update}"`
             )
           },
 
     /**
-     * Update an item, dispatch events before and after
+     * Delete an item, dispatch events before and after
      *
      * @param  {Function}       dispatch  Redux dispatch function
      * @param  {Number|string}  id        Item id
@@ -228,7 +225,7 @@ export const buildCollection = ({ name, cacheTTL = 0, methods = {} }) => {
             })
         : () => {
             throw new TypeError(
-              `ReduxCollections: "${name}"."delete" should be a function, got "${typeof methods.delete}"`
+              `ReduxAllIsList: "${name}"."delete" should be a function, got "${typeof methods.delete}"`
             )
           },
 
@@ -243,33 +240,29 @@ export const buildCollection = ({ name, cacheTTL = 0, methods = {} }) => {
       hasCache && collection.cache.clear()
 
       dispatch({
-        type: collection.acitons.loadEnd,
-        payload: {
-          items: [],
-        },
+        type: collection.actions.loadEnd,
+        payload: [],
       })
 
       return Promise.resolve([])
     },
 
     /**
-     * Empty list
+     * Add items to list without outside method
      *
      * @param  {Function}  dispatch  Redux dispatch function
      *
      * @return {void}
      */
-    add: dispatch => item => {
+    add: dispatch => items => {
       hasCache && collection.cache.clear()
 
       dispatch({
         type: collection.actions.createSuccess,
-        payload: {
-          item,
-        },
+        payload: Array.isArray(items) ? items : [items],
       })
 
-      return Promise.resolve(item)
+      return Promise.resolve(items)
     },
 
     /**
@@ -291,7 +284,6 @@ export const buildCollection = ({ name, cacheTTL = 0, methods = {} }) => {
 
         errors: {},
         loadDate: null,
-
         isLoading: false,
       },
       { type, payload }
@@ -314,8 +306,10 @@ export const buildCollection = ({ name, cacheTTL = 0, methods = {} }) => {
         // Update
         case collection.actions.updateStart:
           return updateStartReducer(state, payload)
-        case collection.actions.updateEnd:
-          return updateEndReducer(state, payload)
+        case collection.actions.updateSuccess:
+          return updateSuccessReducer(state, payload)
+        case collection.actions.updateError:
+          return updateErrorReducer(state, payload)
 
         // Delete
         case collection.actions.deleteStart:
@@ -331,3 +325,5 @@ export const buildCollection = ({ name, cacheTTL = 0, methods = {} }) => {
     },
   }
 }
+
+export { buildList, buildList as buildCollection }
