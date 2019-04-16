@@ -134,6 +134,7 @@ test("List without API methods", t => {
         [{ id: 1, foo: "bar" }, { id: 2, foo: "bar2" }],
         "Builtin .add should add items to state"
       )
+
+      t.end()
     })
-    .then(() => t.end())
 })

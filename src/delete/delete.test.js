@@ -28,31 +28,6 @@ test("Delete", t => {
 
   listFind()
     .then(() => listDelete(2))
-    // .then(() => {
-    //   // Trigger delete action and check intermediate state
-    //   const deletePromise = listDelete(2)
-
-    //   console.log(store.getState())
-    //   const todosSelector = todoList.selector(store.getState())
-
-    //   t.equals(
-    //     todosSelector.isDeleting(2),
-    //     true,
-    //     "isDeleting by id flag should be true while deleting"
-    //   )
-    //   t.equals(
-    //     todosSelector.isDeleting(),
-    //     true,
-    //     "isDeleting flag should be true while deleting"
-    //   )
-    //   t.deepEquals(
-    //     todosSelector.itemsDeletingIds(),
-    //     [2],
-    //     "array with deleting ids should contain current deleting id"
-    //   )
-
-    //   return deletePromise
-    // })
     .then(({ result }) => {
       const todosSelector = todoList.selector(store.getState())
 
@@ -75,6 +50,7 @@ test("Delete", t => {
         false,
         "isDeleting flag should be false after deleting"
       )
+
+      t.end()
     })
-    .finally(() => t.end())
 })
