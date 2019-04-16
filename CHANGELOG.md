@@ -9,35 +9,50 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.5] - 16 April 2019
+
+### Add
+
+* Tests for list `.add()` and `.clear()`
+* Selector `.error()` function for getting lastest error
+* Cache support added via `cacheTTL`
+
+### Change
+
+* List `.create` accepts multiple items
+* Multiple calls to the same method at the same time will only trigger once
+* Method calls are sequential and will be wait on any previous ones to finish
+
 ## [0.3.0] - 29 December 2018
 
 ### Add
 
-- Tests for selector
+* Tests for selector
 
 ### Change
 
-- Resolve API call inside action. List methods no longer needs to explicitly return a Promise.
+* Resolve API call inside action. List methods no longer needs to explicitly return a Promise.
 
 ## [0.2.2] - 9 December 2018
 
 ### Change
 
-- Fix `isLoaded` selector not checking corect date property
+* Fix `isLoaded` selector not checking corect date property
 
 ## [0.2.0] - 8 December 2018
 
 ### Add
 
-- Add state selector to [`buildList`](src/index.js#L57) export
-- Add test for [`create`](src/create/create.test.js), [`find`](src/find/find.test.js), [`update`](src/update/update.test.js) and [`delete`](src/delete/delete.test.js) actions
+* Add state selector to [`buildList`](src/index.js#L57) export
+* Add test for [`create`](src/create/create.test.js), [`find`](src/find/find.test.js), [`update`](src/update/update.test.js) and [`delete`](src/delete/delete.test.js) actions
 
 ## [0.1.0] - 26 November 2018
 
 First
 
-[Unreleased]: https://github.com/asd14/redux-all-is-list/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/asd14/redux-all-is-list/compare/v0.5...HEAD
 
+[0.5]: https://github.com/asd14/redux-all-is-list/compare/v0.3.0...v0.5
 [0.3.0]: https://github.com/asd14/redux-all-is-list/compare/v0.2.2...v0.3.0
 [0.2.2]: https://github.com/asd14/redux-all-is-list/compare/v0.2.0...v0.2.2
 [0.2.0]: https://github.com/asd14/redux-all-is-list/compare/v0.1.0...v0.2.0

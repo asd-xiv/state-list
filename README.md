@@ -6,24 +6,26 @@
 
 # redux-all-is-list
 
-> Reduce Redux boilerplate when mapping data from API endpoints.
+> Reduce Redux boilerplate when mapping API data
 
 ---
 
-<!-- MarkdownTOC levels="1,2,3" autolink="true" indent="    " -->
+<!-- vim-markdown-toc GFM -->
 
-- [Install](#install)
-- [Use](#use)
-- [Develop](#develop)
-- [Changelog](#changelog)
-    - [0.3.0 - 29 December 2018](#030---29-december-2018)
+* [Install](#install)
+* [Use](#use)
+* [Develop](#develop)
+* [Changelog](#changelog)
+  * [0.5 - 16 April 2019](#05---16-april-2019)
+    * [Add](#add)
+    * [Change](#change)
 
-<!-- /MarkdownTOC -->
+<!-- vim-markdown-toc -->
 
 ## Install
 
 ```bash
-npm i --save-exact @asd14/redux-all-is-list
+npm i @asd14/redux-all-is-list
 ```
 
 ## Use
@@ -109,11 +111,17 @@ export { TodosContainer }
 git clone git@github.com:asd14/redux-all-is-list.git && \
   cd redux-all-is-list && \
   npm run setup
+```
 
-# run tests (any `*.test.js`) once
+Run all `*.test.js` in `src` folder
+
+```bash
 npm test
+```
 
-# watch `src` folder for changes and run test automatically
+Watch `src` folder for changes and re-run tests
+
+```bash
 npm run tdd
 ```
 
@@ -121,12 +129,16 @@ npm run tdd
 
 History of all changes in [CHANGELOG.md](CHANGELOG.md)
 
-### 0.3.0 - 29 December 2018
+### 0.5 - 16 April 2019
 
 #### Add
 
-- Tests for selector
+* Tests for list `.add()` and `.clear()`
+* Selector `.error()` function for getting lastest error
+* Cache support added via `cacheTTL`
 
 #### Change
 
-- Resolve API call inside action. List methods no longer needs to explicitly return a Promise.
+* List `.create` accepts multiple items
+* Multiple calls to the same method at the same time will only trigger once
+* Method calls are sequential and will be wait on any previous ones to finish
