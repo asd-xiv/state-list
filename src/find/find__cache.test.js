@@ -1,12 +1,12 @@
 import test from "tape"
 import { createStore, combineReducers } from "redux"
 
-import { buildCollection } from ".."
+import { buildList } from ".."
 
 test("Find - caching", t => {
   // WHAT TO TEST
   let findCount = 0
-  const todoList = buildCollection({
+  const todoList = buildList({
     name: "FIND-CACHE_TODOS",
     cacheTTL: 2000,
     methods: {
@@ -69,6 +69,7 @@ test("Find - caching", t => {
         1,
         "Running find 4 times in batches of 2. Should run only once due to the queue and cache"
       )
+
+      t.end()
     })
-    .finally(() => t.end())
 })
