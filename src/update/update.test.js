@@ -29,36 +29,11 @@ test("Update", t => {
 
   listFind()
     .then(() => listUpdate(2, { name: "Updated foo" }))
-    // .then(() => {
-    //   // Trigger update action and check intermediate state
-    //   const updatePromise = listUpdate(2, { name: "Updated foo" })
-    //   const todosSelector = todoList.selector(store.getState())
-
-    //   console.log("TEST", store.getState())
-
-    //   t.equals(
-    //     todosSelector.isUpdating(2),
-    //     true,
-    //     "isUpdating by id flag should be true while updating"
-    //   )
-    //   t.equals(
-    //     todosSelector.isUpdating(),
-    //     true,
-    //     "isUpdating flag should be true while updating"
-    //   )
-    //   t.deepEquals(
-    //     todosSelector.itemsUpdating(),
-    //     [{ id: 2, data: { name: "Updated foo" } }],
-    //     "array with updating items should contain current updating item"
-    //   )
-
-    //   return updatePromise
-    // })
-    .then(itemUpdated => {
+    .then(({ result }) => {
       const todosSelector = todoList.selector(store.getState())
 
       t.deepEquals(
-        itemUpdated,
+        result,
         { id: 2, name: "Updated foo" },
         "list.update resolves with updated item"
       )
@@ -68,6 +43,7 @@ test("Update", t => {
         [{ id: 1, name: "lorem ipsum" }, { id: 2, name: "Updated foo" }],
         "element should be updated in items array"
       )
+
+      t.end()
     })
-    .finally(() => t.end())
 })

@@ -1,58 +1,72 @@
 /* eslint-disable no-multi-assign */
+import "core-js/stable"
+import "regenerator-runtime/runtime"
 
 const debug = require("debug")("ReduxAllIsList:Main")
 
-import { findBy, has, hasKey, hasWith, is, isEmpty } from "@asd14/m"
+import { pipe, findBy, sortBy, head, is, isEmpty, hasWith } from "@asd14/m"
 import {
   createAction,
   createStartReducer,
-  createEndReducer,
+  createSuccessReducer,
+  createErrorReducer,
 } from "./create/create"
 import { findAction, findStartReducer, findEndReducer } from "./find/find"
 import {
   updateAction,
   updateStartReducer,
-  updateEndReducer,
+  updateSuccessReducer,
+  updateErrorReducer,
 } from "./update/update"
 import {
   deleteAction,
   deleteStartReducer,
-  deleteEndReducer,
+  deleteSuccessReducer,
+  deleteErrorReducer,
 } from "./delete/delete"
 
-import { buildQueue } from "../lib/queue"
-import { buildCacheStore } from "../lib/cache"
+import { buildQueue } from "./lib/queue"
+import { buildCacheStore } from "./lib/cache"
 
 const collections = Object.create(null)
+
+const hasKey = key => obj => Object.prototype.hasOwnProperty.call(obj, key)
 
 /**
  * List factory function
  *
- * @param  {Object}  props           Collection props
+ * @param  {Object}  props           List props
  * @param  {string}  props.name      Unique name so actions dont overlap
  * @param  {number}  props.cacheTTL  If present, all .find requests are cached
  *                                   for this amount of milliseconds
  *
  * @return {Object}
  */
-export const buildList = ({ name, cacheTTL = 0, methods = {} }) => {
+const buildList = ({ name, cacheTTL = 0, methods = {} }) => {
   if (hasKey(name)(collections)) {
     throw new Error(`ReduxAllIsList: List with name "${name}" already exists`)
   }
 
-  const hasCache = is(cacheTTL) && cacheTTL !== 0
+  const hasCache = !isEmpty(cacheTTL)
   const collection = (collections[name] = {
-    cache: hasCache ? buildCacheStore({ ttl: cacheTTL }) : undefined,
+    cache: hasCache
+      ? buildCacheStore({
+          ttl: cacheTTL,
+        })
+      : undefined,
     queue: buildQueue(),
     actions: {
       createStart: `${name}_CREATE_START`,
-      createEnd: `${name}_CREATE_END`,
-      findStart: `${name}_LOAD_START`,
-      findEnd: `${name}_LOAD_END`,
+      createSuccess: `${name}_CREATE_SUCCESS`,
+      createError: `${name}_CREATE_ERROR`,
+      loadStart: `${name}_LOAD_START`,
+      loadEnd: `${name}_LOAD_END`,
       updateStart: `${name}_UPDATE_START`,
-      updateEnd: `${name}_UPDATE_END`,
+      updateSuccess: `${name}_UPDATE_SUCCESS`,
+      updateError: `${name}_UPDATE_ERROR`,
       deleteStart: `${name}_DELETE_START`,
-      deleteEnd: `${name}_DELETE_END`,
+      deleteSuccess: `${name}_DELETE_SUCCESS`,
+      deleteError: `${name}_DELETE_ERROR`,
     },
   })
 
@@ -72,21 +86,30 @@ export const buildList = ({ name, cacheTTL = 0, methods = {} }) => {
       byId: id => findBy({ id })(state[name].items),
 
       items: () => state[name].items,
-      itemsUpdating: () => state[name].itemsUpdating,
-      itemsDeletingIds: () => state[name].itemsDeletingIds,
-      itemCreating: () => state[name].itemCreating,
+      creating: () => state[name].creating,
+      updating: () => state[name].updating,
+      deleting: () => state[name].deleting,
 
+      error: action =>
+        isEmpty(action)
+          ? pipe(
+              Object.entries,
+              sortBy("date"),
+              head
+            )(state[name].errors)
+          : state[name].errors[action],
+
+      isCreating: () => !isEmpty(state[name].creating),
       isLoaded: () => is(state[name].loadDate),
-      isLoading: () => state[name].isLoading || state[name].isReloading,
-      isCreating: () => state[name].isCreating,
+      isLoading: () => state[name].isLoading,
       isUpdating: id =>
         id
-          ? hasWith({ id })(state[name].itemsUpdating)
-          : !isEmpty(state[name].itemsUpdating),
+          ? hasWith({ id })(state[name].updating)
+          : !isEmpty(state[name].updating),
       isDeleting: id =>
         id
-          ? has(id)(state[name].itemsDeletingIds)
-          : !isEmpty(state[name].itemsDeletingIds),
+          ? hasWith({ id })(state[name].deleting)
+          : !isEmpty(state[name].deleting),
     }),
 
     /**
@@ -106,7 +129,8 @@ export const buildList = ({ name, cacheTTL = 0, methods = {} }) => {
                 dispatch,
                 api: methods.create,
                 actionStart: collection.actions.createStart,
-                actionEnd: collection.actions.createEnd,
+                actionSuccess: collection.actions.createSuccess,
+                actionError: collection.actions.createError,
               }),
               args,
             })
@@ -132,8 +156,8 @@ export const buildList = ({ name, cacheTTL = 0, methods = {} }) => {
               cache: collection.cache,
               dispatch,
               method: methods.find,
-              actionStart: collection.actions.findStart,
-              actionEnd: collection.actions.findEnd,
+              actionStart: collection.actions.loadStart,
+              actionEnd: collection.actions.loadEnd,
             }),
             args,
           })
@@ -164,7 +188,8 @@ export const buildList = ({ name, cacheTTL = 0, methods = {} }) => {
                 dispatch,
                 api: methods.update,
                 actionStart: collection.actions.updateStart,
-                actionEnd: collection.actions.updateEnd,
+                actionSuccess: collection.actions.updateSuccess,
+                actionError: collection.actions.updateError,
               }),
               args,
             })
@@ -175,11 +200,12 @@ export const buildList = ({ name, cacheTTL = 0, methods = {} }) => {
           },
 
     /**
-     * Update an item, dispatch events before and after
+     * Delete an item, dispatch events before and after
      *
      * @param  {Function}       dispatch  Redux dispatch function
      * @param  {Number|string}  id        Item id
-     * @param  {Array}          rest      API method parameters
+     *
+     * @param  {Array}  args  API method parameters
      *
      * @return {void}
      */
@@ -192,7 +218,8 @@ export const buildList = ({ name, cacheTTL = 0, methods = {} }) => {
                 dispatch,
                 api: methods.delete,
                 actionStart: collection.actions.deleteStart,
-                actionEnd: collection.actions.deleteEnd,
+                actionSuccess: collection.actions.deleteSuccess,
+                actionError: collection.actions.deleteError,
               }),
               args,
             })
@@ -213,33 +240,29 @@ export const buildList = ({ name, cacheTTL = 0, methods = {} }) => {
       hasCache && collection.cache.clear()
 
       dispatch({
-        type: collection.acitons.findEnd,
-        payload: {
-          items: [],
-        },
+        type: collection.actions.loadEnd,
+        payload: [],
       })
 
       return Promise.resolve([])
     },
 
     /**
-     * Empty list
+     * Add items to list without outside method
      *
      * @param  {Function}  dispatch  Redux dispatch function
      *
      * @return {void}
      */
-    add: dispatch => item => {
+    add: dispatch => items => {
       hasCache && collection.cache.clear()
 
       dispatch({
-        type: collection.actions.createEnd,
-        payload: {
-          item,
-        },
+        type: collection.actions.createSuccess,
+        payload: Array.isArray(items) ? items : [items],
       })
 
-      return Promise.resolve(item)
+      return Promise.resolve(items)
     },
 
     /**
@@ -255,51 +278,46 @@ export const buildList = ({ name, cacheTTL = 0, methods = {} }) => {
     reducer: (
       state = {
         items: [],
-        itemsUpdating: [],
-        itemsDeletingIds: [],
-        itemCreating: {},
+        creating: [],
+        updating: [],
+        deleting: [],
 
-        errors: [],
+        errors: {},
         loadDate: null,
-
         isLoading: false,
-        isReloading: false,
-        isCreating: false,
       },
       { type, payload }
     ) => {
       switch (type) {
-        /*
-         * Create
-         */
+        // Create
         case collection.actions.createStart:
           return createStartReducer(state, payload)
-        case collection.actions.createEnd:
-          return createEndReducer(state, payload)
+        case collection.actions.createSuccess:
+          return createSuccessReducer(state, payload)
+        case collection.actions.createError:
+          return createErrorReducer(state, payload)
 
-        /*
-         * Read
-         */
-        case collection.actions.findStart:
+        // Read
+        case collection.actions.loadStart:
           return findStartReducer(state, payload)
-        case collection.actions.findEnd:
+        case collection.actions.loadEnd:
           return findEndReducer(state, payload)
 
-        /*
-         * Update
-         */
+        // Update
         case collection.actions.updateStart:
           return updateStartReducer(state, payload)
-        case collection.actions.updateEnd:
-          return updateEndReducer(state, payload)
+        case collection.actions.updateSuccess:
+          return updateSuccessReducer(state, payload)
+        case collection.actions.updateError:
+          return updateErrorReducer(state, payload)
 
-        /*
-         * Delete
-         */
+        // Delete
         case collection.actions.deleteStart:
           return deleteStartReducer(state, payload)
-        case collection.actions.deleteEnd:
-          return deleteEndReducer(state, payload)
+        case collection.actions.deleteSuccess:
+          return deleteSuccessReducer(state, payload)
+        case collection.actions.deleteError:
+          return deleteErrorReducer(state, payload)
 
         default:
           return state
@@ -307,3 +325,5 @@ export const buildList = ({ name, cacheTTL = 0, methods = {} }) => {
     },
   }
 }
+
+export { buildList, buildList as buildCollection }

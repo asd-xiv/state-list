@@ -26,12 +26,10 @@ export const findAction = ({
   if (cachedResults !== undefined) {
     dispatch({
       type: actionEnd,
-      payload: {
-        items: Array.isArray(cachedResults) ? cachedResults : [cachedResults],
-      },
+      payload: Array.isArray(cachedResults) ? cachedResults : [cachedResults],
     })
 
-    return Promise.resolve(cachedResults)
+    return cachedResults
   }
 
   dispatch({
@@ -41,9 +39,7 @@ export const findAction = ({
   return Promise.resolve(method(...args)).then(results => {
     dispatch({
       type: actionEnd,
-      payload: {
-        items: Array.isArray(results) ? results : [results],
-      },
+      payload: Array.isArray(results) ? results : [results],
     })
 
     is(cache) && cache.set(args, results)
@@ -72,7 +68,7 @@ export const findStartReducer = state => ({
  *
  * @return {Object} New state
  */
-export const findEndReducer = (state, { items }) => ({
+export const findEndReducer = (state, items) => ({
   ...state,
   items,
   loadDate: new Date(),

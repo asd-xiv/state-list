@@ -1,4 +1,4 @@
-import { findBy, tail, deepEqual, is, isEmpty } from "@asd14/m"
+import { findBy, last, deepEqual, is, isEmpty } from "@asd14/m"
 
 /**
  * Unieq, sequential, promise based job queue
@@ -32,8 +32,8 @@ export const buildQueue = () => {
         return runningJob.fnPromise
       }
 
-      let deferredResolve = null
-      let deferredReject = null
+      let deferredResolve = null,
+        deferredReject = null
 
       const newJob = {
         args,
@@ -61,7 +61,7 @@ export const buildQueue = () => {
       const shouldPop = !isProcessing && !isEmpty(jobsList)
 
       if (shouldPop) {
-        const job = tail(jobsList)
+        const job = last(jobsList)
 
         isProcessing = true
 
