@@ -16,9 +16,9 @@
 * [Use](#use)
 * [Develop](#develop)
 * [Changelog](#changelog)
-  * [0.5 - 16 April 2019](#05---16-april-2019)
-    * [Add](#add)
-    * [Change](#change)
+  * [0.5.1 - 18 April 2019](#051---18-april-2019)
+    * [Remove](#remove)
+    * [Chage](#chage)
 
 <!-- vim-markdown-toc -->
 
@@ -129,16 +129,12 @@ npm run tdd
 
 History of all changes in [CHANGELOG.md](CHANGELOG.md)
 
-### 0.5 - 16 April 2019
+### 0.5.1 - 18 April 2019
 
-#### Add
+#### Remove
 
-* Tests for list `.add()` and `.clear()`
-* Selector `.error()` function for getting lastest error
-* Cache support added via `cacheTTL`
+* `.add()` builtin method
 
-#### Change
+#### Chage
 
-* List `.create` accepts multiple items
-* Multiple calls to the same method at the same time will only trigger once
-* Method calls are sequential and will be wait on any previous ones to finish
+* `.create()` and `.update()` has a `isDraft` option that when true only creates/updates the local state without running the respective methods. Methods still need to be defined
