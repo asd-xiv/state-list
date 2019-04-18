@@ -43,7 +43,14 @@ test("Update", t => {
         [{ id: 1, name: "lorem ipsum" }, { id: 2, name: "Updated foo" }],
         "element should be updated in items array"
       )
-
+    })
+    .then(() => listUpdate(2, { name: "Draft" }, { isDraft: true }))
+    .then(({ result }) => {
+      t.deepEquals(
+        result,
+        { id: 2, name: "Draft" },
+        "Draft .update() resolves with item without calling method"
+      )
       t.end()
     })
 })

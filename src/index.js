@@ -191,18 +191,29 @@ const buildList = ({ name, cacheTTL = 0, methods = {} }) => {
      */
     update: dispatch =>
       typeof methods.update === "function"
-        ? (...args) =>
-            collection.queue.enqueue({
+        ? (id, data, { isDraft = false } = {}) => {
+            hasCache && collection.cache.clear()
+
+            if (isDraft) {
+              dispatch({
+                type: collection.actions.updateSuccess,
+                payload: { id, ...data },
+              })
+
+              return Promise.resolve({ result: { id, ...data } })
+            }
+
+            return collection.queue.enqueue({
               fn: updateAction({
-                cache: collection.cache,
                 dispatch,
                 api: methods.update,
                 actionStart: collection.actions.updateStart,
                 actionSuccess: collection.actions.updateSuccess,
                 actionError: collection.actions.updateError,
               }),
-              args,
+              args: [id, data],
             })
+          }
         : () => {
             throw new TypeError(
               `ReduxAllIsList: "${name}"."update" should be a function, got "${typeof methods.update}"`
