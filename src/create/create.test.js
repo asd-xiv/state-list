@@ -25,35 +25,52 @@ test("Create", t => {
   // Link lists's action to store's dispatch
   const listCreate = todoList.create(store.dispatch)
 
-  listCreate({ name: "New foo" }).then(({ result }) => {
-    const selector = todoList.selector(store.getState())
+  listCreate({ name: "New foo" })
+    .then(({ result }) => {
+      const selector = todoList.selector(store.getState())
 
-    t.deepEquals(
-      selector.creating(),
-      [],
-      "selector.creating should be empty array"
-    )
+      t.deepEquals(
+        selector.creating(),
+        [],
+        "selector.creating should be empty array"
+      )
 
-    t.equals(
-      selector.isCreating(),
-      false,
-      "selector.isCreating should be false after creating"
-    )
+      t.equals(
+        selector.isCreating(),
+        false,
+        "selector.isCreating should be false after creating"
+      )
 
-    t.deepEquals(
-      result,
-      { id: 1, name: "New foo" },
-      "list.create resolves with created item"
-    )
+      t.deepEquals(
+        result,
+        { id: 1, name: "New foo" },
+        "list.create resolves with created item"
+      )
 
-    t.deepEquals(
-      selector.items(),
-      [result],
-      "Created element should be added to items array"
-    )
+      t.deepEquals(
+        selector.items(),
+        [result],
+        "Created element should be added to items array"
+      )
+    })
+    .then(() => listCreate({ id: 2, foo: "bar-draft" }, { isDraft: true }))
+    .then(({ result }) => {
+      const selector = todoList.selector(store.getState())
 
-    t.end()
-  })
+      t.deepEquals(
+        result,
+        { id: 2, foo: "bar-draft" },
+        "Draft .create() resolves with item without calling method"
+      )
+
+      t.deepEquals(
+        selector.items(),
+        [{ id: 1, name: "New foo" }, result],
+        "Created draft element should be added to items array"
+      )
+
+      t.end()
+    })
 })
 
 test("Create - multiple", t => {

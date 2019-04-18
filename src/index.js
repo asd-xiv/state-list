@@ -1,7 +1,4 @@
 /* eslint-disable no-multi-assign */
-import "core-js/stable"
-import "regenerator-runtime/runtime"
-
 const debug = require("debug")("ReduxAllIsList:Main")
 
 import { pipe, findBy, sortBy, head, is, isEmpty, hasWith } from "@asd14/m"
@@ -122,18 +119,31 @@ const buildList = ({ name, cacheTTL = 0, methods = {} }) => {
      */
     create: dispatch =>
       typeof methods.create === "function"
-        ? (...args) =>
-            collection.queue.enqueue({
+        ? (data, { isDraft = false } = {}) => {
+            hasCache && collection.cache.clear()
+
+            if (isDraft) {
+              dispatch({
+                type: collection.actions.createSuccess,
+                payload: data,
+              })
+
+              return Promise.resolve({ result: data })
+            }
+
+            return collection.queue.enqueue({
               fn: createAction({
-                cache: collection.cache,
                 dispatch,
                 api: methods.create,
                 actionStart: collection.actions.createStart,
                 actionSuccess: collection.actions.createSuccess,
                 actionError: collection.actions.createError,
               }),
-              args,
+
+              // need to be array since queue will call fn(...args)
+              args: [data],
             })
+          }
         : () => {
             throw new TypeError(
               `ReduxAllIsList: "${name}"."create" should be a function, got "${typeof methods.create}"`
@@ -245,24 +255,6 @@ const buildList = ({ name, cacheTTL = 0, methods = {} }) => {
       })
 
       return Promise.resolve([])
-    },
-
-    /**
-     * Add items to list without outside method
-     *
-     * @param  {Function}  dispatch  Redux dispatch function
-     *
-     * @return {void}
-     */
-    add: dispatch => items => {
-      hasCache && collection.cache.clear()
-
-      dispatch({
-        type: collection.actions.createSuccess,
-        payload: Array.isArray(items) ? items : [items],
-      })
-
-      return Promise.resolve(items)
     },
 
     /**

@@ -1,6 +1,6 @@
 const debug = require("debug")("ReduxAllIsList:Create")
 
-import { forEach, map, reduce, hasWith, is } from "@asd14/m"
+import { forEach, map, reduce, hasWith } from "@asd14/m"
 
 /**
  * Call API to create item. Dispatch actions before, after success and after
@@ -17,7 +17,6 @@ import { forEach, map, reduce, hasWith, is } from "@asd14/m"
  * @return {Promise<Object>}
  */
 export const createAction = ({
-  cache,
   dispatch,
   api,
   actionStart,
@@ -26,7 +25,7 @@ export const createAction = ({
 }) => data => {
   dispatch({
     type: actionStart,
-    payload: Array.isArray(data) ? data : [data],
+    payload: data,
   })
 
   // Resolve promise on both success and error with {result, error} obj
@@ -36,7 +35,7 @@ export const createAction = ({
 
       dispatch({
         type: actionSuccess,
-        payload: Array.isArray(result) ? result : [result],
+        payload: result,
       })
 
       resolve({ result })
@@ -60,34 +59,38 @@ export const createAction = ({
 
       resolve({ error: stateError })
     }
-  }).finally(() => {
-    is(cache) && cache.clear()
   })
 }
 
 /**
  * Modify state to indicate an item is being created
  *
- * @param {Object}  state  Old state
- * @param {Object}  items  Items to be created
+ * @param {Object}  state    Old state
+ * @param {Object}  payload  Create method input data
  *
  * @return {Object} New state
  */
-export const createStartReducer = (state, items) => ({
-  ...state,
-  creating: items,
-  isCreating: true,
-})
+export const createStartReducer = (state, payload) => {
+  const items = Array.isArray(payload) ? payload : [payload]
+
+  return {
+    ...state,
+    creating: [...state.creating, ...items],
+    isCreating: true,
+  }
+}
 
 /**
  * Add newly created item to list
  *
- * @param  {Object}  state  Old state
- * @param  {Object}  items  Newly created items
+ * @param  {Object}  state    Old state
+ * @param  {Object}  payload  Create method result
  *
  * @return {Object} New state
  */
-export const createSuccessReducer = (state, items) => {
+export const createSuccessReducer = (state, payload) => {
+  const items = Array.isArray(payload) ? payload : [payload]
+
   forEach(item => {
     const hasId = Object.prototype.hasOwnProperty.call(item, "id")
 
@@ -120,7 +123,7 @@ export const createSuccessReducer = (state, items) => {
         : [...acc, item]
     }, state.items)(items),
 
-    // reset action error
+    // reset error after successfull action
     errors: {
       ...state.errors,
       create: null,
