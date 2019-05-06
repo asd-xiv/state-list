@@ -6,14 +6,29 @@
 
 # redux-all-is-list
 
-> Reduce Redux boilerplate when mapping API data
+> A Redux data "gateway", similar to an API gateway. A less strict version of GraphQL, where you can have multiple data sources.
 
 ---
 
 <!-- vim-markdown-toc GFM -->
 
+* [Features](#features)
+  * [Aggregate](#aggregate)
+  * [Mitigate inconsistent API](#mitigate-inconsistent-api)
+  * [Race free](#race-free)
+  * [Cache](#cache)
+  * [It's Redux](#its-redux)
 * [Install](#install)
-* [Use](#use)
+* [Example](#example)
+* [API](#api)
+  * [Definition](#definition)
+    * [Params](#params)
+    * [Retuns](#retuns)
+  * [Internal state slice](#internal-state-slice)
+  * [Add to Radux](#add-to-radux)
+  * [Consume in container component](#consume-in-container-component)
+  * [Selectors](#selectors)
+* [Recommendations](#recommendations)
 * [Develop](#develop)
 * [Changelog](#changelog)
   * [0.5.1 - 18 April 2019](#051---18-april-2019)
@@ -22,21 +37,48 @@
 
 <!-- vim-markdown-toc -->
 
+## Features
+
+### Aggregate
+
+> Combine data coming from different sources (users from own api, tweet count from Twitter)
+
+### Mitigate inconsistent API
+
+> Uniform into a common shape, ie. stop backend tech dept from propagating into the frontend
+
+### Race free
+
+> All CRUD operations are done in sequence. If `update` is issued after `delete`, the `update` promise will wait for `delete` to finish and then do it's work.
+
+### Cache
+
+> `find` operations are cached based on it's signature.
+
+### It's Redux
+
+> Treat your state data as simple lists with common metadata helpers (isLoading, isUpdating etc.) and less boilerplate.
+
 ## Install
 
 ```bash
 npm i @asd14/redux-all-is-list
 ```
 
-## Use
+## Example
 
-`todos.state.js`
+1:1 mapping of a Todo list's CRUD methods to corresponding API endpoints.
+
+Define a list of todos from our local API.
 
 ```js
+// todos.state.js
+
 import { buildList } from "@asd14/redux-all-is-list"
 
 export const TodosList = buildList({
-  name: "SOME-PAGE__WHATEVER-SECTION__TODOS",
+  name: "PAGE__SECTION--TODOS",
+  cacheTTL: 1000,
   methods: {
     create: data => POST("/todos", data),
     find: () => [{id: 1, title: "lorem ipsum"}],
@@ -46,9 +88,11 @@ export const TodosList = buildList({
 })
 ```
 
-`store.js`
+Hook internal list reducers into the state store.
 
 ```js
+// store.js
+
 import { createStore, combineReducers } from "redux"
 import { TodosList } from "./todos.state"
 
@@ -59,9 +103,11 @@ const store = createStore(
 )
 ```
 
-`todos.container.jsx`
+Use the list's selector helpers to access it's data.
 
 ```js
+// todos.container.jsx
+
 import React from "react"
 import cx from "classnames"
 import { connect } from "react-redux"
@@ -94,9 +140,9 @@ class TodosContainer extends React.Component {
     return (
       <div
         className={cx({
-          [css.loading]: todosIsLoading,
+          [css.isLoading]: todosIsLoading,
         })}>
-        {todos |> map(todo => <div>{todo.title}</div>)}
+        {todos.map(item => <div>{item.title}</div>)}
       </div>
     )
   }
@@ -104,6 +150,141 @@ class TodosContainer extends React.Component {
 
 export { TodosContainer }
 ```
+
+## API
+
+### Definition
+
+`buildList` is the only exposed function. It prepares the reducer and CRUD actions that interface and data sources.
+
+```js
+import { buildList } from "@asd14/redux-all-is-list"
+
+buildList({
+  name: "PAGE__SECTION--TODOS",
+  cacheTTL: 100,
+  methods: {
+    create: data => POST("/todos", data),
+    find: ({ offset, limit }) =>
+      GET("/todos", {
+        offset,
+        limit,
+      }),
+    update: (id, data) => PATCH(`/todos/${id}`, date),
+    delete: id => DELETE(`/todos/${id}`),
+  },
+})
+```
+
+#### Params
+
+Object containing:
+
+**`*name`**`:string`
+
+Unique name used for the redux store key. If multiple lists use the same name, an error will be thrown. This is because the list is ment to be added on the root level of the redux store. Use [BEM](http://getbem.com/naming/) for naming, ex. `{page}__{section}--{entity}`
+
+**`methods`**`:Object`
+
+Define list's CRUD actions and map to one or more data sources (local storage, 3rd party APIs or own API). There are only 4 actions that can be defined.
+
+* `.create(data: Object, { isDraft: bool = false }): Promise<Object>`
+  * Add return obj to main `slice.items` - `id` field is required.  
+  * Add data obj to `slice.creating` array, cleared after promise resolves.
+  * Toggle `slice.isCreating` flag before and after promise resolves.  
+  * If `isDraft` is true, the method will not run. The data object will be simply added to the `slice.items` array.
+  * Clear cache if `cacheTTL` is set.
+
+* `.find(...args: any[]): Promise<Object[]>`
+  * Replace `slice.items` contents with return array - `id` field is required in each item.
+  * Toggle `slice.isLoading` flag before and after promise resolves.
+  * Set `slice.loadDate` to the current time (Date object) after promise resolves.
+  * Results will be cached based on `args`. `find({offset: 10})` will be cached separately than `find()`.
+
+* `update(id: string|number, data: Object, { isDraft: bool = false }): Promise<Object>`
+  * Update item in `slice.items` if exists (merge by `id`), add otherwise.
+  * Add item to `slice.updating` array, cleared after promise resolves.
+  * If `isDraft` is true, the method will not run. The data object will be simply merged or added to the `slice.items` array.
+  * Clear cache if `cacheTTL` is set.
+
+* `delete: (id: string|number): Promise`
+  * Delete item with `id`. Return value is ignored.
+  * Clear cache if `cacheTTL` is set.
+
+**`cacheTTL`**`: number`
+
+Number of miliseconds a cached value is valid.
+
+#### Retuns
+
+Object containing:
+
+**`name`**`:string` and **`reducer`**`:Function`
+
+Map the same `name` passed in the builder function to the constructed reducer function specific each list. Use when initializing the store.
+
+```js
+import { createStore, combineReducers } from "redux"
+import { TodosList } from "./todos.state"
+
+const store = createStore(
+  combineReducers({
+    [TodosList.name]: TodosList.reducer,
+  }),
+)
+```
+
+**`create|find|update|delete`**`: (dispatch: Function): Function`
+
+Curry function that make available the store's `dispatch` to the functions in `methods`. Error will be thrown if the method is not defined in builder function's `methods` obj.
+
+```js
+@connect(mapStateToProps, dispatch => ({
+  xHandleTodosFind: TodosList.find(dispatch),
+}))
+```
+
+### Internal state slice
+
+```js
+{
+  ...
+  [list.name] : {
+    items: [],
+    creating: [],
+    updating: [],
+    deleting: [],
+    errors: {},
+    loadDate: null,
+    isLoading: false,
+  }
+}
+```
+
+### Add to Radux
+
+### Consume in container component
+
+### Selectors
+
+* **`.head`**`: () => Object|undefined`
+* **`.byId`**`: (id: string|number) => Object|undefined`
+* **`.items`**`: () => Object[]`
+* **`.creating`**`: () => Object[]`
+* **`.updating`**`: () => Object[]`
+* **`.deleting`**`: () => Object[]`
+* **`.error`**`: (action: string) => Object`
+* **`.isCreating`**`: () => boolean`
+* **`.isLoaded`**`: () => boolean`
+* **`.isLoading`**`: () => boolean`
+* **`.isUpdating`**`: (id: string|number) => boolean`
+* **`.isDeleting`**`: (id: string|number) => boolean`
+
+## Recommendations
+
+* Don't reuse. A list should be used once per page/section.
+* Group all lists per page into a separate file to avoid variable name collision.
+* Don't store data locally, data lives in the database - that's the real application state.
 
 ## Develop
 
