@@ -34,11 +34,6 @@ test("Find", t => {
         false,
         "isLoaded flag should be false before loading"
       )
-      t.equals(
-        todosSelector.isLoading(),
-        true,
-        "isLoading flag should be true while loading"
-      )
 
       return findPromise
     })
