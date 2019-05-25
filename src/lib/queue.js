@@ -65,7 +65,9 @@ export const buildQueue = () => {
 
         isProcessing = true
 
-        Promise.resolve(job.fn(...job.args))
+        Promise.resolve()
+          // run the job "inside" the promise so that the catch chain catches it
+          .then(() => job.fn(...job.args))
           .then(job.onResolve)
           .catch(job.onReject)
           .finally(() => {
