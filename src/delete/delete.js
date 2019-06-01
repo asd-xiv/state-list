@@ -1,6 +1,6 @@
 const debug = require("debug")("ReduxAllIsList:Delete")
 
-import { filterBy, findBy, is, hasWith } from "@asd14/m"
+import { filterBy, findBy, is, isEmpty, hasWith } from "@asd14/m"
 
 /**
  * Call API to delete an item, dispatch events before and after
@@ -24,6 +24,14 @@ export const deleteAction = ({
   actionSuccess,
   actionError,
 }) => id => {
+  if (isEmpty(id)) {
+    throw new TypeError(
+      `ReduxAllIsList: deleteAction - cannot call delete method without a valid "id" param. Expected something, got "${JSON.stringify(
+        id
+      )}"`
+    )
+  }
+
   dispatch({
     type: actionStart,
     payload: id,
@@ -33,10 +41,15 @@ export const deleteAction = ({
   return new Promise(async resolve => {
     try {
       const result = await api(id)
+      const hasId =
+        is(result) && Object.prototype.hasOwnProperty.call(result, "id")
 
       dispatch({
         type: actionSuccess,
-        payload: result,
+        payload: {
+          ...result,
+          id: hasId ? result.id : id,
+        },
       })
 
       resolve({ result })
@@ -102,11 +115,11 @@ export const deleteStartReducer = (state, id) => {
  * @return {Object}
  */
 export const deleteSuccessReducer = (state, item) => {
-  const hasId = Object.prototype.hasOwnProperty.call(item, "id")
+  const hasId = is(item) && Object.prototype.hasOwnProperty.call(item, "id")
 
   if (!hasId) {
     throw new TypeError(
-      `deleteSuccessReducer: cannot delete item "${item}" without id property`
+      `ReduxAllIsList: deleteSuccessReducer - cannot delete item "${item}" without id property`
     )
   }
 

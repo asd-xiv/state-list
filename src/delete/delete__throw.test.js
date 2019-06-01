@@ -28,7 +28,7 @@ test("Delete - error", t => {
                 status: 404,
               })
             )
-          : Promise.resolve({ id: 1 })
+          : { id: 1 }
       },
     },
   })
@@ -43,6 +43,14 @@ test("Delete - error", t => {
   // Link lists's action to store's dispatch
   const listFind = todoList.find(store.dispatch)
   const listDelete = todoList.delete(store.dispatch)
+
+  listDelete().catch(error => {
+    t.equals(
+      error.message,
+      `ReduxAllIsList: deleteAction - cannot call delete method without a valid "id" param. Expected something, got "undefined"`,
+      "delete method called without valid id parameter should throw error"
+    )
+  })
 
   listFind()
     .then(() => listDelete(2))
