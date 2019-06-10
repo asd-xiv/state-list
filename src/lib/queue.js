@@ -1,4 +1,4 @@
-import { findBy, last, deepEqual, is, isEmpty } from "@asd14/m"
+import { findWith, last, deepEqual, is, isEmpty } from "@asd14/m"
 
 /**
  * Unieq, sequential, promise based job queue
@@ -23,7 +23,7 @@ export const buildQueue = () => {
 
   return {
     enqueue({ fn, args }) {
-      const runningJob = findBy({
+      const runningJob = findWith({
         args: deepEqual(args),
         fnString: fn.toString(),
       })(jobsList)
@@ -66,7 +66,7 @@ export const buildQueue = () => {
         isProcessing = true
 
         Promise.resolve()
-          // run the job "inside" the promise so that the catch chain catches it
+          // run job inside promise chain so it gets into catch
           .then(() => job.fn(...job.args))
           .then(job.onResolve)
           .catch(job.onReject)
