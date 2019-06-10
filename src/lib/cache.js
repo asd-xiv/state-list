@@ -3,28 +3,14 @@ import {
   get,
   when,
   deepEqual,
-  findBy,
-  findIndexBy,
+  findWith,
+  upsert,
   remove,
   is,
 } from "@asd14/m"
 
 // check if item exists and is not expired
 const isValid = item => is(item) && new Date() < item.validUntil
-
-// update if exists, add otherwise
-const upsertBy = (filter, value, source) => {
-  const result = [...source]
-  const index = findIndexBy(filter)(source)
-
-  if (index === -1) {
-    result.push(value)
-  } else {
-    result.splice(index, 1, value)
-  }
-
-  return result
-}
 
 /**
  * Object type key based cache store
@@ -37,7 +23,7 @@ export const buildCacheStore = ({ ttl = 100 } = {}) => {
   return {
     get(key) {
       return pipe(
-        findBy({ key: deepEqual(key) }),
+        findWith({ key: deepEqual(key) }),
         when(isValid, get("value"), item => {
           // if item exists, its expired
           if (is(item)) {
@@ -53,7 +39,7 @@ export const buildCacheStore = ({ ttl = 100 } = {}) => {
      * @param  {string|number|Object}  key        Store under key
      * @param  {any}                   value      What to store
      *
-     * @returns  {CacheStore}  Cache store instance
+     * @returns  {undefined}
      */
     set(key, value) {
       if (!is(key)) {
@@ -62,23 +48,15 @@ export const buildCacheStore = ({ ttl = 100 } = {}) => {
         )
       }
 
-      items = upsertBy(
+      items = upsert(key, {
         key,
-        {
-          key,
-          value,
-          validUntil: new Date(new Date().getTime() + ttl),
-        },
-        items
-      )
-
-      return this
+        value,
+        validUntil: new Date(new Date().getTime() + ttl),
+      })(items)
     },
 
     clear() {
       items = []
-
-      return this
     },
   }
 }

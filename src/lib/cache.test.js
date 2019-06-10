@@ -11,8 +11,10 @@ test("Cache store - String and Object key based cache store", t => {
     "String key does not exist, returns undefined"
   )
 
+  cache.set("lorem", { foo: "bar" })
+
   t.deepEquals(
-    cache.set("lorem", { foo: "bar" }).get("lorem"),
+    cache.get("lorem"),
     {
       foo: "bar",
     },
@@ -25,8 +27,10 @@ test("Cache store - String and Object key based cache store", t => {
     "Object key does not exist returns, undefined"
   )
 
+  cache.set({ args: "lorem" }, "42")
+
   t.equals(
-    cache.set({ args: "lorem" }, "42").get({ args: "lorem" }),
+    cache.get({ args: "lorem" }),
     "42",
     "Object key exists and did not expire, returns stored value"
   )
