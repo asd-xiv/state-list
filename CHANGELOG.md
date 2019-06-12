@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.6] - 12 June 2019
+
+### Change
+
+* `.delete()` and `.update()` uses "id" parameter to identify element. If method retuns "id" field, it will take precedence.
+
 ## [0.5.1] - 18 April 2019
 
 ### Remove
@@ -60,8 +66,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 First
 
-[Unreleased]: https://github.com/asd14/redux-all-is-list/compare/v0.5.1...HEAD
+[Unreleased]: https://github.com/asd14/redux-all-is-list/compare/v0.6...HEAD
 
+[0.6]: https://github.com/asd14/redux-all-is-list/compare/v0.5.1...v0.6
 [0.5.1]: https://github.com/asd14/redux-all-is-list/compare/v0.5...v0.5.1
 [0.5]: https://github.com/asd14/redux-all-is-list/compare/v0.3.0...v0.5
 [0.3.0]: https://github.com/asd14/redux-all-is-list/compare/v0.2.2...v0.3.0

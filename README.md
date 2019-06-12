@@ -31,9 +31,8 @@
 * [Recommendations](#recommendations)
 * [Develop](#develop)
 * [Changelog](#changelog)
-  * [0.5.1 - 18 April 2019](#051---18-april-2019)
-    * [Remove](#remove)
-    * [Chage](#chage)
+  * [0.6 - 12 June 2019](#06---12-june-2019)
+    * [Change](#change)
 
 <!-- vim-markdown-toc -->
 
@@ -310,12 +309,8 @@ npm run tdd
 
 History of all changes in [CHANGELOG.md](CHANGELOG.md)
 
-### 0.5.1 - 18 April 2019
+### 0.6 - 12 June 2019
 
-#### Remove
+#### Change
 
-* `.add()` builtin method
-
-#### Chage
-
-* `.create()` and `.update()` has a `isDraft` option that when true only creates/updates the local state without running the respective methods. Methods still need to be defined
+* `.delete()` and `.update()` uses "id" parameter to identify element. If method retuns "id" field, it will take precedence.
