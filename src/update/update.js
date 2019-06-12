@@ -1,6 +1,6 @@
 const debug = require("debug")("ReduxAllIsList:Update")
 
-import { map, merge, hasWith } from "@asd14/m"
+import { map, merge, isEmpty, hasWith, hasKey } from "@asd14/m"
 
 /**
  * Call API to update an item, dispatch events before and after
@@ -19,6 +19,14 @@ export const updateAction = ({
   actionSuccess,
   actionError,
 }) => (id, data) => {
+  if (isEmpty(id)) {
+    throw new TypeError(
+      `ReduxAllIsList: updateAction - cannot call update method without a valid "id" param. Expected something, got "${JSON.stringify(
+        id
+      )}"`
+    )
+  }
+
   dispatch({
     type: actionStart,
     payload: { id, data },
@@ -31,7 +39,10 @@ export const updateAction = ({
 
       dispatch({
         type: actionSuccess,
-        payload: result,
+        payload: {
+          ...result,
+          id: hasKey("id")(result) ? result.id : id,
+        },
       })
 
       resolve({ result })
@@ -108,9 +119,7 @@ export const updateSuccessReducer = (state, payload) => {
 
   if (hasWith({ id: payload.id })(state.items)) {
     debug(
-      `updateSuccessReducer: ID "${
-        payload.id
-      }" does not exist, doint nothing (will still trigger a rerender)`,
+      `updateSuccessReducer: ID "${payload.id}" does not exist, doint nothing (will still trigger a rerender)`,
       {
         payload,
         existingItems: state.items,

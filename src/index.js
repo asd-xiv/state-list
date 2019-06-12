@@ -1,7 +1,7 @@
 /* eslint-disable no-multi-assign */
 const debug = require("debug")("ReduxAllIsList:Main")
 
-import { pipe, findBy, sortBy, head, is, isEmpty, hasWith } from "@asd14/m"
+import { pipe, findWith, sortWith, head, is, isEmpty, hasWith } from "@asd14/m"
 import {
   createAction,
   createStartReducer,
@@ -80,7 +80,7 @@ const buildList = ({ name, cacheTTL = 0, methods = {} }) => {
     selector: state => ({
       head: () =>
         state[name].items.length === 0 ? undefined : state[name].items[0],
-      byId: id => findBy({ id })(state[name].items),
+      byId: id => findWith({ id })(state[name].items),
 
       items: () => state[name].items,
       creating: () => state[name].creating,
@@ -91,7 +91,7 @@ const buildList = ({ name, cacheTTL = 0, methods = {} }) => {
         isEmpty(action)
           ? pipe(
               Object.entries,
-              sortBy("date"),
+              sortWith("date"),
               head
             )(state[name].errors)
           : state[name].errors[action],
