@@ -1,6 +1,6 @@
 const debug = require("debug")("ReduxAllIsList:Delete")
 
-import { filterBy, findBy, is, isEmpty, hasWith } from "@asd14/m"
+import { filterWith, findWith, is, isEmpty, hasWith, hasKey } from "@asd14/m"
 
 /**
  * Call API to delete an item, dispatch events before and after
@@ -41,14 +41,12 @@ export const deleteAction = ({
   return new Promise(async resolve => {
     try {
       const result = await api(id)
-      const hasId =
-        is(result) && Object.prototype.hasOwnProperty.call(result, "id")
 
       dispatch({
         type: actionSuccess,
         payload: {
           ...result,
-          id: hasId ? result.id : id,
+          id: hasKey("id")(result) ? result.id : id,
         },
       })
 
@@ -87,7 +85,7 @@ export const deleteAction = ({
  * @return {Object}  New slice state
  */
 export const deleteStartReducer = (state, id) => {
-  const deletingItem = findBy({ id })(state.deleting)
+  const deletingItem = findWith({ id })(state.deleting)
 
   is(deletingItem) &&
     debug(
@@ -102,7 +100,7 @@ export const deleteStartReducer = (state, id) => {
     ...state,
     deleting: is(deletingItem)
       ? state.deleting
-      : [...state.deleting, findBy({ id })(state.items)],
+      : [...state.deleting, findWith({ id })(state.items)],
   }
 }
 
@@ -125,9 +123,7 @@ export const deleteSuccessReducer = (state, item) => {
 
   if (!hasWith({ id: item.id })(state.items)) {
     debug(
-      `deleteSuccessReducer: ID "${
-        item.id
-      }" does not exist, doing nothing (will still trigger a rerender)`,
+      `deleteSuccessReducer: ID "${item.id}" does not exist, doing nothing (will still trigger a rerender)`,
       {
         deletedItem: item,
         existingItems: state.items,
@@ -137,8 +133,8 @@ export const deleteSuccessReducer = (state, item) => {
 
   return {
     ...state,
-    items: filterBy({ "!id": item.id })(state.items),
-    deleting: filterBy({ "!id": item.id })(state.deleting),
+    items: filterWith({ "!id": item.id })(state.items),
+    deleting: filterWith({ "!id": item.id })(state.deleting),
     errors: {
       ...state.errors,
       delete: null,
