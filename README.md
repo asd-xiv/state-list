@@ -31,7 +31,7 @@
 * [Recommendations](#recommendations)
 * [Develop](#develop)
 * [Changelog](#changelog)
-  * [0.6 - 12 June 2019](#06---12-june-2019)
+  * [0.7 - 10 July 2019](#07---10-july-2019)
     * [Change](#change)
 
 <!-- vim-markdown-toc -->
@@ -309,8 +309,8 @@ npm run tdd
 
 History of all changes in [CHANGELOG.md](CHANGELOG.md)
 
-### 0.6 - 12 June 2019
+### 0.7 - 10 July 2019
 
 #### Change
 
-* `.delete()` and `.update()` uses "id" parameter to identify element. If method retuns "id" field, it will take precedence.
+* Update packages

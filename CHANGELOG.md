@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.7] - 10 July 2019
+
+### Change
+
+* Update packages
+
 ## [0.6] - 12 June 2019
 
 ### Change
@@ -66,8 +72,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 First
 
-[Unreleased]: https://github.com/asd14/redux-all-is-list/compare/v0.6...HEAD
+[Unreleased]: https://github.com/asd14/redux-all-is-list/compare/v0.7...HEAD
 
+[0.7]: https://github.com/asd14/redux-all-is-list/compare/v0.6...v0.7
 [0.6]: https://github.com/asd14/redux-all-is-list/compare/v0.5.1...v0.6
 [0.5.1]: https://github.com/asd14/redux-all-is-list/compare/v0.5...v0.5.1
 [0.5]: https://github.com/asd14/redux-all-is-list/compare/v0.3.0...v0.5
