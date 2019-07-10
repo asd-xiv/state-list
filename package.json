@@ -1,6 +1,6 @@
 {
   "name": "@asd14/redux-all-is-list",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "A Redux data gateway, similar to an API gateway. A less strict version of GraphQL, where you can have multiple data sources",
   "homepage": "https://github.com/asd14/redux-all-is-list",
   "repository": {
