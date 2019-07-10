@@ -10,8 +10,5 @@
       "lifetime": 5,
     }
   },
-  "rules": {
-    "multiline-comment-style": "off",
-    "promise/catch-or-return": "warn"
-  },
+  "rules": {},
 }
