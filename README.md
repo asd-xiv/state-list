@@ -61,7 +61,7 @@
 ## Install
 
 ```bash
-npm i @asd14/redux-all-is-list
+npm install @asd14/redux-all-is-list
 ```
 
 ## Example
