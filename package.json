@@ -14,29 +14,29 @@
     "name": "Andrei Dumitrescu",
     "url": "https://github.com/andreidcm"
   },
-  "main": "bin/index.js",
+  "main": "lib/index.js",
   "license": "BSD-3-Clause",
   "scripts": {
     "----UTILS": "",
     "setup": "rm -rf ./node_modules && npm i && npm audit fix",
     "setup:ci": "npm ci && npm audit fix",
     "update": "npm-check --update --save-exact",
-    "----BUNDLE": "",
-    "build": "rm -rf ./bin && babel src -d bin",
+    "----BUILD": "",
+    "build": "rm -rf ./lib && babel src -d lib",
     "prepare": "npm audit fix && npm test && npm run lint && npm run build",
     "prepublishOnly": "npm run coverage",
     "----LINT": "",
     "lint:js": "eslint ./src",
     "lint:md": "markdownlint *.md",
     "lint": "npm run lint:md && npm run lint:js",
-    "----TESTS": "",
-    "test": "tape -r @babel/register src/*.test.js src/**/*.test.js lib/**/*.test.js",
-    "tdd": "nodemon --watch src --watch lib --exec \"npm run test | tap-diff\"",
+    "----TEST": "",
+    "test": "tape -r @babel/register src/*.test.js src/**/*.test.js",
+    "tdd": "nodemon --watch src --exec \"npm run test | tap-diff\"",
     "coverage:report": "NODE_ENV=test nyc npm test && nyc report --reporter=html",
     "coverage": "NODE_ENV=test nyc npm test && nyc report --reporter=text-lcov | coveralls"
   },
   "peerDependencies": {
-    "redux": "4.0.1"
+    "redux": "^4.0.4"
   },
   "dependencies": {
     "@asd14/m": "0.24.0",
@@ -55,7 +55,7 @@
     "@babel/register": "7.5.5",
     "babel-eslint": "10.0.2",
     "coveralls": "3.0.6",
-    "eslint": "6.1.0",
+    "eslint": "6.2.0",
     "eslint-config-prettier": "6.0.0",
     "eslint-plugin-import": "2.18.2",
     "eslint-plugin-json": "1.4.0",
@@ -63,11 +63,12 @@
     "eslint-plugin-prettier": "3.1.0",
     "eslint-plugin-promise": "4.2.1",
     "eslint-plugin-unicorn": "10.0.0",
-    "markdownlint-cli": "0.17.0",
+    "markdownlint-cli": "0.18.0",
     "nodemon": "1.19.1",
     "npm-check": "5.9.0",
     "nyc": "14.1.1",
     "prettier": "1.18.2",
+    "semantic-release": "15.13.21",
     "tap-diff": "0.1.1",
     "tape": "4.11.0"
   }
