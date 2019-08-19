@@ -66,5 +66,6 @@ typings/
 
 dist/
 bin/
+lib/
 docs/
 .coveralls.yml
