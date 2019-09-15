@@ -8,7 +8,7 @@ version: 2
 # YAML variable templates
 #
 job_defaults: &job_defaults
-  working_directory: ~/redux-all-is-list
+  working_directory: ~/redux-list
   docker:
     - image: circleci/node:10
 
@@ -23,7 +23,7 @@ job_filter: &job_filter
 #
 workflows:
   version: 2
-  build_test_coverage_publish:
+  npm_deploy:
     jobs:
       - setup:
           <<: *job_filter
