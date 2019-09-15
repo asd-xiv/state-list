@@ -1,7 +1,7 @@
 <!-- markdownlint-disable first-line-h1 line-length -->
 
 [![CircleCI](https://circleci.com/gh/mutantlove/redux-list.svg?style=svg)](https://circleci.com/gh/mutantlove/redux-list)
-[![npm package version](https://badge.fury.io/js/%mutantlove%2Fm.svg)](https://badge.fury.io/js/%mutantlove%2Fredux-all-is-list)
+[![npm version](https://badge.fury.io/js/%40mutantlove%2Fredux-list.svg)](https://badge.fury.io/js/%40mutantlove%2Fredux-list)
 [![dev-badge](https://david-dm.org/mutantlove/redux-list.svg)](https://david-dm.org/mutantlove/redux-list)
 [![Coverage Status](https://coveralls.io/repos/github/mutantlove/redux-list/badge.svg)](https://coveralls.io/github/mutantlove/redux-list)
 

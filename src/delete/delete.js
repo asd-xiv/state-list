@@ -1,6 +1,13 @@
 const debug = require("debug")("ReduxList:Delete")
 
-import { filterWith, findWith, is, isEmpty, hasWith, hasKey } from "@mutantlove/m"
+import {
+  filterWith,
+  findWith,
+  is,
+  isEmpty,
+  hasWith,
+  hasKey,
+} from "@mutantlove/m"
 
 /**
  * Call API to delete an item, dispatch events before and after
