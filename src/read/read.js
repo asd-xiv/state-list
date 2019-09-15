@@ -1,12 +1,8 @@
-const debug = require("debug")("ReduxList:Find")
-
-import { is } from "@mutantlove/m"
+const debug = require("debug")("ReduxList:Read")
 
 /**
  * Call API to fetch items, dispatch events before and after
  *
- * @param  {Object}    cache            Cache store used when cacheTTL is set
- * @param  {number}    cacheTTL         Valid duration (milliseconds)
  * @param  {Function}  dispatch         Redux dispatch
  * @param  {Function}  api              API method
  * @param  {string}    actionStartName  Action dispatched before API call
@@ -14,38 +10,46 @@ import { is } from "@mutantlove/m"
  *
  * @returns {Object[]}
  */
-export const findAction = ({
-  cache,
+export const readAction = ({
   dispatch,
-  method,
+  api,
   actionStart,
-  actionEnd,
-}) => (...args) => {
-  const cachedResults = is(cache) ? cache.get(args) : undefined
-
-  if (cachedResults !== undefined) {
-    dispatch({
-      type: actionEnd,
-      payload: Array.isArray(cachedResults) ? cachedResults : [cachedResults],
-    })
-
-    return cachedResults
-  }
-
+  actionSuccess,
+  actionError,
+}) => async (...args) => {
   dispatch({
     type: actionStart,
   })
 
-  return Promise.resolve(method(...args)).then(results => {
+  try {
+    const results = await api(...args)
+
     dispatch({
-      type: actionEnd,
+      type: actionSuccess,
       payload: Array.isArray(results) ? results : [results],
     })
 
-    is(cache) && cache.set(args, results)
-
     return results
-  })
+  } catch (error) {
+    // wrapping here so that both reducer and this current promise
+    // resolve/pass the same data
+    const stateError = {
+      date: new Date(),
+      data: {
+        name: error.name,
+        message: error.message,
+        status: error.status,
+        body: error.body,
+      },
+    }
+
+    dispatch({
+      type: actionError,
+      payload: stateError,
+    })
+
+    return { error: stateError }
+  }
 }
 
 /**
@@ -55,7 +59,7 @@ export const findAction = ({
  *
  * @return {Object} New state
  */
-export const findStartReducer = state => ({
+export const readStartReducer = state => ({
   ...state,
   isLoading: true,
 })
@@ -68,9 +72,19 @@ export const findStartReducer = state => ({
  *
  * @return {Object} New state
  */
-export const findEndReducer = (state, items) => ({
+export const readSuccessReducer = (state, items) => ({
   ...state,
   items,
   loadDate: new Date(),
+  isLoading: false,
+})
+
+export const readErrorReducer = (state, error = {}) => ({
+  ...state,
+  errors: {
+    ...state.errors,
+    read: error,
+  },
+  items: [],
   isLoading: false,
 })

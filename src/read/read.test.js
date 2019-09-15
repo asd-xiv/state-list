@@ -3,12 +3,12 @@ import { createStore, combineReducers } from "redux"
 
 import { buildList } from ".."
 
-test("Find", t => {
+test("Read", t => {
   // WHAT TO TEST
   const todoList = buildList({
-    name: "FIND_TODOS",
+    name: "READ_TODOS",
     methods: {
-      find: () => [{ id: 1, name: "lorem ipsum" }, { id: 2, name: "foo bar" }],
+      read: () => [{ id: 1, name: "lorem ipsum" }, { id: 2, name: "foo bar" }],
     },
   })
 
@@ -20,12 +20,12 @@ test("Find", t => {
   )
 
   // Link lists's action to store's dispatch
-  const listFind = todoList.find(store.dispatch)
+  const listRead = todoList.read(store.dispatch)
 
   Promise.resolve()
     .then(() => {
-      // Trigger find action and check intermediate state
-      const findPromise = listFind()
+      // Trigger read action and check intermediate state
+      const readPromise = listRead()
       const todosSelector = todoList.selector(store.getState())
 
       t.deepEquals(todosSelector.items(), [], "items array should be empty")
@@ -35,10 +35,10 @@ test("Find", t => {
         "isLoaded flag should be false before loading"
       )
 
-      return findPromise
+      return readPromise
     })
     .then(items => {
-      // Check state after find
+      // Check state after read
       const todosSelector = todoList.selector(store.getState())
 
       t.equals(
@@ -54,7 +54,7 @@ test("Find", t => {
       t.deepEquals(
         items,
         [{ id: 1, name: "lorem ipsum" }, { id: 2, name: "foo bar" }],
-        "list.find resolves with retrived items"
+        "list.read resolves with retrived items"
       )
       t.deepEquals(
         todosSelector.items(),

@@ -3,14 +3,14 @@ import { createStore, combineReducers } from "redux"
 
 import { buildList } from ".."
 
-test("Find - race conditions", t => {
+test("Read - race conditions", t => {
   let callCount = 0
 
   // WHAT TO TEST
   const todoList = buildList({
-    name: "FIND_RACE_TODOS",
+    name: "READ_RACE_TODOS",
     methods: {
-      find: () => {
+      read: () => {
         callCount++
 
         return new Promise(resolve => {
@@ -33,18 +33,18 @@ test("Find - race conditions", t => {
   )
 
   // Link lists's action to store's dispatch
-  const listFind = todoList.find(store.dispatch)
+  const listRead = todoList.read(store.dispatch)
 
   return Promise.resolve()
     .then(() =>
       Promise.all([
-        listFind(),
-        listFind(),
-        listFind(),
+        listRead(),
+        listRead(),
+        listRead(),
         new Promise(resolve => {
-          // run another find after the other 3 ended
+          // run another .read after the other 3 ended
           setTimeout(() => {
-            resolve(listFind())
+            resolve(listRead())
           }, 550)
         }),
       ])
