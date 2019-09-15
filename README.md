@@ -7,7 +7,7 @@
 
 # redux-list
 
-> A Redux data "gateway", similar to an API gateway. A less strict version of GraphQL, where you can have multiple data sources.
+> A Redux data "gateway", similar to an API gateway.
 
 ---
 
@@ -35,15 +35,15 @@
 
 ### Aggregate
 
-> Combine data coming from different sources (users from own api, tweet count from Twitter)
+> Combine data coming from different sources (users from own api, tweet count from Twitter).
 
 ### Mitigate inconsistent API
 
-> Uniform into a common shape, ie. stop backend tech dept from propagating into the frontend
+> Uniform into a common shape, ie. stop backend tech dept from propagating into the frontend.
 
 ### Race free
 
-> All CRUD operations are done in sequence. If `update` is issued after `delete`, the `update` promise will wait for `delete` to finish and then do it's work.
+> All CRUD operations are done in sequence. If `update` is issued after `delete`, the `update` promise will wait for `delete` to finish.
 
 ### It's Redux
 
@@ -91,7 +91,7 @@ const store = createStore(
 )
 ```
 
-Use the list's selector helpers to access it's data.
+Use the list's selector helpers to access the data.
 
 ```js
 // todos.container.jsx
