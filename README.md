@@ -17,17 +17,12 @@
   * [Aggregate](#aggregate)
   * [Mitigate inconsistent API](#mitigate-inconsistent-api)
   * [Race free](#race-free)
-  * [Cache](#cache)
   * [It's Redux](#its-redux)
 * [Install](#install)
 * [Example](#example)
 * [API](#api)
-  * [Definition](#definition)
-    * [Params](#params)
-    * [Retuns](#retuns)
+  * [Retuns](#retuns)
   * [Internal state slice](#internal-state-slice)
-  * [Add to Radux](#add-to-radux)
-  * [Consume in container component](#consume-in-container-component)
   * [Selectors](#selectors)
 * [Recommendations](#recommendations)
 * [Develop](#develop)
@@ -50,13 +45,9 @@
 
 > All CRUD operations are done in sequence. If `update` is issued after `delete`, the `update` promise will wait for `delete` to finish and then do it's work.
 
-### Cache
-
-> `find` operations are cached based on it's signature.
-
 ### It's Redux
 
-> Treat your state data as simple lists with common metadata helpers (isLoading, isUpdating etc.) and less boilerplate.
+> Treat your state data as simple lists with common metadata helpers (isLoading, isUpdating etc.).
 
 ## Install
 
@@ -71,20 +62,18 @@ npm install @mutantlove/redux-list
 Define a list of todos from our local API.
 
 ```js
-// todos.state.js
+// todos.list.js
 
 import { buildList } from "@mutantlove/redux-list"
 
-export const TodosList = buildList({
-  name: "PAGE__SECTION--TODOS",
-  cacheTTL: 1000,
-  methods: {
-    create: data => POST("/todos", data),
-    find: () => [{id: 1, title: "lorem ipsum"}],
-    update: (id, data) => PATCH(`/todos/${id}`, date),
-    delete: id => DELETE(`/todos/${id}`),
-  },
+const TodosList = buildList("PAGE__SECTION--TODOS", {
+  create: data => POST("/todos", data),
+  read: () => [{id: 1, title: "lorem ipsum"}],
+  update: (id, data) => PATCH(`/todos/${id}`, date),
+  delete: id => DELETE(`/todos/${id}`),
 })
+
+export {TodosList}
 ```
 
 Hook internal list reducers into the state store.
@@ -123,7 +112,7 @@ import { TodosList } from "./todos.state"
     }
   },
   dispatch => ({
-    xHandleTodosFind: TodosList.find(dispatch),
+    xHandleTodosFind: TodosList.read(dispatch),
   })
 )
 class TodosContainer extends React.Component {
@@ -152,69 +141,58 @@ export { TodosContainer }
 
 ## API
 
-### Definition
-
-`buildList` is the only exposed function. It prepares the reducer and CRUD actions that interface and data sources.
+`buildList` is the only exposed function.
 
 ```js
-import { buildList } from "@mutantlove/redux-all-is-list"
+buildList(
+  /**
+   * Unique name used as Redux store key. If multiple lists use the same
+   * name, an error will be thrown.
+   * This is because the list is ment to be added on the root level of
+   * the store.
+   *
+   * Use BEM (getbem.com/naming) for naming, ex. `{page}__{section}--{entity}`
+   */
+  "PROFILE__LATEST--WRITTEN-ARTICLES",
 
-buildList({
-  name: "PAGE__SECTION--TODOS",
-  cacheTTL: 100,
-  methods: {
-    create: data => POST("/todos", data),
-    find: ({ offset, limit }) =>
-      GET("/todos", {
-        offset,
-        limit,
-      }),
-    update: (id, data) => PATCH(`/todos/${id}`, date),
-    delete: id => DELETE(`/todos/${id}`),
+  /**
+   * Define list's CRUD actions and map to one or more data sources (local
+   * storage, 3rd party APIs or own API). There are only 4 actions that can
+   * be defined: `create`, `read`, `update` and `delete`.
+   */
+  {
+  /**
+   * Create
+   *
+   * Redux actions will be dispatched before and after the method call.
+   * `${name}_CREATE_START` before and `${name}_CREATE_SUCCESS` or
+   * `${name}_CREATE_ERROR` after, depending if method throws an error.
+   *
+   * @param {Object} data     An `id` field must be present
+   * @param {Object} options  If called with `isDraft` option set to true,
+   *                          this method will not run. The data object will
+   *                          simply be added `slice.items`.
+   *
+   * @returns Object | Promise<Object>
+   */
+  create: (data, options, ...rest) => {
+    return {
+      id: "uuid",
+    }
+  }
+
+  read: (...rest) => {
   },
+
+  update: (id, data, options, ...rest) => {
+  },
+
+  delete: (id, ...rest) => {
+  }
 })
 ```
 
-#### Params
-
-Object containing:
-
-**`*name`**`:string`
-
-Unique name used for the redux store key. If multiple lists use the same name, an error will be thrown. This is because the list is ment to be added on the root level of the redux store. Use [BEM](http://getbem.com/naming/) for naming, ex. `{page}__{section}--{entity}`
-
-**`methods`**`:Object`
-
-Define list's CRUD actions and map to one or more data sources (local storage, 3rd party APIs or own API). There are only 4 actions that can be defined.
-
-* `.create(data: Object, { isDraft: bool = false }): Promise<Object>`
-  * Add return obj to main `slice.items` - `id` field is required.  
-  * Add data obj to `slice.creating` array, cleared after promise resolves.
-  * Toggle `slice.isCreating` flag before and after promise resolves.  
-  * If `isDraft` is true, the method will not run. The data object will be simply added to the `slice.items` array.
-  * Clear cache if `cacheTTL` is set.
-
-* `.find(...args: any[]): Promise<Object[]>`
-  * Replace `slice.items` contents with return array - `id` field is required in each item.
-  * Toggle `slice.isLoading` flag before and after promise resolves.
-  * Set `slice.loadDate` to the current time (Date object) after promise resolves.
-  * Results will be cached based on `args`. `find({offset: 10})` will be cached separately than `find()`.
-
-* `update(id: string|number, data: Object, { isDraft: bool = false }): Promise<Object>`
-  * Update item in `slice.items` if exists (merge by `id`), add otherwise.
-  * Add item to `slice.updating` array, cleared after promise resolves.
-  * If `isDraft` is true, the method will not run. The data object will be simply merged or added to the `slice.items` array.
-  * Clear cache if `cacheTTL` is set.
-
-* `delete: (id: string|number): Promise`
-  * Delete item with `id`. Return value is ignored.
-  * Clear cache if `cacheTTL` is set.
-
-**`cacheTTL`**`: number`
-
-Number of miliseconds a cached value is valid.
-
-#### Retuns
+### Retuns
 
 Object containing:
 
@@ -233,13 +211,13 @@ const store = createStore(
 )
 ```
 
-**`create|find|update|delete`**`: (dispatch: Function): Function`
+**`create|read|update|delete`**`: (dispatch: Function): Function`
 
-Curry function that make available the store's `dispatch` to the functions in `methods`. Error will be thrown if the method is not defined in builder function's `methods` obj.
+Curried function that takes the store's `dispatch`. Error will be thrown if method is not defined.
 
 ```js
 @connect(mapStateToProps, dispatch => ({
-  xHandleTodosFind: TodosList.find(dispatch),
+  xHandleTodosFind: TodosList.read(dispatch),
 }))
 ```
 
@@ -260,10 +238,6 @@ Curry function that make available the store's `dispatch` to the functions in `m
 }
 ```
 
-### Add to Radux
-
-### Consume in container component
-
 ### Selectors
 
 * **`.head`**`: () => Object|undefined`
@@ -281,9 +255,8 @@ Curry function that make available the store's `dispatch` to the functions in `m
 
 ## Recommendations
 
-* Don't reuse. A list should be used once per page/section.
-* Group all lists per page into a separate file to avoid variable name collision.
-* Don't store data locally, data lives in the database - that's the real application state.
+* A list should be used once per page/section.
+* Don't store data locally, data lives in the database - the real application state.
 
 ## Develop
 

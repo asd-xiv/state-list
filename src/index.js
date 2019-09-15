@@ -44,12 +44,12 @@ const hasKey = key => obj => Object.prototype.hasOwnProperty.call(obj, key)
 /**
  * List factory function
  *
- * @param  {Object}  props           List props
- * @param  {string}  props.name      Unique name so actions dont overlap
+ * @param {string} name    Unique name so actions dont overlap
+ * @param {Object} methods Object with CRUD method
  *
  * @return {Object}
  */
-const buildList = ({ name, methods = {} }) => {
+const buildList = (name, methods = {}) => {
   if (hasKey(name)(collections)) {
     throw new Error(`ReduxList: List with name "${name}" already exists`)
   }

@@ -5,16 +5,13 @@ import { buildList } from ".."
 
 test("Create", t => {
   // WHAT TO TEST
-  const todoList = buildList({
-    name: "CREATE_TODOS",
-    methods: {
-      create: (data, options, other) => ({
-        id: 1,
-        ...data,
-        options,
-        other,
-      }),
-    },
+  const todoList = buildList("CREATE_TODOS", {
+    create: (data, options, other) => ({
+      id: 1,
+      ...data,
+      options,
+      other,
+    }),
   })
 
   // Redux store
@@ -97,11 +94,8 @@ test("Create", t => {
 
 test("Create - multiple", t => {
   // WHAT TO TEST
-  const todoList = buildList({
-    name: "CREATE-MULTIPLE_TODOS",
-    methods: {
-      create: items => items.map((item, index) => ({ id: index, ...item })),
-    },
+  const todoList = buildList("CREATE-MULTIPLE_TODOS", {
+    create: items => items.map((item, index) => ({ id: index, ...item })),
   })
 
   // Redux store

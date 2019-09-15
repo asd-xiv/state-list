@@ -5,12 +5,9 @@ import { buildList } from ".."
 
 test("Delete - different id in response", t => {
   // WHAT TO TEST
-  const todoList = buildList({
-    name: "DELETE-ERROR-DIFFERENT-ID_TODOS",
-    methods: {
-      read: () => [{ id: 1, name: "build gdpr startup" }, { id: 2 }],
-      delete: () => Promise.resolve({ id: 1 }),
-    },
+  const todoList = buildList("DELETE-ERROR-DIFFERENT-ID_TODOS", {
+    read: () => [{ id: 1, name: "build gdpr startup" }, { id: 2 }],
+    delete: () => Promise.resolve({ id: 1 }),
   })
 
   // Redux store

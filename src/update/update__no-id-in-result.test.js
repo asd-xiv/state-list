@@ -5,12 +5,9 @@ import { buildList } from ".."
 
 test("Update - id not in response", t => {
   // WHAT TO TEST
-  const todoList = buildList({
-    name: "UPDATE-ERROR-NO-ID_TODOS",
-    methods: {
-      read: () => [{ id: 1, name: "build gdpr startup" }, { id: 2 }],
-      update: (id, data) => data,
-    },
+  const todoList = buildList("UPDATE-ERROR-NO-ID_TODOS", {
+    read: () => [{ id: 1, name: "build gdpr startup" }, { id: 2 }],
+    update: (id, data) => data,
   })
 
   // Redux store

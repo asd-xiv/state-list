@@ -16,20 +16,17 @@ class RequestError extends Error {
 
 test("Update - error", t => {
   // WHAT TO TEST
-  const todoList = buildList({
-    name: "UPDATE-ERROR_TODOS",
-    methods: {
-      read: () => [{ id: 1, name: "build gdpr startup" }, { id: 2 }],
-      update: (id, data) => {
-        return id === 3
-          ? Promise.reject(
-              new RequestError("Something something API crash", {
-                body: { message: "resource not found" },
-                status: 404,
-              })
-            )
-          : Promise.resolve({ id, ...data })
-      },
+  const todoList = buildList("UPDATE-ERROR_TODOS", {
+    read: () => [{ id: 1, name: "build gdpr startup" }, { id: 2 }],
+    update: (id, data) => {
+      return id === 3
+        ? Promise.reject(
+            new RequestError("Something something API crash", {
+              body: { message: "resource not found" },
+              status: 404,
+            })
+          )
+        : Promise.resolve({ id, ...data })
     },
   })
 

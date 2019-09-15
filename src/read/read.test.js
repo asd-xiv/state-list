@@ -5,11 +5,8 @@ import { buildList } from ".."
 
 test("Read", t => {
   // WHAT TO TEST
-  const todoList = buildList({
-    name: "READ_TODOS",
-    methods: {
-      read: () => [{ id: 1, name: "lorem ipsum" }, { id: 2, name: "foo bar" }],
-    },
+  const todoList = buildList("READ_TODOS", {
+    read: () => [{ id: 1, name: "lorem ipsum" }, { id: 2, name: "foo bar" }],
   })
 
   // Redux store

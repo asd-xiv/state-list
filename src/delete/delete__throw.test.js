@@ -16,20 +16,17 @@ class RequestError extends Error {
 
 test("Delete - error", t => {
   // WHAT TO TEST
-  const todoList = buildList({
-    name: "DELETE-ERROR_TODOS",
-    methods: {
-      read: () => [{ id: 1, name: "build gdpr startup" }, { id: 2 }],
-      delete: id => {
-        return id === 2
-          ? Promise.reject(
-              new RequestError("Something something API crash", {
-                body: { message: "resource not found" },
-                status: 404,
-              })
-            )
-          : { id: 1 }
-      },
+  const todoList = buildList("DELETE-ERROR_TODOS", {
+    read: () => [{ id: 1, name: "build gdpr startup" }, { id: 2 }],
+    delete: id => {
+      return id === 2
+        ? Promise.reject(
+            new RequestError("Something something API crash", {
+              body: { message: "resource not found" },
+              status: 404,
+            })
+          )
+        : { id: 1 }
     },
   })
 

@@ -16,20 +16,17 @@ class RequestError extends Error {
 
 test("Create - error", t => {
   // WHAT TO TEST
-  const todoList = buildList({
-    name: "CREATE-ERROR_TODOS",
-    methods: {
-      read: () => [],
-      create: ({ name }) => {
-        return name === "throw"
-          ? Promise.reject(
-              new RequestError("Something something API crash", {
-                body: { validationData: "from server" },
-                status: 409,
-              })
-            )
-          : Promise.resolve({ id: 1, name })
-      },
+  const todoList = buildList("CREATE-ERROR_TODOS", {
+    read: () => [],
+    create: ({ name }) => {
+      return name === "throw"
+        ? Promise.reject(
+            new RequestError("Something something API crash", {
+              body: { validationData: "from server" },
+              status: 409,
+            })
+          )
+        : Promise.resolve({ id: 1, name })
     },
   })
 

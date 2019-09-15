@@ -5,12 +5,9 @@ import { buildList } from ".."
 
 test("Delete", t => {
   // WHAT TO TEST
-  const todoList = buildList({
-    name: "DELETE_TODOS",
-    methods: {
-      read: () => [{ id: 1, name: "lorem ipsum" }, { id: 2, name: "foo bar" }],
-      delete: (id, testRest) => ({ id, testRest }),
-    },
+  const todoList = buildList("DELETE_TODOS", {
+    read: () => [{ id: 1, name: "lorem ipsum" }, { id: 2, name: "foo bar" }],
+    delete: (id, testRest) => ({ id, testRest }),
   })
 
   // Redux store

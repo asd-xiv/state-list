@@ -5,12 +5,9 @@ import { buildList } from ".."
 
 test("Delete - id not in response", t => {
   // WHAT TO TEST
-  const todoList = buildList({
-    name: "DELETE-ERROR-NO-ID_TODOS",
-    methods: {
-      read: () => [{ id: 1, name: "build gdpr startup" }, { id: 2 }],
-      delete: () => ({ name: "I dont know who I am :(" }),
-    },
+  const todoList = buildList("DELETE-ERROR-NO-ID_TODOS", {
+    read: () => [{ id: 1, name: "build gdpr startup" }, { id: 2 }],
+    delete: () => ({ name: "I dont know who I am :(" }),
   })
 
   // Redux store

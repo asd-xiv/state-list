@@ -7,21 +7,15 @@ test("Read - race conditions", t => {
   let callCount = 0
 
   // WHAT TO TEST
-  const todoList = buildList({
-    name: "READ_RACE_TODOS",
-    methods: {
-      read: () => {
-        callCount++
+  const todoList = buildList("READ_RACE_TODOS", {
+    read: () => {
+      callCount++
 
-        return new Promise(resolve => {
-          setTimeout(() => {
-            resolve([
-              { id: 1, name: "lorem ipsum" },
-              { id: 2, name: "foo bar" },
-            ])
-          }, 500)
-        })
-      },
+      return new Promise(resolve => {
+        setTimeout(() => {
+          resolve([{ id: 1, name: "lorem ipsum" }, { id: 2, name: "foo bar" }])
+        }, 500)
+      })
     },
   })
 
