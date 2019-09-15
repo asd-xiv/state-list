@@ -47,7 +47,7 @@ test("Delete - error", t => {
   listDelete().catch(error => {
     t.equals(
       error.message,
-      `ReduxAllIsList: deleteAction - cannot call delete method without a valid "id" param. Expected something, got "undefined"`,
+      `ReduxList: deleteAction - cannot call delete method without a valid "id" param. Expected something, got "undefined"`,
       "delete method called without valid id parameter should throw error"
     )
   })

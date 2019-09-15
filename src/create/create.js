@@ -1,6 +1,6 @@
-const debug = require("debug")("ReduxAllIsList:Create")
+const debug = require("debug")("ReduxList:Create")
 
-import { forEach, map, reduce, hasWith } from "@asd14/m"
+import { forEach, map, reduce, hasWith } from "@mutantlove/m"
 
 /**
  * Call API to create item. Dispatch actions before, after success and after

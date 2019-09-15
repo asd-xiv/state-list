@@ -1,7 +1,15 @@
 /* eslint-disable no-multi-assign */
-const debug = require("debug")("ReduxAllIsList:Main")
+const debug = require("debug")("ReduxList:Main")
 
-import { pipe, findWith, sortWith, head, is, isEmpty, hasWith } from "@asd14/m"
+import {
+  pipe,
+  findWith,
+  sortWith,
+  head,
+  is,
+  isEmpty,
+  hasWith,
+} from "@mutantlove/m"
 import {
   createAction,
   createStartReducer,
@@ -41,7 +49,7 @@ const hasKey = key => obj => Object.prototype.hasOwnProperty.call(obj, key)
  */
 const buildList = ({ name, cacheTTL = 0, methods = {} }) => {
   if (hasKey(name)(collections)) {
-    throw new Error(`ReduxAllIsList: List with name "${name}" already exists`)
+    throw new Error(`ReduxList: List with name "${name}" already exists`)
   }
 
   const hasCache = !isEmpty(cacheTTL)
@@ -146,7 +154,7 @@ const buildList = ({ name, cacheTTL = 0, methods = {} }) => {
           }
         : () => {
             throw new TypeError(
-              `ReduxAllIsList: "${name}"."create" should be a function, got "${typeof methods.create}"`
+              `ReduxList: "${name}"."create" should be a function, got "${typeof methods.create}"`
             )
           },
 
@@ -175,7 +183,7 @@ const buildList = ({ name, cacheTTL = 0, methods = {} }) => {
 
       return () => {
         throw new TypeError(
-          `ReduxAllIsList: "${name}"."find" should be a function, got "${typeof methods.find}"`
+          `ReduxList: "${name}"."find" should be a function, got "${typeof methods.find}"`
         )
       }
     },
@@ -216,7 +224,7 @@ const buildList = ({ name, cacheTTL = 0, methods = {} }) => {
           }
         : () => {
             throw new TypeError(
-              `ReduxAllIsList: "${name}"."update" should be a function, got "${typeof methods.update}"`
+              `ReduxList: "${name}"."update" should be a function, got "${typeof methods.update}"`
             )
           },
 
@@ -246,7 +254,7 @@ const buildList = ({ name, cacheTTL = 0, methods = {} }) => {
             })
         : () => {
             throw new TypeError(
-              `ReduxAllIsList: "${name}"."delete" should be a function, got "${typeof methods.delete}"`
+              `ReduxList: "${name}"."delete" should be a function, got "${typeof methods.delete}"`
             )
           },
 

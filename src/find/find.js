@@ -1,6 +1,6 @@
-const debug = require("debug")("ReduxAllIsList:Find")
+const debug = require("debug")("ReduxList:Find")
 
-import { is } from "@asd14/m"
+import { is } from "@mutantlove/m"
 
 /**
  * Call API to fetch items, dispatch events before and after

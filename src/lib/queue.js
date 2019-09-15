@@ -1,4 +1,4 @@
-import { findWith, last, deepEqual, is, isEmpty } from "@asd14/m"
+import { findWith, last, deepEqual, is, isEmpty } from "@mutantlove/m"
 
 /**
  * Unieq, sequential, promise based job queue

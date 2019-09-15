@@ -7,7 +7,7 @@ import {
   upsert,
   remove,
   is,
-} from "@asd14/m"
+} from "@mutantlove/m"
 
 // check if item exists and is not expired
 const isValid = item => is(item) && new Date() < item.validUntil
@@ -44,7 +44,7 @@ export const buildCacheStore = ({ ttl = 100 } = {}) => {
     set(key, value) {
       if (!is(key)) {
         throw new TypeError(
-          `ReduxAllIsList: Cache can not store "${value}" under key "${key}"`
+          `ReduxList: Cache can not store "${value}" under key "${key}"`
         )
       }
 

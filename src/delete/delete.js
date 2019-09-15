@@ -1,6 +1,6 @@
-const debug = require("debug")("ReduxAllIsList:Delete")
+const debug = require("debug")("ReduxList:Delete")
 
-import { filterWith, findWith, is, isEmpty, hasWith, hasKey } from "@asd14/m"
+import { filterWith, findWith, is, isEmpty, hasWith, hasKey } from "@mutantlove/m"
 
 /**
  * Call API to delete an item, dispatch events before and after
@@ -26,7 +26,7 @@ export const deleteAction = ({
 }) => id => {
   if (isEmpty(id)) {
     throw new TypeError(
-      `ReduxAllIsList: deleteAction - cannot call delete method without a valid "id" param. Expected something, got "${JSON.stringify(
+      `ReduxList: deleteAction - cannot call delete method without a valid "id" param. Expected something, got "${JSON.stringify(
         id
       )}"`
     )
@@ -117,7 +117,7 @@ export const deleteSuccessReducer = (state, item) => {
 
   if (!hasId) {
     throw new TypeError(
-      `ReduxAllIsList: deleteSuccessReducer - cannot delete item "${item}" without id property`
+      `ReduxList: deleteSuccessReducer - cannot delete item "${item}" without id property`
     )
   }
 

@@ -1,11 +1,11 @@
 <!-- markdownlint-disable first-line-h1 line-length -->
 
-[![CircleCI](https://circleci.com/gh/asd14/redux-all-is-list.svg?style=svg)](https://circleci.com/gh/asd14/redux-all-is-list)
-[![npm package version](https://badge.fury.io/js/%40asd14%2Fm.svg)](https://badge.fury.io/js/%40asd14%2Fredux-all-is-list)
-[![dev-badge](https://david-dm.org/asd14/redux-all-is-list.svg)](https://david-dm.org/asd14/redux-all-is-list)
-[![Coverage Status](https://coveralls.io/repos/github/asd14/redux-all-is-list/badge.svg)](https://coveralls.io/github/asd14/redux-all-is-list)
+[![CircleCI](https://circleci.com/gh/mutantlove/redux-list.svg?style=svg)](https://circleci.com/gh/mutantlove/redux-list)
+[![npm package version](https://badge.fury.io/js/%mutantlove%2Fm.svg)](https://badge.fury.io/js/%mutantlove%2Fredux-all-is-list)
+[![dev-badge](https://david-dm.org/mutantlove/redux-list.svg)](https://david-dm.org/mutantlove/redux-list)
+[![Coverage Status](https://coveralls.io/repos/github/mutantlove/redux-list/badge.svg)](https://coveralls.io/github/mutantlove/redux-list)
 
-# redux-all-is-list
+# redux-list
 
 > A Redux data "gateway", similar to an API gateway. A less strict version of GraphQL, where you can have multiple data sources.
 
@@ -61,7 +61,7 @@
 ## Install
 
 ```bash
-npm install @asd14/redux-all-is-list
+npm install @mutantlove/redux-list
 ```
 
 ## Example
@@ -73,7 +73,7 @@ Define a list of todos from our local API.
 ```js
 // todos.state.js
 
-import { buildList } from "@asd14/redux-all-is-list"
+import { buildList } from "@mutantlove/redux-list"
 
 export const TodosList = buildList({
   name: "PAGE__SECTION--TODOS",
@@ -157,7 +157,7 @@ export { TodosContainer }
 `buildList` is the only exposed function. It prepares the reducer and CRUD actions that interface and data sources.
 
 ```js
-import { buildList } from "@asd14/redux-all-is-list"
+import { buildList } from "@mutantlove/redux-all-is-list"
 
 buildList({
   name: "PAGE__SECTION--TODOS",
@@ -288,8 +288,8 @@ Curry function that make available the store's `dispatch` to the functions in `m
 ## Develop
 
 ```bash
-git clone git@github.com:asd14/redux-all-is-list.git && \
-  cd redux-all-is-list && \
+git clone git@github.com:mutantlove/redux-list.git && \
+  cd redux-list && \
   npm run setup
 ```
 
@@ -329,4 +329,4 @@ BREAKING CHANGE: Half of features not working anymore
 
 ## Changelog
 
-See the [releases section](https://github.com/asd14/redux-all-is-list/releases) for details.
+See the [releases section](https://github.com/mutantlove/redux-list/releases) for details.

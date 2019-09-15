@@ -1,6 +1,6 @@
-const debug = require("debug")("ReduxAllIsList:Update")
+const debug = require("debug")("ReduxList:Update")
 
-import { map, merge, isEmpty, hasWith, hasKey } from "@asd14/m"
+import { map, merge, isEmpty, hasWith, hasKey } from "@mutantlove/m"
 
 /**
  * Call API to update an item, dispatch events before and after
@@ -21,7 +21,7 @@ export const updateAction = ({
 }) => (id, data) => {
   if (isEmpty(id)) {
     throw new TypeError(
-      `ReduxAllIsList: updateAction - cannot call update method without a valid "id" param. Expected something, got "${JSON.stringify(
+      `ReduxList: updateAction - cannot call update method without a valid "id" param. Expected something, got "${JSON.stringify(
         id
       )}"`
     )

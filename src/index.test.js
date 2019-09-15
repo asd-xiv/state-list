@@ -31,7 +31,7 @@ test("List without API methods", t => {
     () => {
       buildList({ name: "TODOS" })
     },
-    /ReduxAllIsList: List with name "TODOS" already exists/,
+    /ReduxList: List with name "TODOS" already exists/,
     "Throw exception when creating a list with a duplicate name"
   )
 
@@ -69,7 +69,7 @@ test("List without API methods", t => {
     () => {
       listCreate({ id: 2 })
     },
-    /ReduxAllIsList: "TODOS"."create" should be a function, got "undefined"/,
+    /ReduxList: "TODOS"."create" should be a function, got "undefined"/,
     'Throw exception when calling "create" on list without methods'
   )
 
@@ -77,7 +77,7 @@ test("List without API methods", t => {
     () => {
       listFind()
     },
-    /ReduxAllIsList: "TODOS"."find" should be a function, got "undefined"/,
+    /ReduxList: "TODOS"."find" should be a function, got "undefined"/,
     'Throw exception when calling "find" on list without methods'
   )
 
@@ -85,7 +85,7 @@ test("List without API methods", t => {
     () => {
       listUpdate(1, { test: 2 })
     },
-    /ReduxAllIsList: "TODOS"."update" should be a function, got "undefined"/,
+    /ReduxList: "TODOS"."update" should be a function, got "undefined"/,
     'Throw exception when calling "update" on list without methods'
   )
 
@@ -93,7 +93,7 @@ test("List without API methods", t => {
     () => {
       listDelete(1, { test: 2 })
     },
-    /ReduxAllIsList: "TODOS"."delete" should be a function, got "undefined"/,
+    /ReduxList: "TODOS"."delete" should be a function, got "undefined"/,
     'Throw exception when calling "delete" on list without methods'
   )
 
