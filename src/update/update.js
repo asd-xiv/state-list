@@ -18,7 +18,7 @@ export const updateAction = ({
   actionStart,
   actionSuccess,
   actionError,
-}) => (id, data) => {
+}) => async (id, data, ...rest) => {
   if (isEmpty(id)) {
     throw new TypeError(
       `ReduxList: updateAction - cannot call update method without a valid "id" param. Expected something, got "${JSON.stringify(
@@ -33,40 +33,38 @@ export const updateAction = ({
   })
 
   // Resolve promise on both success and error with {result, error} obj
-  return new Promise(async resolve => {
-    try {
-      const result = await api(id, data)
+  try {
+    const result = await api(id, data, ...rest)
 
-      dispatch({
-        type: actionSuccess,
-        payload: {
-          ...result,
-          id: hasKey("id")(result) ? result.id : id,
-        },
-      })
+    dispatch({
+      type: actionSuccess,
+      payload: {
+        ...result,
+        id: hasKey("id")(result) ? result.id : id,
+      },
+    })
 
-      resolve({ result })
-    } catch (error) {
-      // wrapping here so that both reducer and this current promise
-      // resolve/pass the same data
-      const stateError = {
-        date: new Date(),
-        data: {
-          name: error.name,
-          message: error.message,
-          status: error.status,
-          body: error.body,
-        },
-      }
-
-      dispatch({
-        type: actionError,
-        payload: stateError,
-      })
-
-      resolve({ error: stateError })
+    return { result }
+  } catch (error) {
+    // wrapping here so that both reducer and this current promise
+    // resolve/pass the same data
+    const stateError = {
+      date: new Date(),
+      data: {
+        name: error.name,
+        message: error.message,
+        status: error.status,
+        body: error.body,
+      },
     }
-  })
+
+    dispatch({
+      type: actionError,
+      payload: stateError,
+    })
+
+    return { error: stateError }
+  }
 }
 
 /**

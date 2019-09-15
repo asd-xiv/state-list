@@ -19,7 +19,7 @@ test("Update - error", t => {
   const todoList = buildList({
     name: "UPDATE-ERROR_TODOS",
     methods: {
-      find: () => [{ id: 1, name: "build gdpr startup" }, { id: 2 }],
+      read: () => [{ id: 1, name: "build gdpr startup" }, { id: 2 }],
       update: (id, data) => {
         return id === 3
           ? Promise.reject(
@@ -41,10 +41,10 @@ test("Update - error", t => {
   )
 
   // Link lists's action to store's dispatch
-  const listFind = todoList.find(store.dispatch)
+  const listRead = todoList.read(store.dispatch)
   const listUpdate = todoList.update(store.dispatch)
 
-  listFind()
+  listRead()
     .then(() => listUpdate(3, { name: "updated name" }))
     .then(({ error }) => {
       const todosSelector = todoList.selector(store.getState())

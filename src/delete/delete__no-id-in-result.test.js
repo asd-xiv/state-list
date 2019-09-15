@@ -8,7 +8,7 @@ test("Delete - id not in response", t => {
   const todoList = buildList({
     name: "DELETE-ERROR-NO-ID_TODOS",
     methods: {
-      find: () => [{ id: 1, name: "build gdpr startup" }, { id: 2 }],
+      read: () => [{ id: 1, name: "build gdpr startup" }, { id: 2 }],
       delete: () => ({ name: "I dont know who I am :(" }),
     },
   })
@@ -21,7 +21,7 @@ test("Delete - id not in response", t => {
   )
 
   // Link lists's action to store's dispatch
-  const listFind = todoList.find(store.dispatch)
+  const listFind = todoList.read(store.dispatch)
   const listDelete = todoList.delete(store.dispatch)
 
   listFind()

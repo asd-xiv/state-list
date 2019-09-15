@@ -8,8 +8,8 @@ test("Delete", t => {
   const todoList = buildList({
     name: "DELETE_TODOS",
     methods: {
-      find: () => [{ id: 1, name: "lorem ipsum" }, { id: 2, name: "foo bar" }],
-      delete: id => ({ id }),
+      read: () => [{ id: 1, name: "lorem ipsum" }, { id: 2, name: "foo bar" }],
+      delete: (id, testRest) => ({ id, testRest }),
     },
   })
 
@@ -21,15 +21,19 @@ test("Delete", t => {
   )
 
   // Link lists's action to store's dispatch
-  const listFind = todoList.find(store.dispatch)
+  const listFind = todoList.read(store.dispatch)
   const listDelete = todoList.delete(store.dispatch)
 
   listFind()
-    .then(() => listDelete(2))
+    .then(() => listDelete(2, "test-rest-params"))
     .then(({ result }) => {
       const todosSelector = todoList.selector(store.getState())
 
-      t.equals(result.id, 2, "list.delete resolves with element id")
+      t.deepEquals(
+        result,
+        { id: 2, testRest: "test-rest-params" },
+        "list.delete resolves with element id"
+      )
 
       t.deepEquals(
         todosSelector.items(),

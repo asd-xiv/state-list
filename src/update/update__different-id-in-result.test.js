@@ -8,7 +8,7 @@ test("Update - different id in response", t => {
   const todoList = buildList({
     name: "UPDATE-ERROR-DIFFERENT-ID_TODOS",
     methods: {
-      find: () => [{ id: 1, name: "build gdpr startup" }, { id: 2 }],
+      read: () => [{ id: 1, name: "build gdpr startup" }, { id: 2 }],
       update: () =>
         Promise.resolve({ id: 1, name: "updated different element" }),
     },
@@ -22,10 +22,10 @@ test("Update - different id in response", t => {
   )
 
   // Link lists's action to store's dispatch
-  const listFind = todoList.find(store.dispatch)
+  const listRead = todoList.read(store.dispatch)
   const listUpdate = todoList.update(store.dispatch)
 
-  listFind()
+  listRead()
     .then(() => listUpdate(2, { name: "random" }))
     .then(() => {
       const todosSelector = todoList.selector(store.getState())

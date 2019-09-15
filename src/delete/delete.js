@@ -12,7 +12,6 @@ import {
 /**
  * Call API to delete an item, dispatch events before and after
  *
- * @param  {Object}    cache          Cache store
  * @param  {Function}  dispatch       Redux dispatch
  * @param  {Function}  api            API method
  * @param  {string}    actionStart    Action before API call
@@ -24,13 +23,12 @@ import {
  * @return {Object}
  */
 export const deleteAction = ({
-  cache,
   dispatch,
   api,
   actionStart,
   actionSuccess,
   actionError,
-}) => id => {
+}) => async (id, ...rest) => {
   if (isEmpty(id)) {
     throw new TypeError(
       `ReduxList: deleteAction - cannot call delete method without a valid "id" param. Expected something, got "${JSON.stringify(
@@ -45,42 +43,38 @@ export const deleteAction = ({
   })
 
   // Resolve promise on both success and error with {result, error} obj
-  return new Promise(async resolve => {
-    try {
-      const result = await api(id)
+  try {
+    const result = await api(id, ...rest)
 
-      dispatch({
-        type: actionSuccess,
-        payload: {
-          ...result,
-          id: hasKey("id")(result) ? result.id : id,
-        },
-      })
+    dispatch({
+      type: actionSuccess,
+      payload: {
+        ...result,
+        id: hasKey("id")(result) ? result.id : id,
+      },
+    })
 
-      resolve({ result })
-    } catch (error) {
-      // wrapping here so that both reducer and this current promise
-      // resolve/pass the same data
-      const stateError = {
-        date: new Date(),
-        data: {
-          name: error.name,
-          message: error.message,
-          status: error.status,
-          body: error.body,
-        },
-      }
-
-      dispatch({
-        type: actionError,
-        payload: stateError,
-      })
-
-      resolve({ error: stateError })
+    return { result }
+  } catch (error) {
+    // wrapping here so that both reducer and this current promise
+    // resolve/pass the same data
+    const stateError = {
+      date: new Date(),
+      data: {
+        name: error.name,
+        message: error.message,
+        status: error.status,
+        body: error.body,
+      },
     }
-  }).finally(() => {
-    is(cache) && cache.clear()
-  })
+
+    dispatch({
+      type: actionError,
+      payload: stateError,
+    })
+
+    return { error: stateError }
+  }
 }
 
 /**

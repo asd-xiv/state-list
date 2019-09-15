@@ -7,7 +7,6 @@ test("List without API methods", t => {
   // WHAT TO TEST
   const todoList = buildList({
     name: "TODOS",
-    cache: 1,
     methods: {},
   })
 
@@ -20,7 +19,7 @@ test("List without API methods", t => {
 
   // Link lists's action to store's dispatch
   const listCreate = todoList.create(store.dispatch)
-  const listFind = todoList.find(store.dispatch)
+  const listRead = todoList.read(store.dispatch)
   const listUpdate = todoList.update(store.dispatch)
   const listDelete = todoList.delete(store.dispatch)
   const listClear = todoList.clear(store.dispatch)
@@ -75,10 +74,10 @@ test("List without API methods", t => {
 
   t.throws(
     () => {
-      listFind()
+      listRead()
     },
-    /ReduxList: "TODOS"."find" should be a function, got "undefined"/,
-    'Throw exception when calling "find" on list without methods'
+    /ReduxList: "TODOS"."read" should be a function, got "undefined"/,
+    'Throw exception when calling "read" on list without methods'
   )
 
   t.throws(

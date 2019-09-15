@@ -8,7 +8,7 @@ test("Update", t => {
   const todoList = buildList({
     name: "UPDATE_TODOS",
     methods: {
-      find: () => [{ id: 1, name: "lorem ipsum" }, { id: 2, name: "foo bar" }],
+      read: () => [{ id: 1, name: "lorem ipsum" }, { id: 2, name: "foo bar" }],
       update: (id, data) => ({
         id,
         ...data,
@@ -24,10 +24,10 @@ test("Update", t => {
   )
 
   // Link lists's action to store's dispatch
-  const listFind = todoList.find(store.dispatch)
+  const listRead = todoList.read(store.dispatch)
   const listUpdate = todoList.update(store.dispatch)
 
-  listFind()
+  listRead()
     .then(() => listUpdate(2, { name: "Updated foo" }))
     .then(({ result }) => {
       const todosSelector = todoList.selector(store.getState())

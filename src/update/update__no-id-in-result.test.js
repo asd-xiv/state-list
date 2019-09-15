@@ -8,7 +8,7 @@ test("Update - id not in response", t => {
   const todoList = buildList({
     name: "UPDATE-ERROR-NO-ID_TODOS",
     methods: {
-      find: () => [{ id: 1, name: "build gdpr startup" }, { id: 2 }],
+      read: () => [{ id: 1, name: "build gdpr startup" }, { id: 2 }],
       update: (id, data) => data,
     },
   })
@@ -21,10 +21,10 @@ test("Update - id not in response", t => {
   )
 
   // Link lists's action to store's dispatch
-  const listFind = todoList.find(store.dispatch)
+  const listRead = todoList.read(store.dispatch)
   const listUpdate = todoList.update(store.dispatch)
 
-  listFind()
+  listRead()
     .then(() => listUpdate(1, { name: "updated" }))
     .then(() => {
       const todosSelector = todoList.selector(store.getState())

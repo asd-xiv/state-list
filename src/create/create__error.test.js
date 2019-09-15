@@ -19,7 +19,7 @@ test("Create - error", t => {
   const todoList = buildList({
     name: "CREATE-ERROR_TODOS",
     methods: {
-      find: () => [],
+      read: () => [],
       create: ({ name }) => {
         return name === "throw"
           ? Promise.reject(
@@ -42,7 +42,7 @@ test("Create - error", t => {
 
   // Link lists's action to store's dispatch
   const listCreate = todoList.create(store.dispatch)
-  const listFind = todoList.find(store.dispatch)
+  const listFind = todoList.read(store.dispatch)
 
   listFind()
     .then(() => listCreate({ name: "throw" }))

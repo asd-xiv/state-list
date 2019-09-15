@@ -8,7 +8,7 @@ test("Delete - different id in response", t => {
   const todoList = buildList({
     name: "DELETE-ERROR-DIFFERENT-ID_TODOS",
     methods: {
-      find: () => [{ id: 1, name: "build gdpr startup" }, { id: 2 }],
+      read: () => [{ id: 1, name: "build gdpr startup" }, { id: 2 }],
       delete: () => Promise.resolve({ id: 1 }),
     },
   })
@@ -21,7 +21,7 @@ test("Delete - different id in response", t => {
   )
 
   // Link lists's action to store's dispatch
-  const listFind = todoList.find(store.dispatch)
+  const listFind = todoList.read(store.dispatch)
   const listDelete = todoList.delete(store.dispatch)
 
   listFind()

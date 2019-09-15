@@ -16,7 +16,12 @@ import {
   createSuccessReducer,
   createErrorReducer,
 } from "./create/create"
-import { findAction, findStartReducer, findEndReducer } from "./find/find"
+import {
+  readAction,
+  readStartReducer,
+  readSuccessReducer,
+  readErrorReducer,
+} from "./read/read"
 import {
   updateAction,
   updateStartReducer,
@@ -31,7 +36,6 @@ import {
 } from "./delete/delete"
 
 import { buildQueue } from "./lib/queue"
-import { buildCacheStore } from "./lib/cache"
 
 const collections = Object.create(null)
 
@@ -42,38 +46,29 @@ const hasKey = key => obj => Object.prototype.hasOwnProperty.call(obj, key)
  *
  * @param  {Object}  props           List props
  * @param  {string}  props.name      Unique name so actions dont overlap
- * @param  {number}  props.cacheTTL  If present, all .find requests are cached
- *                                   for this amount of milliseconds
  *
  * @return {Object}
  */
-const buildList = ({ name, cacheTTL = 0, methods = {} }) => {
+const buildList = ({ name, methods = {} }) => {
   if (hasKey(name)(collections)) {
     throw new Error(`ReduxList: List with name "${name}" already exists`)
   }
 
-  const hasCache = !isEmpty(cacheTTL)
-  const collection = (collections[name] = {
-    cache: hasCache
-      ? buildCacheStore({
-          ttl: cacheTTL,
-        })
-      : undefined,
-    queue: buildQueue(),
-    actions: {
-      createStart: `${name}_CREATE_START`,
-      createSuccess: `${name}_CREATE_SUCCESS`,
-      createError: `${name}_CREATE_ERROR`,
-      loadStart: `${name}_LOAD_START`,
-      loadEnd: `${name}_LOAD_END`,
-      updateStart: `${name}_UPDATE_START`,
-      updateSuccess: `${name}_UPDATE_SUCCESS`,
-      updateError: `${name}_UPDATE_ERROR`,
-      deleteStart: `${name}_DELETE_START`,
-      deleteSuccess: `${name}_DELETE_SUCCESS`,
-      deleteError: `${name}_DELETE_ERROR`,
-    },
-  })
+  collections[name] = true
+
+  const queue = buildQueue()
+  const createStart = `${name}_CREATE_START`
+  const createSuccess = `${name}_CREATE_SUCCESS`
+  const createError = `${name}_CREATE_ERROR`
+  const readStart = `${name}_READ_START`
+  const readSuccess = `${name}_READ_END`
+  const readError = `${name}_READ_ERROR`
+  const updateStart = `${name}_UPDATE_START`
+  const updateSuccess = `${name}_UPDATE_SUCCESS`
+  const updateError = `${name}_UPDATE_ERROR`
+  const deleteStart = `${name}_DELETE_START`
+  const deleteSuccess = `${name}_DELETE_SUCCESS`
+  const deleteError = `${name}_DELETE_ERROR`
 
   return {
     name,
@@ -127,29 +122,27 @@ const buildList = ({ name, cacheTTL = 0, methods = {} }) => {
      */
     create: dispatch =>
       typeof methods.create === "function"
-        ? (data, { isDraft = false } = {}) => {
-            hasCache && collection.cache.clear()
-
+        ? (data, { isDraft = false, ...restOptions } = {}, ...rest) => {
             if (isDraft) {
               dispatch({
-                type: collection.actions.createSuccess,
+                type: createSuccess,
                 payload: data,
               })
 
               return Promise.resolve({ result: data })
             }
 
-            return collection.queue.enqueue({
+            return queue.enqueue({
               fn: createAction({
                 dispatch,
                 api: methods.create,
-                actionStart: collection.actions.createStart,
-                actionSuccess: collection.actions.createSuccess,
-                actionError: collection.actions.createError,
+                actionStart: createStart,
+                actionSuccess: createSuccess,
+                actionError: createError,
               }),
 
-              // need to be array since queue will call fn(...args)
-              args: [data],
+              // needs array since queue calls fn(...args)
+              args: [data, { isDraft, ...restOptions }, ...rest],
             })
           }
         : () => {
@@ -166,24 +159,26 @@ const buildList = ({ name, cacheTTL = 0, methods = {} }) => {
      *
      * @return {void}
      */
-    find: dispatch => {
-      if (typeof methods.find === "function") {
+    read: dispatch => {
+      if (typeof methods.read === "function") {
         return (...args) =>
-          collection.queue.enqueue({
-            fn: findAction({
-              cache: collection.cache,
+          queue.enqueue({
+            fn: readAction({
               dispatch,
-              method: methods.find,
-              actionStart: collection.actions.loadStart,
-              actionEnd: collection.actions.loadEnd,
+              api: methods.read,
+              actionStart: readStart,
+              actionSuccess: readSuccess,
+              actionError: readError,
             }),
+
+            // needs array since queue calls fn(...args)
             args,
           })
       }
 
       return () => {
         throw new TypeError(
-          `ReduxList: "${name}"."find" should be a function, got "${typeof methods.find}"`
+          `ReduxList: "${name}"."read" should be a function, got "${typeof methods.red}"`
         )
       }
     },
@@ -199,27 +194,27 @@ const buildList = ({ name, cacheTTL = 0, methods = {} }) => {
      */
     update: dispatch =>
       typeof methods.update === "function"
-        ? (id, data, { isDraft = false } = {}) => {
-            hasCache && collection.cache.clear()
-
+        ? (id, data, { isDraft = false, ...restOptions } = {}, ...rest) => {
             if (isDraft) {
               dispatch({
-                type: collection.actions.updateSuccess,
+                type: updateSuccess,
                 payload: { id, ...data },
               })
 
               return Promise.resolve({ result: { id, ...data } })
             }
 
-            return collection.queue.enqueue({
+            return queue.enqueue({
               fn: updateAction({
                 dispatch,
                 api: methods.update,
-                actionStart: collection.actions.updateStart,
-                actionSuccess: collection.actions.updateSuccess,
-                actionError: collection.actions.updateError,
+                actionStart: updateStart,
+                actionSuccess: updateSuccess,
+                actionError: updateError,
               }),
-              args: [id, data],
+
+              // needs array since queue calls fn(...args)
+              args: [id, data, { isDraft, ...restOptions }, ...rest],
             })
           }
         : () => {
@@ -241,15 +236,16 @@ const buildList = ({ name, cacheTTL = 0, methods = {} }) => {
     delete: dispatch =>
       typeof methods.delete === "function"
         ? (...args) =>
-            collection.queue.enqueue({
+            queue.enqueue({
               fn: deleteAction({
-                cache: collection.cache,
                 dispatch,
                 api: methods.delete,
-                actionStart: collection.actions.deleteStart,
-                actionSuccess: collection.actions.deleteSuccess,
-                actionError: collection.actions.deleteError,
+                actionStart: deleteStart,
+                actionSuccess: deleteSuccess,
+                actionError: deleteError,
               }),
+
+              // needs array since queue calls fn(...args)
               args,
             })
         : () => {
@@ -266,10 +262,8 @@ const buildList = ({ name, cacheTTL = 0, methods = {} }) => {
      * @return {void}
      */
     clear: dispatch => () => {
-      hasCache && collection.cache.clear()
-
       dispatch({
-        type: collection.actions.loadEnd,
+        type: readSuccess,
         payload: [],
       })
 
@@ -301,33 +295,35 @@ const buildList = ({ name, cacheTTL = 0, methods = {} }) => {
     ) => {
       switch (type) {
         // Create
-        case collection.actions.createStart:
+        case createStart:
           return createStartReducer(state, payload)
-        case collection.actions.createSuccess:
+        case createSuccess:
           return createSuccessReducer(state, payload)
-        case collection.actions.createError:
+        case createError:
           return createErrorReducer(state, payload)
 
         // Read
-        case collection.actions.loadStart:
-          return findStartReducer(state, payload)
-        case collection.actions.loadEnd:
-          return findEndReducer(state, payload)
+        case readStart:
+          return readStartReducer(state, payload)
+        case readSuccess:
+          return readSuccessReducer(state, payload)
+        case readError:
+          return readErrorReducer(state, payload)
 
         // Update
-        case collection.actions.updateStart:
+        case updateStart:
           return updateStartReducer(state, payload)
-        case collection.actions.updateSuccess:
+        case updateSuccess:
           return updateSuccessReducer(state, payload)
-        case collection.actions.updateError:
+        case updateError:
           return updateErrorReducer(state, payload)
 
         // Delete
-        case collection.actions.deleteStart:
+        case deleteStart:
           return deleteStartReducer(state, payload)
-        case collection.actions.deleteSuccess:
+        case deleteSuccess:
           return deleteSuccessReducer(state, payload)
-        case collection.actions.deleteError:
+        case deleteError:
           return deleteErrorReducer(state, payload)
 
         default:

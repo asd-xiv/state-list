@@ -8,9 +8,11 @@ test("Create", t => {
   const todoList = buildList({
     name: "CREATE_TODOS",
     methods: {
-      create: data => ({
+      create: (data, options, other) => ({
         id: 1,
         ...data,
+        options,
+        other,
       }),
     },
   })
@@ -25,7 +27,11 @@ test("Create", t => {
   // Link lists's action to store's dispatch
   const listCreate = todoList.create(store.dispatch)
 
-  listCreate({ name: "New foo" })
+  listCreate(
+    { name: "New foo" },
+    { otherOption: "lorem" },
+    { restParam: "ipsum" }
+  )
     .then(({ result }) => {
       const selector = todoList.selector(store.getState())
 
@@ -43,7 +49,12 @@ test("Create", t => {
 
       t.deepEquals(
         result,
-        { id: 1, name: "New foo" },
+        {
+          id: 1,
+          name: "New foo",
+          options: { isDraft: false, otherOption: "lorem" },
+          other: { restParam: "ipsum" },
+        },
         "list.create resolves with created item"
       )
 
@@ -59,13 +70,24 @@ test("Create", t => {
 
       t.deepEquals(
         result,
-        { id: 2, foo: "bar-draft" },
+        {
+          id: 2,
+          foo: "bar-draft",
+        },
         "Draft .create() resolves with item without calling method"
       )
 
       t.deepEquals(
         selector.items(),
-        [{ id: 1, name: "New foo" }, result],
+        [
+          {
+            id: 1,
+            name: "New foo",
+            options: { isDraft: false, otherOption: "lorem" },
+            other: { restParam: "ipsum" },
+          },
+          result,
+        ],
         "Created draft element should be added to items array"
       )
 

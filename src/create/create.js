@@ -1,6 +1,6 @@
 const debug = require("debug")("ReduxList:Create")
 
-import { forEach, map, reduce, hasWith } from "@mutantlove/m"
+import { findWith, isNothing, map, reduce, hasWith, is } from "@mutantlove/m"
 
 /**
  * Call API to create item. Dispatch actions before, after success and after
@@ -22,44 +22,42 @@ export const createAction = ({
   actionStart,
   actionSuccess,
   actionError,
-}) => data => {
+}) => async (data, ...rest) => {
   dispatch({
     type: actionStart,
     payload: data,
   })
 
   // Resolve promise on both success and error with {result, error} obj
-  return new Promise(async resolve => {
-    try {
-      const result = await api(data)
+  try {
+    const result = await api(data, ...rest)
 
-      dispatch({
-        type: actionSuccess,
-        payload: result,
-      })
+    dispatch({
+      type: actionSuccess,
+      payload: result,
+    })
 
-      resolve({ result })
-    } catch (error) {
-      // wrapping here and not in the reducer so that both resolved error and
-      // state error match
-      const stateError = {
-        date: new Date(),
-        data: {
-          name: error.name,
-          message: error.message,
-          status: error.status,
-          body: error.body,
-        },
-      }
-
-      dispatch({
-        type: actionError,
-        payload: stateError,
-      })
-
-      resolve({ error: stateError })
+    return { result }
+  } catch (error) {
+    // wrapping here and not in the reducer so that both resolved error and
+    // state error match
+    const stateError = {
+      date: new Date(),
+      data: {
+        name: error.name,
+        message: error.message,
+        status: error.status,
+        body: error.body,
+      },
     }
-  })
+
+    dispatch({
+      type: actionError,
+      payload: stateError,
+    })
+
+    return { error: stateError }
+  }
 }
 
 /**
@@ -90,16 +88,15 @@ export const createStartReducer = (state, payload) => {
  */
 export const createSuccessReducer = (state, payload) => {
   const items = Array.isArray(payload) ? payload : [payload]
-
-  forEach(item => {
-    const hasId = Object.prototype.hasOwnProperty.call(item, "id")
-
-    if (!hasId) {
-      throw new TypeError(
-        `createSuccessReducer: trying to create item "${item}" without id property`
-      )
-    }
+  const itemWithoutId = findWith({
+    id: isNothing,
   })(items)
+
+  if (is(itemWithoutId)) {
+    throw new TypeError(
+      `createSuccessReducer: trying to create item "${itemWithoutId}" without id property`
+    )
+  }
 
   return {
     ...state,

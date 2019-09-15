@@ -19,7 +19,7 @@ test("Delete - error", t => {
   const todoList = buildList({
     name: "DELETE-ERROR_TODOS",
     methods: {
-      find: () => [{ id: 1, name: "build gdpr startup" }, { id: 2 }],
+      read: () => [{ id: 1, name: "build gdpr startup" }, { id: 2 }],
       delete: id => {
         return id === 2
           ? Promise.reject(
@@ -41,7 +41,7 @@ test("Delete - error", t => {
   )
 
   // Link lists's action to store's dispatch
-  const listFind = todoList.find(store.dispatch)
+  const listFind = todoList.read(store.dispatch)
   const listDelete = todoList.delete(store.dispatch)
 
   listDelete().catch(error => {
