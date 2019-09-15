@@ -61,7 +61,7 @@ jobs:
       - save_cache:
           paths:
             - node_modules
-            - lib
+            - dist
             - src
             - .git
             - .babelrc
@@ -71,6 +71,7 @@ jobs:
             - .prettierrc
             - README.md
             - CHANGELOG.md
+            - package-lock.json
             - package.json
           key: redux-all-is-list-{{ .Branch }}-{{ .Revision }}
 
