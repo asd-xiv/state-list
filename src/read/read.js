@@ -22,14 +22,14 @@ export const readAction = ({
   })
 
   try {
-    const results = await api(...args)
+    const result = await api(...args)
 
     dispatch({
       type: actionSuccess,
-      payload: Array.isArray(results) ? results : [results],
+      payload: Array.isArray(result) ? result : [result],
     })
 
-    return results
+    return { result }
   } catch (error) {
     // wrapping here so that both reducer and this current promise
     // resolve/pass the same data
@@ -52,26 +52,11 @@ export const readAction = ({
   }
 }
 
-/**
- * Modify state to indicate the list is being loaded
- *
- * @param {Object}  state  Old state
- *
- * @return {Object} New state
- */
 export const readStartReducer = state => ({
   ...state,
   isLoading: true,
 })
 
-/**
- * Add newly received items
- *
- * @param {Object}    state  Old state
- * @param {Object[]}  items  List of items
- *
- * @return {Object} New state
- */
 export const readSuccessReducer = (state, items) => ({
   ...state,
   items,

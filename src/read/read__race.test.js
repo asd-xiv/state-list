@@ -1,20 +1,20 @@
 import test from "tape"
 import { createStore, combineReducers } from "redux"
 
-import { buildList } from ".."
+import { buildList, useList } from ".."
 
-test("Read - race conditions", t => {
+test("Read - race conditions", async t => {
   let callCount = 0
 
   // WHAT TO TEST
-  const todoList = buildList("READ_RACE_TODOS", {
+  const todos = buildList("READ_RACE_TODOS", {
     read: () => {
       callCount++
 
       return new Promise(resolve => {
         setTimeout(() => {
           resolve([{ id: 1, name: "lorem ipsum" }, { id: 2, name: "foo bar" }])
-        }, 500)
+        }, 100)
       })
     },
   })
@@ -22,34 +22,32 @@ test("Read - race conditions", t => {
   // Redux store
   const store = createStore(
     combineReducers({
-      [todoList.name]: todoList.reducer,
+      [todos.name]: todos.reducer,
     })
   )
 
-  // Link lists's action to store's dispatch
-  const listRead = todoList.read(store.dispatch)
+  const { read } = useList(todos, store.dispatch)
 
-  return Promise.resolve()
-    .then(() =>
-      Promise.all([
-        listRead(),
-        listRead(),
-        listRead(),
-        new Promise(resolve => {
-          // run another .read after the other 3 ended
-          setTimeout(() => {
-            resolve(listRead())
-          }, 550)
-        }),
-      ])
-    )
-    .finally(() => {
-      t.equals(
-        callCount,
-        2,
-        "Multiple same signature calls should not trigger until first one ended"
-      )
+  await Promise.all([
+    read(),
+    read(),
+    read(),
+    read(),
+    read(),
+    read(),
+    new Promise(resolve => {
+      // run another .read after the others ended
+      setTimeout(() => {
+        resolve(read())
+      }, 150)
+    }),
+  ])
 
-      t.end()
-    })
+  t.equals(
+    callCount,
+    2,
+    "Multiple same signature calls should not trigger until first one ended"
+  )
+
+  t.end()
 })
