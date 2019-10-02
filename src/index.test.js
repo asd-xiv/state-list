@@ -109,16 +109,13 @@ test("List without API methods", async t => {
     'Throw exception when calling "remove" on list without methods'
   )
 
-  {
-    await clear()
-    const { items } = selector(store.getState())
+  await clear()
 
-    t.deepEquals(
-      items(),
-      [],
-      "Builtin .clear should remove all items from state"
-    )
-  }
+  t.deepEquals(
+    selector(store.getState()).items(),
+    [],
+    "Builtin .clear should remove all items from state"
+  )
 
   t.end()
 })
