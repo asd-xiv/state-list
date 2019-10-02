@@ -1,11 +1,11 @@
 import test from "tape"
 import { createStore, combineReducers } from "redux"
 
-import { buildList } from ".."
+import { buildList, useList } from ".."
 
-test("Update - different id in response", t => {
+test("Update - different id in response", async t => {
   // WHAT TO TEST
-  const todoList = buildList("UPDATE-ERROR-DIFFERENT-ID_TODOS", {
+  const todos = buildList("UPDATE-ERROR-DIFFERENT-ID_TODOS", {
     read: () => [{ id: 1, name: "build gdpr startup" }, { id: 2 }],
     update: () => Promise.resolve({ id: 1, name: "updated different element" }),
   })
@@ -13,25 +13,22 @@ test("Update - different id in response", t => {
   // Redux store
   const store = createStore(
     combineReducers({
-      [todoList.name]: todoList.reducer,
+      [todos.name]: todos.reducer,
     })
   )
 
-  // Link lists's action to store's dispatch
-  const listRead = todoList.read(store.dispatch)
-  const listUpdate = todoList.update(store.dispatch)
+  const { selector, read, update } = useList(todos, store.dispatch)
 
-  listRead()
-    .then(() => listUpdate(2, { name: "random" }))
-    .then(() => {
-      const todosSelector = todoList.selector(store.getState())
+  await read()
+  await update(2, { name: "random" })
 
-      t.deepEquals(
-        todosSelector.items(),
-        [{ id: 1, name: "updated different element" }, { id: 2 }],
-        "Element with id equal to the returned value should be removed from items array"
-      )
+  const { items } = selector(store.getState())
 
-      t.end()
-    })
+  t.deepEquals(
+    items(),
+    [{ id: 1, name: "updated different element" }, { id: 2 }],
+    "Update should be done on the element with the id returned by .update, not the id that .update was called with"
+  )
+
+  t.end()
 })

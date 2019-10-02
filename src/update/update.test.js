@@ -1,11 +1,11 @@
 import test from "tape"
 import { createStore, combineReducers } from "redux"
 
-import { buildList } from ".."
+import { buildList, useList } from ".."
 
-test("Update", t => {
+test("Update", async t => {
   // WHAT TO TEST
-  const todoList = buildList("UPDATE_TODOS", {
+  const todos = buildList("UPDATE_TODOS", {
     read: () => [{ id: 1, name: "lorem ipsum" }, { id: 2, name: "foo bar" }],
     update: (id, data) => ({
       id,
@@ -16,38 +16,39 @@ test("Update", t => {
   // Redux store
   const store = createStore(
     combineReducers({
-      [todoList.name]: todoList.reducer,
+      [todos.name]: todos.reducer,
     })
   )
 
-  // Link lists's action to store's dispatch
-  const listRead = todoList.read(store.dispatch)
-  const listUpdate = todoList.update(store.dispatch)
+  const { selector, read, update } = useList(todos, store.dispatch)
 
-  listRead()
-    .then(() => listUpdate(2, { name: "Updated foo" }))
-    .then(({ result }) => {
-      const todosSelector = todoList.selector(store.getState())
+  await read()
 
-      t.deepEquals(
-        result,
-        { id: 2, name: "Updated foo" },
-        "list.update resolves with updated item"
-      )
+  {
+    const { result } = await update(2, { name: "Updated foo" })
+    const { items } = selector(store.getState())
 
-      t.deepEquals(
-        todosSelector.items(),
-        [{ id: 1, name: "lorem ipsum" }, { id: 2, name: "Updated foo" }],
-        "element should be updated in items array"
-      )
-    })
-    .then(() => listUpdate(2, { name: "Draft" }, { isDraft: true }))
-    .then(({ result }) => {
-      t.deepEquals(
-        result,
-        { id: 2, name: "Draft" },
-        "Draft .update() resolves with item without calling method"
-      )
-      t.end()
-    })
+    t.deepEquals(
+      result,
+      { id: 2, name: "Updated foo" },
+      "list.update resolves with updated item"
+    )
+
+    t.deepEquals(
+      items(),
+      [{ id: 1, name: "lorem ipsum" }, { id: 2, name: "Updated foo" }],
+      "element should be updated in items array"
+    )
+  }
+  {
+    const { result } = await update(2, { name: "Draft" }, { isDraft: true })
+
+    t.deepEquals(
+      result,
+      { id: 2, name: "Draft" },
+      "Draft .update() resolves with item without calling method"
+    )
+  }
+
+  t.end()
 })

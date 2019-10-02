@@ -60,32 +60,11 @@ export const createAction = ({
   }
 }
 
-/**
- * Modify state to indicate an item is being created
- *
- * @param {Object}  state    Old state
- * @param {Object}  payload  Create method input data
- *
- * @return {Object} New state
- */
-export const createStartReducer = (state, payload) => {
-  const items = Array.isArray(payload) ? payload : [payload]
+export const createStartReducer = (state, payload) => ({
+  ...state,
+  creating: Array.isArray(payload) ? payload : [payload],
+})
 
-  return {
-    ...state,
-    creating: [...state.creating, ...items],
-    isCreating: true,
-  }
-}
-
-/**
- * Add newly created item to list
- *
- * @param  {Object}  state    Old state
- * @param  {Object}  payload  Create method result
- *
- * @return {Object} New state
- */
 export const createSuccessReducer = (state, payload) => {
   const items = Array.isArray(payload) ? payload : [payload]
   const itemWithoutId = findWith({
@@ -125,7 +104,6 @@ export const createSuccessReducer = (state, payload) => {
       ...state.errors,
       create: null,
     },
-
     creating: [],
   }
 }

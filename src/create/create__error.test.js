@@ -1,7 +1,7 @@
 import test from "tape"
 import { createStore, combineReducers } from "redux"
 
-import { buildList } from ".."
+import { buildList, useList } from ".."
 
 // Dummy Error with api data inside
 class RequestError extends Error {
@@ -14,9 +14,9 @@ class RequestError extends Error {
   }
 }
 
-test("Create - error", t => {
+test("Create - error", async t => {
   // WHAT TO TEST
-  const todoList = buildList("CREATE-ERROR_TODOS", {
+  const todos = buildList("CREATE-ERROR_TODOS", {
     read: () => [],
     create: ({ name }) => {
       return name === "throw"
@@ -33,55 +33,52 @@ test("Create - error", t => {
   // Redux store
   const store = createStore(
     combineReducers({
-      [todoList.name]: todoList.reducer,
+      [todos.name]: todos.reducer,
     })
   )
 
-  // Link lists's action to store's dispatch
-  const listCreate = todoList.create(store.dispatch)
-  const listFind = todoList.read(store.dispatch)
+  const { selector, create, read } = useList(todos, store.dispatch)
 
-  listFind()
-    .then(() => listCreate({ name: "throw" }))
-    .then(({ error }) => {
-      const todosSelector = todoList.selector(store.getState())
-      const stateError = todosSelector.error("create")
+  await read()
 
-      t.deepEquals(
-        error,
-        stateError,
-        `Error data set to state equals error data the action promise resolves to`
-      )
+  {
+    const { error: apiError } = await create({ name: "throw" })
+    const createError = selector(store.getState()).error("create")
 
-      t.deepEquals(
-        {
-          body: error.data.body,
-          status: error.data.status,
-        },
-        {
-          body: { validationData: "from server" },
-          status: 409,
-        },
-        `Resolved error data same as slide data`
-      )
-    })
-    .then(() => listCreate({ name: "dont throw" }))
-    .then(({ error }) => {
-      const todosSelector = todoList.selector(store.getState())
-      const stateError = todosSelector.error("create")
+    t.deepEquals(
+      apiError,
+      createError,
+      `Error data set to state equals error data the action promise resolves to`
+    )
 
-      t.equals(
-        stateError,
-        null,
-        "State error is set to null after successfull create"
-      )
+    t.deepEquals(
+      {
+        body: createError.data.body,
+        status: createError.data.status,
+      },
+      {
+        body: { validationData: "from server" },
+        status: 409,
+      },
+      `Resolved error data same as slide data`
+    )
+  }
+  {
+    const { error: apiError } = await create({ name: "dont throw" })
+    const createError = selector(store.getState()).error("create")
 
-      t.equals(
-        error,
-        undefined,
-        "Resolved error is null after successfull create"
-      )
+    t.equals(
+      createError,
+      null,
+      "State error is set to null after successfull create"
+    )
 
-      t.end()
-    })
+    t.equals(
+      apiError,
+      undefined,
+      "Resolved error is null after successfull create"
+    )
+  }
+
+  t.end()
 })

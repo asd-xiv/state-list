@@ -67,54 +67,12 @@ export const updateAction = ({
   }
 }
 
-/**
- * Modify state to indicate one item in list is being updated
- *
- * @param  {Object}         state  Old state
- * @param  {number|string}  id     Updating item ID
- * @param  {Object}         data   Updating item data
- *
- * @return {Object} New state
- */
-export const updateStartReducer = (state, { id, data }) => {
-  const isAlreadyUpdating = hasWith({ id })(state.updating)
+export const updateStartReducer = (state, { id, data }) => ({
+  ...state,
+  updating: { id, data },
+})
 
-  isAlreadyUpdating &&
-    debug(
-      "updateStartReducer: ID already updating, doing nothing (will still trigger a rerender)",
-      {
-        id,
-        updating: state.updating,
-      }
-    )
-
-  return {
-    ...state,
-    updating: isAlreadyUpdating
-      ? state.updating
-      : [...state.updating, { id, data }],
-  }
-}
-
-/**
- * Update existing item by id in state list
- *
- * @param {Object}  state    Current state
- * @param {Object}  payload  Updated item data (needs id field)
- *
- * @return {Object}
- */
 export const updateSuccessReducer = (state, payload) => {
-  const hasId = Object.prototype.hasOwnProperty.call(payload, "id")
-
-  if (!hasId) {
-    throw new TypeError(
-      `updateSuccessReducer: cannot update item "${JSON.stringify(
-        payload
-      )}" without id property`
-    )
-  }
-
   if (hasWith({ id: payload.id })(state.items)) {
     debug(
       `updateSuccessReducer: ID "${payload.id}" does not exist, doint nothing (will still trigger a rerender)`,
@@ -130,7 +88,7 @@ export const updateSuccessReducer = (state, payload) => {
     items: map(item => (item.id === payload.id ? merge(item, payload) : item))(
       state.items
     ),
-    updating: [],
+    updating: {},
     errors: {
       ...state.errors,
       update: null,
@@ -140,7 +98,7 @@ export const updateSuccessReducer = (state, payload) => {
 
 export const updateErrorReducer = (state, error = {}) => ({
   ...state,
-  updating: [],
+  updating: {},
   errors: {
     ...state.errors,
     update: error,

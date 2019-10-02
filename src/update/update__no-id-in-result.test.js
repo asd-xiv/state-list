@@ -1,11 +1,11 @@
 import test from "tape"
 import { createStore, combineReducers } from "redux"
 
-import { buildList } from ".."
+import { buildList, useList } from ".."
 
-test("Update - id not in response", t => {
+test("Update - id not in response", async t => {
   // WHAT TO TEST
-  const todoList = buildList("UPDATE-ERROR-NO-ID_TODOS", {
+  const todos = buildList("UPDATE-ERROR-NO-ID_TODOS", {
     read: () => [{ id: 1, name: "build gdpr startup" }, { id: 2 }],
     update: (id, data) => data,
   })
@@ -13,25 +13,22 @@ test("Update - id not in response", t => {
   // Redux store
   const store = createStore(
     combineReducers({
-      [todoList.name]: todoList.reducer,
+      [todos.name]: todos.reducer,
     })
   )
 
-  // Link lists's action to store's dispatch
-  const listRead = todoList.read(store.dispatch)
-  const listUpdate = todoList.update(store.dispatch)
+  const { selector, read, update } = useList(todos, store.dispatch)
 
-  listRead()
-    .then(() => listUpdate(1, { name: "updated" }))
-    .then(() => {
-      const todosSelector = todoList.selector(store.getState())
+  await read()
+  await update(1, { name: "updated" })
 
-      t.deepEquals(
-        todosSelector.items(),
-        [{ id: 1, name: "updated" }, { id: 2 }],
-        "Element with id equal to the passed parameter should be updated"
-      )
+  const { items } = selector(store.getState())
 
-      t.end()
-    })
+  t.deepEquals(
+    items(),
+    [{ id: 1, name: "updated" }, { id: 2 }],
+    "Update should be done on the element with the id parameter .update was called with if there is no id field in the response"
+  )
+
+  t.end()
 })
