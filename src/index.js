@@ -1,15 +1,7 @@
 /* eslint-disable no-multi-assign */
 const debug = require("debug")("ReduxList:Main")
 
-import {
-  pipe,
-  findWith,
-  sortWith,
-  head,
-  is,
-  isEmpty,
-  hasWith,
-} from "@mutantlove/m"
+import { hasKey } from "@mutantlove/m"
 import {
   createAction,
   createStartReducer,
@@ -23,23 +15,27 @@ import {
   readErrorReducer,
 } from "./read/read"
 import {
+  readOneAction,
+  readOneStartReducer,
+  readOneSuccessReducer,
+  readOneErrorReducer,
+} from "./read-one/read-one"
+import {
   updateAction,
   updateStartReducer,
   updateSuccessReducer,
   updateErrorReducer,
 } from "./update/update"
 import {
-  deleteAction,
-  deleteStartReducer,
-  deleteSuccessReducer,
-  deleteErrorReducer,
-} from "./delete/delete"
+  removeAction,
+  removeStartReducer,
+  removeSuccessReducer,
+  removeErrorReducer,
+} from "./remove/remove"
 
 import { buildQueue } from "./lib/queue"
 
 const collections = Object.create(null)
-
-const hasKey = key => obj => Object.prototype.hasOwnProperty.call(obj, key)
 
 /**
  * List factory function
@@ -63,54 +59,18 @@ const buildList = (name, methods = {}) => {
   const readStart = `${name}_READ_START`
   const readSuccess = `${name}_READ_END`
   const readError = `${name}_READ_ERROR`
+  const readOneStart = `${name}_READ-ONE_START`
+  const readOneSuccess = `${name}_READ-ONE_END`
+  const readOneError = `${name}_READ-ONE_ERROR`
   const updateStart = `${name}_UPDATE_START`
   const updateSuccess = `${name}_UPDATE_SUCCESS`
   const updateError = `${name}_UPDATE_ERROR`
-  const deleteStart = `${name}_DELETE_START`
-  const deleteSuccess = `${name}_DELETE_SUCCESS`
-  const deleteError = `${name}_DELETE_ERROR`
+  const removeStart = `${name}_REMOVE_START`
+  const removeSuccess = `${name}_REMOVE_SUCCESS`
+  const removeError = `${name}_REMOVE_ERROR`
 
   return {
     name,
-
-    /**
-     * Selector over the list's state slice
-     *
-     * @param  {Object}  state  The parent state slice
-     *
-     * @return {Object<string, Function>}
-     */
-    selector: state => ({
-      head: () =>
-        state[name].items.length === 0 ? undefined : state[name].items[0],
-      byId: id => findWith({ id })(state[name].items),
-
-      items: () => state[name].items,
-      creating: () => state[name].creating,
-      updating: () => state[name].updating,
-      deleting: () => state[name].deleting,
-
-      error: action =>
-        isEmpty(action)
-          ? pipe(
-              Object.entries,
-              sortWith("date"),
-              head
-            )(state[name].errors)
-          : state[name].errors[action],
-
-      isCreating: () => !isEmpty(state[name].creating),
-      isLoaded: () => is(state[name].loadDate),
-      isLoading: () => state[name].isLoading,
-      isUpdating: id =>
-        id
-          ? hasWith({ id })(state[name].updating)
-          : !isEmpty(state[name].updating),
-      isDeleting: id =>
-        id
-          ? hasWith({ id })(state[name].deleting)
-          : !isEmpty(state[name].deleting),
-    }),
 
     /**
      * Create an item, dispatch events before and after API call
@@ -120,36 +80,39 @@ const buildList = (name, methods = {}) => {
      *
      * @return {void}
      */
-    create: dispatch =>
-      typeof methods.create === "function"
-        ? (data, { isDraft = false, ...restOptions } = {}, ...rest) => {
-            if (isDraft) {
-              dispatch({
-                type: createSuccess,
-                payload: data,
-              })
+    create: dispatch => (
+      data,
+      { isDraft = false, ...restOptions } = {},
+      ...rest
+    ) => {
+      if (typeof methods.create !== "function") {
+        throw new TypeError(
+          `ReduxList: "${name}"."create" must be a function, got "${typeof methods.create}"`
+        )
+      }
 
-              return Promise.resolve({ result: data })
-            }
+      if (isDraft) {
+        dispatch({
+          type: createSuccess,
+          payload: data,
+        })
 
-            return queue.enqueue({
-              fn: createAction({
-                dispatch,
-                api: methods.create,
-                actionStart: createStart,
-                actionSuccess: createSuccess,
-                actionError: createError,
-              }),
+        return Promise.resolve({ result: data })
+      }
 
-              // needs array since queue calls fn(...args)
-              args: [data, { isDraft, ...restOptions }, ...rest],
-            })
-          }
-        : () => {
-            throw new TypeError(
-              `ReduxList: "${name}"."create" should be a function, got "${typeof methods.create}"`
-            )
-          },
+      return queue.enqueue({
+        fn: createAction({
+          dispatch,
+          api: methods.create,
+          actionStart: createStart,
+          actionSuccess: createSuccess,
+          actionError: createError,
+        }),
+
+        // queue calls fn(...args)
+        args: [data, { isDraft, ...restOptions }, ...rest],
+      })
+    },
 
     /**
      * Load list items, dispatch events before and after
@@ -159,28 +122,54 @@ const buildList = (name, methods = {}) => {
      *
      * @return {void}
      */
-    read: dispatch => {
-      if (typeof methods.read === "function") {
-        return (...args) =>
-          queue.enqueue({
-            fn: readAction({
-              dispatch,
-              api: methods.read,
-              actionStart: readStart,
-              actionSuccess: readSuccess,
-              actionError: readError,
-            }),
-
-            // needs array since queue calls fn(...args)
-            args,
-          })
-      }
-
-      return () => {
+    read: dispatch => (...args) => {
+      if (typeof methods.read !== "function") {
         throw new TypeError(
-          `ReduxList: "${name}"."read" should be a function, got "${typeof methods.red}"`
+          `ReduxList: "${name}"."read" must be a function, got "${typeof methods.read}"`
         )
       }
+
+      return queue.enqueue({
+        fn: readAction({
+          dispatch,
+          api: methods.read,
+          actionStart: readStart,
+          actionSuccess: readSuccess,
+          actionError: readError,
+        }),
+
+        // queue calls fn(...args)
+        args,
+      })
+    },
+
+    /**
+     * Load one item, dispatch events before and after
+     *
+     * @param  {Function}  dispatch  Redux dispatch function
+     * @param  {Array}     args      API method parameters
+     *
+     * @return {void}
+     */
+    readOne: dispatch => (...args) => {
+      if (typeof methods.readOne !== "function") {
+        throw new TypeError(
+          `ReduxList: "${name}"."readOne" must be a function, got "${typeof methods.readOne}"`
+        )
+      }
+
+      return queue.enqueue({
+        fn: readOneAction({
+          dispatch,
+          api: methods.readOne,
+          actionStart: readOneStart,
+          actionSuccess: readOneSuccess,
+          actionError: readOneError,
+        }),
+
+        // queue calls fn(...args)
+        args,
+      })
     },
 
     /**
@@ -192,36 +181,39 @@ const buildList = (name, methods = {}) => {
      *
      * @return {void}
      */
-    update: dispatch =>
-      typeof methods.update === "function"
-        ? (id, data, { isDraft = false, ...restOptions } = {}, ...rest) => {
-            if (isDraft) {
-              dispatch({
-                type: updateSuccess,
-                payload: { id, ...data },
-              })
+    update: dispatch => (
+      id,
+      data,
+      { isDraft = false, ...restOptions } = {},
+      ...rest
+    ) => {
+      if (typeof methods.update !== "function") {
+        throw new TypeError(
+          `ReduxList: "${name}"."update" must be a function, got "${typeof methods.update}"`
+        )
+      }
+      if (isDraft) {
+        dispatch({
+          type: updateSuccess,
+          payload: { id, ...data },
+        })
 
-              return Promise.resolve({ result: { id, ...data } })
-            }
+        return Promise.resolve({ result: { id, ...data } })
+      }
 
-            return queue.enqueue({
-              fn: updateAction({
-                dispatch,
-                api: methods.update,
-                actionStart: updateStart,
-                actionSuccess: updateSuccess,
-                actionError: updateError,
-              }),
+      return queue.enqueue({
+        fn: updateAction({
+          dispatch,
+          api: methods.update,
+          actionStart: updateStart,
+          actionSuccess: updateSuccess,
+          actionError: updateError,
+        }),
 
-              // needs array since queue calls fn(...args)
-              args: [id, data, { isDraft, ...restOptions }, ...rest],
-            })
-          }
-        : () => {
-            throw new TypeError(
-              `ReduxList: "${name}"."update" should be a function, got "${typeof methods.update}"`
-            )
-          },
+        // queue calls fn(...args)
+        args: [id, data, { isDraft, ...restOptions }, ...rest],
+      })
+    },
 
     /**
      * Delete an item, dispatch events before and after
@@ -233,26 +225,26 @@ const buildList = (name, methods = {}) => {
      *
      * @return {void}
      */
-    delete: dispatch =>
-      typeof methods.delete === "function"
-        ? (...args) =>
-            queue.enqueue({
-              fn: deleteAction({
-                dispatch,
-                api: methods.delete,
-                actionStart: deleteStart,
-                actionSuccess: deleteSuccess,
-                actionError: deleteError,
-              }),
+    remove: dispatch => (...args) => {
+      if (typeof methods.remove !== "function") {
+        throw new TypeError(
+          `ReduxList: "${name}"."remove" must be a function, got "${typeof methods.remove}"`
+        )
+      }
 
-              // needs array since queue calls fn(...args)
-              args,
-            })
-        : () => {
-            throw new TypeError(
-              `ReduxList: "${name}"."delete" should be a function, got "${typeof methods.delete}"`
-            )
-          },
+      return queue.enqueue({
+        fn: removeAction({
+          dispatch,
+          api: methods.remove,
+          actionStart: removeStart,
+          actionSuccess: removeSuccess,
+          actionError: removeError,
+        }),
+
+        // queue calls fn(...args)
+        args,
+      })
+    },
 
     /**
      * Empty list
@@ -283,9 +275,10 @@ const buildList = (name, methods = {}) => {
     reducer: (
       state = {
         items: [],
+        reading: null,
         creating: [],
         updating: [],
-        deleting: [],
+        removing: [],
 
         errors: {},
         loadDate: null,
@@ -310,6 +303,14 @@ const buildList = (name, methods = {}) => {
         case readError:
           return readErrorReducer(state, payload)
 
+        // ReadOne
+        case readOneStart:
+          return readOneStartReducer(state, payload)
+        case readOneSuccess:
+          return readOneSuccessReducer(state, payload)
+        case readOneError:
+          return readOneErrorReducer(state, payload)
+
         // Update
         case updateStart:
           return updateStartReducer(state, payload)
@@ -319,12 +320,12 @@ const buildList = (name, methods = {}) => {
           return updateErrorReducer(state, payload)
 
         // Delete
-        case deleteStart:
-          return deleteStartReducer(state, payload)
-        case deleteSuccess:
-          return deleteSuccessReducer(state, payload)
-        case deleteError:
-          return deleteErrorReducer(state, payload)
+        case removeStart:
+          return removeStartReducer(state, payload)
+        case removeSuccess:
+          return removeSuccessReducer(state, payload)
+        case removeError:
+          return removeErrorReducer(state, payload)
 
         default:
           return state
@@ -333,4 +334,5 @@ const buildList = (name, methods = {}) => {
   }
 }
 
-export { buildList, buildList as buildCollection }
+export { buildList }
+export { useList } from "./use-list"

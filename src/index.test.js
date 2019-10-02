@@ -1,27 +1,20 @@
 import test from "tape"
 import { createStore, combineReducers } from "redux"
 
-import { buildList } from "."
+import { buildList, useList } from "."
 
-test("List without API methods", t => {
+test("List without API methods", async t => {
   // WHAT TO TEST
-  const todoList = buildList("TODOS")
+  const todos = buildList("TODOS")
 
   // Redux store
   const store = createStore(
     combineReducers({
-      [todoList.name]: todoList.reducer,
+      [todos.name]: todos.reducer,
     })
   )
 
-  // Link lists's action to store's dispatch
-  const listCreate = todoList.create(store.dispatch)
-  const listRead = todoList.read(store.dispatch)
-  const listUpdate = todoList.update(store.dispatch)
-  const listDelete = todoList.delete(store.dispatch)
-  const listClear = todoList.clear(store.dispatch)
-
-  t.equals(todoList.name, "TODOS", "New list created with unique name")
+  t.equals(todos.name, "TODOS", "New list created with unique name")
 
   t.throws(
     () => {
@@ -31,77 +24,101 @@ test("List without API methods", t => {
     "Throw exception when creating a list with a duplicate name"
   )
 
-  const todosSelector = todoList.selector(store.getState())
+  const { selector, create, read, readOne, update, remove, clear } = useList(
+    todos,
+    store.dispatch
+  )
+  const {
+    head,
+    items,
+    creating,
+    removing,
+    updating,
+    isCreating,
+    isLoaded,
+    isLoading,
+    isUpdating,
+    isRemoving,
+  } = selector(store.getState())
 
   t.deepEquals(
     {
-      head: todosSelector.head(),
-      items: todosSelector.items(),
-      creating: todosSelector.creating(),
-      updating: todosSelector.updating(),
-      deleting: todosSelector.deleting(),
-      isCreating: todosSelector.isCreating(),
-      isLoaded: todosSelector.isLoaded(),
-      isLoading: todosSelector.isLoading(),
-      isUpdating: todosSelector.isUpdating(),
-      isDeleting: todosSelector.isDeleting(),
+      head: head(),
+      items: items(),
+      creating: creating(),
+      updating: updating(),
+      removing: removing(),
+      isCreating: isCreating(),
+      isLoaded: isLoaded(),
+      isLoading: isLoading(),
+      isUpdating: isUpdating(),
+      isRemoving: isRemoving(),
     },
     {
       head: undefined,
       items: [],
       updating: [],
-      deleting: [],
+      removing: [],
       creating: [],
       isLoading: false,
       isLoaded: false,
       isCreating: false,
       isUpdating: false,
-      isDeleting: false,
+      isRemoving: false,
     },
     "Default state initialized in redux store via list selector"
   )
 
   t.throws(
     () => {
-      listCreate({ id: 2 })
+      create({ id: 2 })
     },
-    /ReduxList: "TODOS"."create" should be a function, got "undefined"/,
+    /ReduxList: "TODOS"."create" must be a function, got "undefined"/,
     'Throw exception when calling "create" on list without methods'
   )
 
   t.throws(
     () => {
-      listRead()
+      read()
     },
-    /ReduxList: "TODOS"."read" should be a function, got "undefined"/,
+    /ReduxList: "TODOS"."read" must be a function, got "undefined"/,
     'Throw exception when calling "read" on list without methods'
   )
 
   t.throws(
     () => {
-      listUpdate(1, { test: 2 })
+      readOne()
     },
-    /ReduxList: "TODOS"."update" should be a function, got "undefined"/,
+    /ReduxList: "TODOS"."readOne" must be a function, got "undefined"/,
+    'Throw exception when calling "readOne" on list without methods'
+  )
+
+  t.throws(
+    () => {
+      update(1, { test: 2 })
+    },
+    /ReduxList: "TODOS"."update" must be a function, got "undefined"/,
     'Throw exception when calling "update" on list without methods'
   )
 
   t.throws(
     () => {
-      listDelete(1, { test: 2 })
+      remove(1, { test: 2 })
     },
-    /ReduxList: "TODOS"."delete" should be a function, got "undefined"/,
-    'Throw exception when calling "delete" on list without methods'
+    /ReduxList: "TODOS"."remove" must be a function, got "undefined"/,
+    'Throw exception when calling "remove" on list without methods'
   )
 
-  listClear().then(() => {
-    const selector = todoList.selector(store.getState())
+  {
+    await clear()
+    const { items } = selector(store.getState())
 
     t.deepEquals(
-      selector.items(),
+      items(),
       [],
       "Builtin .clear should remove all items from state"
     )
+  }
 
-    t.end()
-  })
+  t.end()
 })
