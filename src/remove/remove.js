@@ -1,13 +1,6 @@
-const debug = require("debug")("ReduxList:Delete")
+const debug = require("debug")("ReduxList:Remove")
 
-import {
-  filterWith,
-  findWith,
-  is,
-  isEmpty,
-  hasWith,
-  hasKey,
-} from "@mutantlove/m"
+import { filterWith, findWith, isEmpty, hasWith, hasKey } from "@mutantlove/m"
 
 /**
  * Call API to delete an item, dispatch events before and after
@@ -22,7 +15,7 @@ import {
  *
  * @return {Object}
  */
-export const deleteAction = ({
+export const removeAction = ({
   dispatch,
   api,
   actionStart,
@@ -31,7 +24,7 @@ export const deleteAction = ({
 }) => async (id, ...rest) => {
   if (isEmpty(id)) {
     throw new TypeError(
-      `ReduxList: deleteAction - cannot call delete method without a valid "id" param. Expected something, got "${JSON.stringify(
+      `ReduxList: removeAction - cannot call remove method without a valid "id" param. Expected something, got "${JSON.stringify(
         id
       )}"`
     )
@@ -77,54 +70,15 @@ export const deleteAction = ({
   }
 }
 
-/**
- * Enable UI flag for removing item
- *
- * @param  {Object}  state  The state
- * @param  {Object}  id     Deleting item id
- *
- * @return {Object}  New slice state
- */
-export const deleteStartReducer = (state, id) => {
-  const deletingItem = findWith({ id })(state.deleting)
+export const removeStartReducer = (state, id) => ({
+  ...state,
+  removing: [findWith({ id })(state.items)],
+})
 
-  is(deletingItem) &&
-    debug(
-      "deleteStartReducer: ID already deleting, doing nothing (will still trigger a rerender)",
-      {
-        deletingItem,
-        deleting: state.deleting,
-      }
-    )
-
-  return {
-    ...state,
-    deleting: is(deletingItem)
-      ? state.deleting
-      : [...state.deleting, findWith({ id })(state.items)],
-  }
-}
-
-/**
- * Remove item from items array
- *
- * @param  {Object}  state    The state
- * @param  {Object}  item     Payload
- *
- * @return {Object}
- */
-export const deleteSuccessReducer = (state, item) => {
-  const hasId = is(item) && Object.prototype.hasOwnProperty.call(item, "id")
-
-  if (!hasId) {
-    throw new TypeError(
-      `ReduxList: deleteSuccessReducer - cannot delete item "${item}" without id property`
-    )
-  }
-
+export const removeSuccessReducer = (state, item) => {
   if (!hasWith({ id: item.id })(state.items)) {
     debug(
-      `deleteSuccessReducer: ID "${item.id}" does not exist, doing nothing (will still trigger a rerender)`,
+      `removeSuccessReducer: ID "${item.id}" does not exist, doing nothing (will still trigger a rerender)`,
       {
         deletedItem: item,
         existingItems: state.items,
@@ -135,19 +89,19 @@ export const deleteSuccessReducer = (state, item) => {
   return {
     ...state,
     items: filterWith({ "!id": item.id })(state.items),
-    deleting: filterWith({ "!id": item.id })(state.deleting),
     errors: {
       ...state.errors,
-      delete: null,
+      remove: null,
     },
+    removing: [],
   }
 }
 
-export const deleteErrorReducer = (state, error = {}) => ({
+export const removeErrorReducer = (state, error = {}) => ({
   ...state,
   errors: {
     ...state.errors,
-    delete: error,
+    remove: error,
   },
-  deleting: [],
+  removing: [],
 })
