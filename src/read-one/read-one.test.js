@@ -6,7 +6,10 @@ import { buildList, useList } from ".."
 test("ReadOne", async t => {
   // WHAT TO TEST
   const todos = buildList("READ-ONE_TODOS", {
-    read: () => [{ id: 1, name: "lorem ipsum" }, { id: 2, name: "foo bar" }],
+    read: () => [
+      { id: 1, name: "lorem ipsum" },
+      { id: 2, name: "foo bar" },
+    ],
     readOne: (id, data) => ({
       id,
       ...data,

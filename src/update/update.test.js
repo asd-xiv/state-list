@@ -6,7 +6,10 @@ import { buildList, useList } from ".."
 test("Update", async t => {
   // WHAT TO TEST
   const todos = buildList("UPDATE_TODOS", {
-    read: () => [{ id: 1, name: "lorem ipsum" }, { id: 2, name: "foo bar" }],
+    read: () => [
+      { id: 1, name: "lorem ipsum" },
+      { id: 2, name: "foo bar" },
+    ],
     update: (id, data) => ({
       id,
       ...data,
@@ -36,7 +39,10 @@ test("Update", async t => {
 
     t.deepEquals(
       items(),
-      [{ id: 1, name: "lorem ipsum" }, { id: 2, name: "Updated foo" }],
+      [
+        { id: 1, name: "lorem ipsum" },
+        { id: 2, name: "Updated foo" },
+      ],
       "element should be updated in items array"
     )
   }

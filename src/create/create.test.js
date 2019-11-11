@@ -109,7 +109,10 @@ test("Create - multiple", async t => {
 
   t.deepEquals(
     result,
-    [{ id: 0, name: "New foo" }, { id: 1, name: "New foo 2" }],
+    [
+      { id: 0, name: "New foo" },
+      { id: 1, name: "New foo 2" },
+    ],
     "list.create resolves with created items"
   )
 

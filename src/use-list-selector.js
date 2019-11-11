@@ -12,16 +12,8 @@ import {
 } from "@mutantlove/m"
 
 const useListSelector = namespace => state => ({
-  head: () =>
-    pipe(
-      get([namespace, "items"]),
-      head
-    )(state),
-  byId: id =>
-    pipe(
-      get([namespace, "items"]),
-      findWith({ id })
-    )(state),
+  head: () => pipe(get([namespace, "items"]), head)(state),
+  byId: id => pipe(get([namespace, "items"]), findWith({ id }))(state),
   items: () => get([namespace, "items"])(state),
   creating: () => get([namespace, "creating"])(state),
   updating: () => get([namespace, "updating"])(state),
@@ -37,10 +29,7 @@ const useListSelector = namespace => state => ({
         )(state)
       : get([namespace, "errors", action])(state),
   isCreating: () =>
-    pipe(
-      get([namespace, "creating"]),
-      items => !isEmpty(items)
-    )(state),
+    pipe(get([namespace, "creating"]), items => !isEmpty(items))(state),
   isRemoving: id => {
     const removing = get([namespace, "removing"])(state)
 
@@ -52,11 +41,7 @@ const useListSelector = namespace => state => ({
     return is(id) ? hasWith({ id })(updating) : !isEmpty(updating)
   },
   isLoading: () => get([namespace, "isLoading"])(state),
-  isLoaded: () =>
-    pipe(
-      get([namespace, "loadDate"]),
-      is
-    )(state),
+  isLoaded: () => pipe(get([namespace, "loadDate"]), is)(state),
 })
 
 export { useListSelector }

@@ -6,7 +6,10 @@ import { buildList, useList } from ".."
 test("Remove", async t => {
   // WHAT TO TEST
   const todos = buildList("DELETE_TODOS", {
-    read: () => [{ id: 1, name: "lorem ipsum" }, { id: 2, name: "foo bar" }],
+    read: () => [
+      { id: 1, name: "lorem ipsum" },
+      { id: 2, name: "foo bar" },
+    ],
     remove: (id, testRest) => ({ id, testRest }),
   })
 

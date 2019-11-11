@@ -13,7 +13,10 @@ test("Read - race conditions", async t => {
 
       return new Promise(resolve => {
         setTimeout(() => {
-          resolve([{ id: 1, name: "lorem ipsum" }, { id: 2, name: "foo bar" }])
+          resolve([
+            { id: 1, name: "lorem ipsum" },
+            { id: 2, name: "foo bar" },
+          ])
         }, 100)
       })
     },

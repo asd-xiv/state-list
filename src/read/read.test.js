@@ -6,7 +6,10 @@ import { buildList, useList } from ".."
 test("Read", async t => {
   // WHAT TO TEST
   const todos = buildList("READ_TODOS", {
-    read: () => [{ id: 1, name: "lorem ipsum" }, { id: 2, name: "foo bar" }],
+    read: () => [
+      { id: 1, name: "lorem ipsum" },
+      { id: 2, name: "foo bar" },
+    ],
   })
 
   // Redux store
@@ -42,7 +45,10 @@ test("Read", async t => {
 
   t.deepEquals(
     items(),
-    [{ id: 1, name: "lorem ipsum" }, { id: 2, name: "foo bar" }],
+    [
+      { id: 1, name: "lorem ipsum" },
+      { id: 2, name: "foo bar" },
+    ],
     "elements should be set in items array"
   )
 
