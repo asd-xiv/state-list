@@ -82,7 +82,7 @@ const buildList = (name, methods = {}) => {
      */
     create: dispatch => (
       data,
-      { isDraft = false, ...restOptions } = {},
+      { isLocal = false, ...restOptions } = {},
       ...rest
     ) => {
       if (typeof methods.create !== "function") {
@@ -91,7 +91,7 @@ const buildList = (name, methods = {}) => {
         )
       }
 
-      if (isDraft) {
+      if (isLocal) {
         dispatch({
           type: createSuccess,
           payload: data,
@@ -110,7 +110,7 @@ const buildList = (name, methods = {}) => {
         }),
 
         // queue calls fn(...args)
-        args: [data, { isDraft, ...restOptions }, ...rest],
+        args: [data, { isLocal, ...restOptions }, ...rest],
       })
     },
 
@@ -184,7 +184,7 @@ const buildList = (name, methods = {}) => {
     update: dispatch => (
       id,
       data,
-      { isDraft = false, ...restOptions } = {},
+      { isLocal = false, ...restOptions } = {},
       ...rest
     ) => {
       if (typeof methods.update !== "function") {
@@ -192,7 +192,8 @@ const buildList = (name, methods = {}) => {
           `ReduxList: "${name}"."update" must be a function, got "${typeof methods.update}"`
         )
       }
-      if (isDraft) {
+
+      if (isLocal) {
         dispatch({
           type: updateSuccess,
           payload: { id, ...data },
@@ -211,7 +212,7 @@ const buildList = (name, methods = {}) => {
         }),
 
         // queue calls fn(...args)
-        args: [id, data, { isDraft, ...restOptions }, ...rest],
+        args: [id, data, { isLocal, ...restOptions }, ...rest],
       })
     },
 
@@ -225,11 +226,26 @@ const buildList = (name, methods = {}) => {
      *
      * @return {void}
      */
-    remove: dispatch => (...args) => {
+    remove: dispatch => (
+      id,
+      { isLocal = false, ...restOptions } = {},
+      ...rest
+    ) => {
       if (typeof methods.remove !== "function") {
         throw new TypeError(
           `ReduxList: "${name}"."remove" must be a function, got "${typeof methods.remove}"`
         )
+      }
+
+      if (isLocal) {
+        dispatch({
+          type: removeSuccess,
+          payload: {
+            id,
+          },
+        })
+
+        return Promise.resolve({ result: { id } })
       }
 
       return queue.enqueue({
@@ -242,7 +258,7 @@ const buildList = (name, methods = {}) => {
         }),
 
         // queue calls fn(...args)
-        args,
+        args: [id, { isLocal, ...restOptions }, ...rest],
       })
     },
 

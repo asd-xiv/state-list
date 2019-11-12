@@ -10,7 +10,7 @@ test("Remove", async t => {
       { id: 1, name: "lorem ipsum" },
       { id: 2, name: "foo bar" },
     ],
-    remove: (id, testRest) => ({ id, testRest }),
+    remove: (id, options, ...rest) => ({ id, options, rest }),
   })
 
   // Redux store
@@ -20,36 +20,70 @@ test("Remove", async t => {
     })
   )
 
-  const { selector, read, remove } = useList(todos, store.dispatch)
+  {
+    const { selector, read, remove } = useList(todos, store.dispatch)
 
-  await read()
+    await read()
 
-  const { result } = await remove(2, "test-rest-params")
-  const { items, isRemoving } = selector(store.getState())
+    const { result } = await remove(
+      2,
+      {
+        testOption: "other",
+      },
+      "test-rest-params"
+    )
+    const { items, isRemoving } = selector(store.getState())
 
-  t.deepEquals(
-    result,
-    { id: 2, testRest: "test-rest-params" },
-    "list.remove resolves with element id"
-  )
+    t.deepEquals(
+      result,
+      {
+        id: 2,
+        options: { isLocal: false, testOption: "other" },
+        rest: ["test-rest-params"],
+      },
+      "list.remove resolves with element id"
+    )
 
-  t.deepEquals(
-    items(),
-    [{ id: 1, name: "lorem ipsum" }],
-    "element should be removed from items array"
-  )
+    t.deepEquals(
+      items(),
+      [{ id: 1, name: "lorem ipsum" }],
+      "element should be removed from items array"
+    )
 
-  t.equals(
-    isRemoving(result.id),
-    false,
-    "isRemoving by id flag should be false after deleting"
-  )
+    t.equals(
+      isRemoving(result.id),
+      false,
+      "isRemoving by id flag should be false after deleting"
+    )
 
-  t.equals(
-    isRemoving(),
-    false,
-    "isRemoving flag should be false after deleting"
-  )
+    t.equals(
+      isRemoving(),
+      false,
+      "isRemoving flag should be false after deleting"
+    )
+  }
+  {
+    const { selector, read, remove } = useList(todos, store.dispatch)
+
+    await read()
+
+    const { result } = await remove(2, {
+      isLocal: true,
+    })
+    const { items } = selector(store.getState())
+
+    t.deepEquals(
+      result,
+      { id: 2 },
+      "Local .remove() resolves with id without calling method"
+    )
+
+    t.deepEquals(
+      items(),
+      [{ id: 1, name: "lorem ipsum" }],
+      "Remove local element should be delete from items array"
+    )
+  }
 
   t.end()
 })

@@ -47,7 +47,7 @@ test("Update", async t => {
     )
   }
   {
-    const { result } = await update(2, { name: "Draft" }, { isDraft: true })
+    const { result } = await update(2, { name: "Draft" }, { isLocal: true })
 
     t.deepEquals(
       result,

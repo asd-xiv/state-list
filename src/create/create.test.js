@@ -43,7 +43,7 @@ test("Create", async t => {
       {
         id: 1,
         name: "New foo",
-        options: { isDraft: false, otherOption: "lorem" },
+        options: { isLocal: false, otherOption: "lorem" },
         other: { restParam: "ipsum" },
       },
       "list.create resolves with created item"
@@ -59,7 +59,7 @@ test("Create", async t => {
     const { selector, create } = useList(todos, store.dispatch)
     const { result } = await create(
       { id: 2, foo: "bar-draft" },
-      { isDraft: true }
+      { isLocal: true }
     )
     const { items } = selector(store.getState())
 
@@ -78,7 +78,7 @@ test("Create", async t => {
         {
           id: 1,
           name: "New foo",
-          options: { isDraft: false, otherOption: "lorem" },
+          options: { isLocal: false, otherOption: "lorem" },
           other: { restParam: "ipsum" },
         },
         result,
