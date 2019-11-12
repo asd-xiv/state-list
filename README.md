@@ -7,24 +7,17 @@
 
 # redux-list
 
-> A Redux data "gateway", similar to an API gateway.
+> Treat all state slices as lists with a standard structure and behaviour
 
 ---
 
 <!-- vim-markdown-toc GFM -->
 
 * [Features](#features)
-  * [Aggregate](#aggregate)
-  * [Mitigate inconsistent API](#mitigate-inconsistent-api)
-  * [Race free](#race-free)
-  * [It's Redux](#its-redux)
 * [Install](#install)
 * [Example](#example)
 * [API](#api)
-  * [Retuns](#retuns)
   * [Internal state slice](#internal-state-slice)
-  * [Selectors](#selectors)
-* [Recommendations](#recommendations)
 * [Develop](#develop)
 * [Commit messages](#commit-messages)
 * [Changelog](#changelog)
@@ -33,21 +26,9 @@
 
 ## Features
 
-### Aggregate
-
-> Combine data coming from different sources (users from own api, tweet count from Twitter).
-
-### Mitigate inconsistent API
-
-> Uniform into a common shape, ie. stop backend tech dept from propagating into the frontend.
-
-### Race free
-
-> All CRUD operations are done in sequence. If `update` is issued after `delete`, the `update` promise will wait for `delete` to finish.
-
-### It's Redux
-
-> Treat your state data as simple lists with common metadata helpers (isLoading, isUpdating etc.).
+* **Aggregate**: Combine data coming from different sources (users from own api, tweet count from Twitter)
+* **Race free**: All CRUD operations are done in sequence. If `update` is issued after `delete`, the `update` promise will wait for `delete` to finish
+* **It's Redux**: Treat your Redux state data as simple lists with common metadata helpers (isLoading, isUpdating etc.).
 
 ## Install
 
@@ -59,16 +40,19 @@ npm install @mutantlove/redux-list
 
 1:1 mapping of a Todo list's CRUD methods to corresponding API endpoints.
 
-Define a list of todos from our local API.
+`src/todos.list.js` - Define a list of Todos from our API.
 
 ```js
-// todos.list.js
-
 import { buildList } from "@mutantlove/redux-list"
 
 const TodosList = buildList("PAGE__SECTION--TODOS", {
   create: data => POST("/todos", data),
   read: () => [{id: 1, title: "lorem ipsum"}],
+  readOne: () => {
+    id: 1,
+    title: "lorem ipsum",
+    body: "extended data that you dont need the first time around"
+  },
   update: (id, data) => PATCH(`/todos/${id}`, date),
   delete: id => DELETE(`/todos/${id}`),
 })
@@ -76,11 +60,11 @@ const TodosList = buildList("PAGE__SECTION--TODOS", {
 export {TodosList}
 ```
 
-Hook internal list reducers into the state store.
+---
+
+`store.js` - Hook internal list reducers into the state store.
 
 ```js
-// store.js
-
 import { createStore, combineReducers } from "redux"
 import { TodosList } from "./todos.state"
 
@@ -91,49 +75,46 @@ const store = createStore(
 )
 ```
 
-Use the list's selector helpers to access the data.
+---
+
+`todos.container.jsx` - Use the list's selector helpers to access the data.
 
 ```js
-// todos.container.jsx
-
 import React from "react"
 import cx from "classnames"
-import { connect } from "react-redux"
+import { useDispatch, useSelector } from "react-redux"
+import { useList } from "@mutantlove/redux-list"
 
 import { TodosList } from "./todos.state"
 
-@connect(
-  store => {
-    const todosSelector = listSelector.selector(store)
+/**
+ * Helper hook to reduce the number of imports
+ */
+const useLocalList = list => {
+  const dispatch = useDispatch()
+  const { selector, ...actions } = useList(list, dispatch)
 
-    return {
-      todos: todosSelector.items(),
-      todosIsLoading: todosSelector.isLoading(),
-    }
-  },
-  dispatch => ({
-    xHandleTodosFind: TodosList.read(dispatch),
-  })
-)
-class TodosContainer extends React.Component {
-  componentDidMount = () => {
-    const { xHandleTodosFind } = this.props
-
-    xHandleTodosFind()
+  return {
+    selector: useSelector(selector),
+    ...actions,
   }
+}
 
-  render = () => {
-    const { todos, todosIsLoading } = this.props
+const TodosContainer = () => {
+  const {
+    selector: { items, isLoading },
+  } = useLocalList(TodosList)
 
-    return (
-      <div
-        className={cx({
-          [css.isLoading]: todosIsLoading,
-        })}>
-        {todos.map(item => <div>{item.title}</div>)}
-      </div>
-    )
-  }
+  return (
+    <div
+      className={cx({
+        [css["todo--is-loading"]]: isLoading(),
+      })}>
+      {items().map(({ id, title }) => (
+        <div key={id}>{title}</div>
+      ))}
+    </div>
+  )
 }
 
 export { TodosContainer }
@@ -141,9 +122,9 @@ export { TodosContainer }
 
 ## API
 
-`buildList` is the only exposed function.
-
 ```js
+const { buildList } from "@mutantlove/redux-list"
+
 buildList(
   /**
    * Unique name used as Redux store key. If multiple lists use the same
@@ -184,41 +165,15 @@ buildList(
   read: (...rest) => {
   },
 
+  readOne: (id, options, ...rest) => {
+  },
+
   update: (id, data, options, ...rest) => {
   },
 
-  delete: (id, ...rest) => {
+  delete: (id, options, ...rest) => {
   }
 })
-```
-
-### Retuns
-
-Object containing:
-
-**`name`**`:string` and **`reducer`**`:Function`
-
-Map the same `name` passed in the builder function to the constructed reducer function specific each list. Use when initializing the store.
-
-```js
-import { createStore, combineReducers } from "redux"
-import { TodosList } from "./todos.state"
-
-const store = createStore(
-  combineReducers({
-    [TodosList.name]: TodosList.reducer,
-  }),
-)
-```
-
-**`create|read|update|delete`**`: (dispatch: Function): Function`
-
-Curried function that takes the store's `dispatch`. Error will be thrown if method is not defined.
-
-```js
-@connect(mapStateToProps, dispatch => ({
-  xHandleTodosFind: TodosList.read(dispatch),
-}))
 ```
 
 ### Internal state slice
@@ -237,26 +192,6 @@ Curried function that takes the store's `dispatch`. Error will be thrown if meth
   }
 }
 ```
-
-### Selectors
-
-* **`.head`**`: () => Object|undefined`
-* **`.byId`**`: (id: string|number) => Object|undefined`
-* **`.items`**`: () => Object[]`
-* **`.creating`**`: () => Object[]`
-* **`.updating`**`: () => Object[]`
-* **`.deleting`**`: () => Object[]`
-* **`.error`**`: (action: string) => Object`
-* **`.isCreating`**`: () => boolean`
-* **`.isLoaded`**`: () => boolean`
-* **`.isLoading`**`: () => boolean`
-* **`.isUpdating`**`: (id: string|number) => boolean`
-* **`.isDeleting`**`: (id: string|number) => boolean`
-
-## Recommendations
-
-* A list should be used once per page/section.
-* Don't store data locally, data lives in the database - the real application state.
 
 ## Develop
 
