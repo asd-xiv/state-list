@@ -26,9 +26,9 @@
 
 ## Features
 
-* **Aggregate**: Combine data coming from different sources (users from own api, tweet count from Twitter)
-* **Race free**: All CRUD operations are done in sequence. If `update` is issued after `delete`, the `update` promise will wait for `delete` to finish
-* **It's Redux**: Treat your Redux state data as simple lists with common metadata helpers (isLoading, isUpdating etc.).
+* [x] **Aggregate**: Combine data coming from different sources (users from own api, tweet count from Twitter)
+* [x] **Race free**: All CRUD operations are done in sequence. If `update` is issued after `delete`, the `update` promise will wait for `delete` to finish
+* [x] **It's Redux**: Treat your Redux state data as simple lists with common metadata helpers (isLoading, isUpdating etc.).
 
 ## Install
 
@@ -37,8 +37,6 @@ npm install @mutantlove/redux-list
 ```
 
 ## Example
-
-1:1 mapping of a Todo list's CRUD methods to corresponding API endpoints.
 
 `src/todos.list.js` - Define a list of Todos from our API.
 
@@ -51,7 +49,7 @@ const TodosList = buildList("PAGE__SECTION--TODOS", {
   readOne: () => {
     id: 1,
     title: "lorem ipsum",
-    body: "extended data that you dont need the first time around"
+    body: "extended data that you dont need the first time round"
   },
   update: (id, data) => PATCH(`/todos/${id}`, date),
   delete: id => DELETE(`/todos/${id}`),
@@ -60,9 +58,7 @@ const TodosList = buildList("PAGE__SECTION--TODOS", {
 export {TodosList}
 ```
 
----
-
-`store.js` - Hook internal list reducers into the state store.
+`src/store.js` - Hook internal list reducers into the state store.
 
 ```js
 import { createStore, combineReducers } from "redux"
@@ -75,9 +71,7 @@ const store = createStore(
 )
 ```
 
----
-
-`todos.container.jsx` - Use the list's selector helpers to access the data.
+`src/todos.container.jsx` - Use the list's selector helpers to access the data.
 
 ```js
 import React from "react"
@@ -150,7 +144,7 @@ buildList(
    * `${name}_CREATE_ERROR` after, depending if method throws an error.
    *
    * @param {Object} data     An `id` field must be present
-   * @param {Object} options  If called with `isDraft` option set to true,
+   * @param {Object} options  If called with `isLocal` option set to true,
    *                          this method will not run. The data object will
    *                          simply be added `slice.items`.
    *
