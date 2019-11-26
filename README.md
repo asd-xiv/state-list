@@ -7,7 +7,7 @@
 
 # redux-list
 
-> Treat all state slices as lists with a standard structure and behaviour
+> Treat Redux state slices as lists with a standard structure and behaviour
 
 ---
 
@@ -27,7 +27,7 @@
 ## Features
 
 * [x] **Aggregate**: Combine data coming from different sources (users from own api, tweet count from Twitter)
-* [x] **Race free**: All CRUD operations are done in sequence. If `update` is issued after `delete`, the `update` promise will wait for `delete` to finish
+* [x] **Race free**: List operations are sequential. If `update` is issued after `delete`, the `update` promise will wait for `delete` to finish
 * [x] **It's Redux**: Treat your Redux state data as simple lists with common metadata helpers (isLoading, isUpdating etc.).
 
 ## Install
