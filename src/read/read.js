@@ -1,5 +1,16 @@
 const debug = require("debug")("ReduxList:Read")
 
+import {
+  pipe,
+  push,
+  hasWith,
+  flatten,
+  reduce,
+  when,
+  merge,
+  map,
+} from "@mutantlove/m"
+
 /**
  * Call API to fetch items, dispatch events before and after
  *
@@ -16,40 +27,43 @@ export const readAction = ({
   actionStart,
   actionSuccess,
   actionError,
-}) => async (...args) => {
+}) => (query = {}, { shouldClear = true, ...rest } = {}) => {
   dispatch({
     type: actionStart,
   })
 
-  try {
-    const result = await api(...args)
+  return Promise.resolve()
+    .then(() => api(query, { shouldClear, ...rest }))
+    .then(result => {
+      dispatch({
+        type: actionSuccess,
+        payload: {
+          items: Array.isArray(result) ? result : [result],
+          shouldClear,
+        },
+      })
 
-    dispatch({
-      type: actionSuccess,
-      payload: Array.isArray(result) ? result : [result],
+      return { result }
     })
+    .catch(error => {
+      // reducer and this promise resolve with the same data
+      const stateError = {
+        date: new Date(),
+        data: {
+          name: error.name,
+          message: error.message,
+          status: error.status,
+          body: error.body,
+        },
+      }
 
-    return { result }
-  } catch (error) {
-    // wrapping here so that both reducer and this current promise
-    // resolve/pass the same data
-    const stateError = {
-      date: new Date(),
-      data: {
-        name: error.name,
-        message: error.message,
-        status: error.status,
-        body: error.body,
-      },
-    }
+      dispatch({
+        type: actionError,
+        payload: stateError,
+      })
 
-    dispatch({
-      type: actionError,
-      payload: stateError,
+      return { error: stateError }
     })
-
-    return { error: stateError }
-  }
 }
 
 export const readStartReducer = state => ({
@@ -57,9 +71,24 @@ export const readStartReducer = state => ({
   isLoading: true,
 })
 
-export const readSuccessReducer = (state, items) => ({
+export const readSuccessReducer = (state, { items, shouldClear }) => ({
   ...state,
-  items,
+  items: shouldClear
+    ? items
+    : pipe(
+        flatten,
+        reduce(
+          (acc, accItem) =>
+            when(
+              hasWith({ id: accItem.id }),
+              map(item =>
+                item.id === accItem.id ? merge(item, accItem) : item
+              ),
+              push(accItem)
+            )(acc),
+          []
+        )
+      )([state.items, items]),
   loadDate: new Date(),
   isLoading: false,
 })

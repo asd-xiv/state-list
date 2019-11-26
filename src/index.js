@@ -272,7 +272,7 @@ const buildList = (name, methods = {}) => {
     clear: dispatch => () => {
       dispatch({
         type: readSuccess,
-        payload: [],
+        payload: { items: [] },
       })
 
       return Promise.resolve([])
