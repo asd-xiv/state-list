@@ -7,7 +7,7 @@
 
 # redux-list
 
-> Treat Redux state slices as lists with a standard structure and behaviour
+> Redux state slices as lists with a standard structure and behaviour
 
 ---
 
@@ -28,7 +28,9 @@
 
 * [x] **Aggregate**: Combine data coming from different sources (users from own api, tweet count from Twitter)
 * [x] **Race free**: List operations are sequential. If `update` is issued after `delete`, the `update` promise will wait for `delete` to finish
-* [x] **It's Redux**: Treat your Redux state data as simple lists with common metadata helpers (isLoading, isUpdating etc.).
+* [x] **It's Redux**: Treat Redux state data as simple lists with common metadata helpers (isLoading, isUpdating etc.)
+* [ ] **Real time**: WebSockets support
+* [ ] **Offline & [CRDT](https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type)**: Keep local changes while offline and sync with [automerge](https://github.com/automerge/automerge)
 
 ## Install
 
@@ -44,18 +46,28 @@ npm install @mutantlove/redux-list
 import { buildList } from "@mutantlove/redux-list"
 
 const TodosList = buildList("PAGE__SECTION--TODOS", {
-  create: data => POST("/todos", data),
-  read: () => [{id: 1, title: "lorem ipsum"}],
-  readOne: () => {
-    id: 1,
-    title: "lorem ipsum",
-    body: "extended data that you dont need the first time round"
-  },
-  update: (id, data) => PATCH(`/todos/${id}`, date),
-  delete: id => DELETE(`/todos/${id}`),
+  create: data =>
+    POST("/todos", data),
+
+  read: () =>
+    GET("/todos"),
+
+  readOne: id =>
+    GET("/comments", {
+      query: { todoId: id },
+    }).then(result => ({
+      id,
+      comments: result,
+    })),
+
+  update: (id, data) =>
+    PATCH(`/todos/${id}`, date),
+
+  delete: id =>
+    DELETE(`/todos/${id}`),
 })
 
-export {TodosList}
+export { TodosList }
 ```
 
 `src/store.js` - Hook internal list reducers into the state store.
@@ -71,22 +83,15 @@ const store = createStore(
 )
 ```
 
-`src/todos.container.jsx` - Use the list's selector helpers to access the data.
+`src/use-app-list.js` - Hook to simplify usage in Container components
 
 ```js
-import React from "react"
-import cx from "classnames"
 import { useDispatch, useSelector } from "react-redux"
-import { useList } from "@mutantlove/redux-list"
+import { useList as useMutantList } from "@mutantlove/redux-list"
 
-import { TodosList } from "./todos.state"
-
-/**
- * Helper hook to reduce the number of imports
- */
-const useLocalList = list => {
+const useList = list => {
   const dispatch = useDispatch()
-  const { selector, ...actions } = useList(list, dispatch)
+  const { selector, ...actions } = useMutantList(list, dispatch)
 
   return {
     selector: useSelector(selector),
@@ -94,10 +99,22 @@ const useLocalList = list => {
   }
 }
 
+export { useList }
+```
+
+`src/todos.container.jsx` - Use list's selector to access the data
+
+```js
+import React from "react"
+import cx from "classnames"
+
+import { useList } from "./use-list"
+import { TodosList } from "./todos.state"
+
 const TodosContainer = () => {
   const {
     selector: { items, isLoading },
-  } = useLocalList(TodosList)
+  } = useList(TodosList)
 
   return (
     <div
@@ -123,8 +140,7 @@ buildList(
   /**
    * Unique name used as Redux store key. If multiple lists use the same
    * name, an error will be thrown.
-   * This is because the list is ment to be added on the root level of
-   * the store.
+   * List is ment to be added on the root level of the Redux store.
    *
    * Use BEM (getbem.com/naming) for naming, ex. `{page}__{section}--{entity}`
    */
@@ -133,41 +149,16 @@ buildList(
   /**
    * Define list's CRUD actions and map to one or more data sources (local
    * storage, 3rd party APIs or own API). There are only 4 actions that can
-   * be defined: `create`, `read`, `update` and `delete`.
+   * be defined: `create`, `read`, `update` and `remove`.
    */
   {
-  /**
-   * Create
-   *
-   * Redux actions will be dispatched before and after the method call.
-   * `${name}_CREATE_START` before and `${name}_CREATE_SUCCESS` or
-   * `${name}_CREATE_ERROR` after, depending if method throws an error.
-   *
-   * @param {Object} data     An `id` field must be present
-   * @param {Object} options  If called with `isLocal` option set to true,
-   *                          this method will not run. The data object will
-   *                          simply be added `slice.items`.
-   *
-   * @returns Object | Promise<Object>
-   */
-  create: (data, options, ...rest) => {
-    return {
-      id: "uuid",
-    }
+    create: (data, options, ...rest) => { ... }
+    read: (...rest) => { ... },
+    readOne: (id, options, ...rest) => { ... },
+    update: (id, data, options, ...rest) => { ... },
+    remove: (id, options, ...rest) => { ... }
   }
-
-  read: (...rest) => {
-  },
-
-  readOne: (id, options, ...rest) => {
-  },
-
-  update: (id, data, options, ...rest) => {
-  },
-
-  delete: (id, options, ...rest) => {
-  }
-})
+)
 ```
 
 ### Internal state slice
