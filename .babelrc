@@ -15,15 +15,6 @@
     // default this will be added to every file that requires it. This
     // duplication is sometimes unnecessary, especially when your application
     // is spread out over multiple files.
-    ["@babel/plugin-transform-runtime", { corejs: 3 }],
-
-    // let result = "hello"
-    //   |> doubleSay
-    //   |> capitalize
-    //   |> exclaim;
-    // result //=> "Hello, hello!"
-    ["@babel/plugin-proposal-pipeline-operator", {
-      "proposal": "minimal"
-    }]
+    ["@babel/plugin-transform-runtime", { corejs: 3 }]
   ]
 }
