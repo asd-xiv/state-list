@@ -16,49 +16,78 @@ test("ReadOne", async t => {
     }),
   })
 
+  const todos2 = buildList("READ-ONE_TODOS-2", {
+    read: () => [
+      { id: 1, name: "lorem ipsum" },
+      { id: 2, name: "foo bar" },
+    ],
+    readOne: (id, data) => ({
+      id,
+      ...data,
+    }),
+  })
+
   // Redux store
   const store = createStore(
     combineReducers({
       [todos.name]: todos.reducer,
+      [todos2.name]: todos2.reducer,
     })
   )
 
-  const { selector, read, readOne } = useList(todos, store.dispatch)
+  {
+    const { selector, read, readOne } = useList(todos, store.dispatch)
 
-  await read()
+    await read()
 
-  const { result } = await readOne(1, {
-    description: "Extending with more info",
-  })
-  const { items } = selector(store.getState())
+    const { result } = await readOne(1, {
+      description: "Extending with more info",
+    })
+    const { items } = selector(store.getState())
 
-  t.deepEquals(
-    result,
-    { id: 1, description: "Extending with more info" },
-    "list.readOne resolves with updated item"
-  )
+    t.deepEquals(
+      result,
+      { id: 1, description: "Extending with more info" },
+      "list.readOne resolves with updated item"
+    )
 
-  t.deepEquals(
-    items(),
-    [
-      {
-        id: 1,
-        name: "lorem ipsum",
-        description: "Extending with more info",
-      },
-      {
-        id: 2,
-        name: "foo bar",
-      },
-    ],
-    "element should be updated in items array"
-  )
+    t.deepEquals(
+      items(),
+      [
+        {
+          id: 1,
+          name: "lorem ipsum",
+          description: "Extending with more info",
+        },
+        {
+          id: 2,
+          name: "foo bar",
+        },
+      ],
+      "element should be updated in items array"
+    )
 
-  t.deepEquals(
-    result,
-    { id: 1, description: "Extending with more info" },
-    "list.readOne resolves with updated item"
-  )
+    t.deepEquals(
+      result,
+      { id: 1, description: "Extending with more info" },
+      "list.readOne resolves with updated item"
+    )
+  }
+
+  {
+    const { selector, readOne } = useList(todos2, store.dispatch)
+
+    await readOne(1, {
+      description: "Extending with more info",
+    })
+    const { items } = selector(store.getState())
+
+    t.deepEquals(
+      items(),
+      [{ id: 1, description: "Extending with more info" }],
+      "readOne returning item that does not exist should add to array"
+    )
+  }
 
   t.end()
 })

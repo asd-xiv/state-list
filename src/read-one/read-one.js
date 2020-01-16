@@ -1,6 +1,6 @@
 const debug = require("debug")("ReduxList:ReadOne")
 
-import { hasKey, map, merge, isEmpty } from "@mutantlove/m"
+import { hasKey, map, push, merge, when, hasWith, isEmpty } from "@mutantlove/m"
 
 /**
  * Call API to fetch one item, dispatch events before and after
@@ -73,9 +73,11 @@ export const readOneStartReducer = (state, id) => ({
 
 export const readOneSuccessReducer = (state, payload) => ({
   ...state,
-  items: map(item => (item.id === payload.id ? merge(item, payload) : item))(
-    state.items
-  ),
+  items: when(
+    hasWith({ id: payload.id }),
+    map(item => (item.id === payload.id ? merge(item, payload) : item)),
+    push(payload)
+  )(state.items),
   reading: null,
   errors: {
     ...state.errors,
