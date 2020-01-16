@@ -1,33 +1,24 @@
 const debug = require("debug")("ReduxList:useListSelector")
 
-import {
-  pipe,
-  get,
-  findWith,
-  isEmpty,
-  sortWith,
-  head,
-  is,
-  hasWith,
-} from "@mutantlove/m"
+import { pipe, get, findWith, isEmpty, when, is, hasWith } from "@mutantlove/m"
+
+const spreadObj = source => ({ ...source })
 
 const useListSelector = namespace => state => ({
-  head: () => pipe(get([namespace, "items"]), head)(state),
-  byId: id => pipe(get([namespace, "items"]), findWith({ id }))(state),
-  items: () => get([namespace, "items"])(state),
-  creating: () => get([namespace, "creating"])(state),
-  updating: () => get([namespace, "updating"])(state),
-  removing: () => get([namespace, "removing"])(state),
-  allErrors: () => get([namespace, "errors"])(state),
+  head: () => pipe(get([namespace, "items", 0]), when(is, spreadObj))(state),
+  byId: id =>
+    pipe(
+      get([namespace, "items"]),
+      findWith({ id }),
+      when(is, spreadObj)
+    )(state),
+  items: () => [...get([namespace, "items"])(state)],
+  creating: () => [...get([namespace, "creating"])(state)],
+  updating: () => [...get([namespace, "updating"])(state)],
+  removing: () => [...get([namespace, "removing"])(state)],
+  allErrors: () => ({ ...get([namespace, "errors"])(state) }),
   error: action =>
-    isEmpty(action)
-      ? pipe(
-          get([namespace, "errors"], {}),
-          Object.values,
-          sortWith("date"),
-          head
-        )(state)
-      : get([namespace, "errors", action])(state),
+    pipe(get([namespace, "errors", action]), when(is, spreadObj))(state),
   isCreating: () =>
     pipe(get([namespace, "creating"]), items => !isEmpty(items))(state),
   isRemoving: id => {
