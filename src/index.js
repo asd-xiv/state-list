@@ -75,12 +75,14 @@ const buildList = (name, methods = {}) => {
     /**
      * Create an item, dispatch events before and after API call
      *
-     * @param  {Function}  dispatch  Redux dispatch function
-     * @param  {Array}     args      API method parameters
+     * @param {Function} dispatch Redux dispatch function
+     * @param {Object}   data     Item data
+     * @param {Object}   options  Action options
      *
      * @return {void}
      */
-    create: dispatch => (
+    create: (
+      dispatch,
       data,
       { isLocal = false, ...restOptions } = {},
       ...rest
@@ -122,7 +124,7 @@ const buildList = (name, methods = {}) => {
      *
      * @return {void}
      */
-    read: dispatch => (...args) => {
+    read: (dispatch, ...args) => {
       if (typeof methods.read !== "function") {
         throw new TypeError(
           `ReduxList: "${name}"."read" must be a function, got "${typeof methods.read}"`
@@ -151,7 +153,7 @@ const buildList = (name, methods = {}) => {
      *
      * @return {void}
      */
-    readOne: dispatch => (...args) => {
+    readOne: (dispatch, ...args) => {
       if (typeof methods.readOne !== "function") {
         throw new TypeError(
           `ReduxList: "${name}"."readOne" must be a function, got "${typeof methods.readOne}"`
@@ -175,13 +177,14 @@ const buildList = (name, methods = {}) => {
     /**
      * Update an item, dispatch events before and after
      *
-     * @param  {Function}       dispatch  Redux dispatch function
-     * @param  {Number|string}  id        Item id
-     * @param  {Array}          rest      API method parameters
+     * @param  {Function}      dispatch Redux dispatch function
+     * @param  {Number|string} id       Item id
+     * @param  {Object}        data     Item data
      *
      * @return {void}
      */
-    update: dispatch => (
+    update: (
+      dispatch,
       id,
       data,
       { isLocal = false, ...restOptions } = {},
@@ -226,7 +229,8 @@ const buildList = (name, methods = {}) => {
      *
      * @return {void}
      */
-    remove: dispatch => (
+    remove: (
+      dispatch,
       id,
       { isLocal = false, ...restOptions } = {},
       ...rest
@@ -269,10 +273,13 @@ const buildList = (name, methods = {}) => {
      *
      * @return {void}
      */
-    clear: dispatch => () => {
+    clear: dispatch => {
       dispatch({
         type: readSuccess,
-        payload: { items: [] },
+        payload: {
+          items: [],
+          shouldClear: true,
+        },
       })
 
       return Promise.resolve([])

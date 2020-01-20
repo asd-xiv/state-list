@@ -28,7 +28,7 @@ test("Read", async t => {
     })
   )
 
-  const { selector, read } = useList(todos, store.dispatch)
+  const { selector, read, clear } = useList(todos, store.dispatch)
 
   // Trigger read action and check intermediate state
   const { result } = await Promise.resolve().then(() => {
@@ -85,6 +85,17 @@ test("Read", async t => {
         { id: 3, name: "shouldClear is false" },
       ],
       "Loading with shouldClear: false should append resulting items to already existing items"
+    )
+  }
+
+  {
+    await clear()
+    const { items } = selector(store.getState())
+
+    t.deepEquals(
+      items(),
+      [],
+      "Clearing list with items should return empty array"
     )
   }
 
