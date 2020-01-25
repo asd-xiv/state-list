@@ -84,8 +84,7 @@ const TodosList = buildList(
    *
    * Usefull for enforcing common transformations on external data, sorting, etc.
    *
-   * @param {Object[]} items  All list elements
-   * @param {String}   origin What method triggered the change
+   * @param {Object[]} items All items inside list internal array
    */
   onChange: items => sortBy(prop("priority"), items)
 )
