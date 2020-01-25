@@ -1,7 +1,7 @@
 import { findWith, last, deepEqual, is, isEmpty } from "@mutantlove/m"
 
 /**
- * Unieq, sequential, promise based job queue
+ * Unique, sequential, promise based queue
  *
  * @example
  * const queue = buildQueue()
@@ -14,7 +14,7 @@ import { findWith, last, deepEqual, is, isEmpty } from "@mutantlove/m"
  *   .then(...)
  *   .catch(...)
  *
- * @return {Object}
+ * @return {Object<enqueue, dequeue>}
  */
 export const buildQueue = () => {
   const jobsList = []
@@ -22,61 +22,72 @@ export const buildQueue = () => {
   let isProcessing = false
 
   return {
-    enqueue({ fn, args }) {
+    enqueue({ id, fn, args }) {
       const runningJob = findWith({
+        id,
         args: deepEqual(args),
-        fnString: fn.toString(),
       })(jobsList)
 
       if (is(runningJob)) {
         return runningJob.fnPromise
       }
 
-      let deferredResolve = null,
-        deferredReject = null
+      let deferredResolve = null
+      let deferredReject = null
+      const fnResultPromise = new Promise((resolve, reject) => {
+        deferredResolve = resolve
+        deferredReject = reject
+      })
 
-      const newJob = {
+      // add job at begining of queue
+      jobsList.unshift({
+        id,
         args,
         fn,
-        fnString: fn.toString(),
-        fnPromise: new Promise((resolve, reject) => {
-          deferredResolve = resolve
-          deferredReject = reject
-        }),
+        fnResultPromise,
         onResolve: results => {
           deferredResolve(results)
         },
         onReject: error => {
           deferredReject(error)
         },
-      }
+      })
 
-      jobsList.unshift(newJob)
+      // start processing jobs
       this.dequeue()
 
-      return newJob.fnPromise
+      // return promise that will be resolved after fn is called and resolved
+      return fnResultPromise
     },
 
     dequeue() {
-      const shouldPop = !isProcessing && !isEmpty(jobsList)
+      const shouldStartRunningJobs = !isProcessing && !isEmpty(jobsList)
 
-      if (shouldPop) {
-        const job = last(jobsList)
-
-        isProcessing = true
-
-        Promise.resolve()
-          // run job inside promise chain so it gets into catch
-          .then(() => job.fn(...job.args))
-          .then(job.onResolve)
-          .catch(job.onReject)
-          .finally(() => {
-            // process next in queue
-            isProcessing = false
-            jobsList.pop()
-            this.dequeue()
-          })
+      if (!shouldStartRunningJobs) {
+        return undefined
       }
+
+      const { fn, args, onResolve, onReject } = last(jobsList)
+
+      // no jobs will be started until current one finishes
+      isProcessing = true
+
+      return Promise.resolve()
+        .then(() => {
+          // Need to remove ourselves before job.fn resolves. If another
+          // action of the same signature runs right after it will return this
+          // job because job still exists in queue
+          jobsList.pop()
+
+          return fn(...args)
+        })
+        .then(onResolve)
+        .catch(onReject)
+        .finally(() => {
+          // process next in queue
+          isProcessing = false
+          this.dequeue()
+        })
     },
   }
 }

@@ -8,11 +8,8 @@ test("Promise Queue - Promise based unique elements queue", t => {
   const queue = buildQueue()
 
   let findCountBatch1 = 0
-
   let findDateBatch1 = null
-
   let findCountBatch2 = 0
-
   let findDateBatch2 = null
 
   const jobs = [
