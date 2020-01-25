@@ -41,6 +41,16 @@ test("Update - error", async t => {
 
   await read()
 
+  try {
+    await update()
+  } catch (error) {
+    t.equals(
+      error.message,
+      `ReduxList: "UPDATE-ERROR_TODOS".update ID param missing. Expected something, got "undefined"`,
+      ".remove method called without valid id parameter should throw error"
+    )
+  }
+
   {
     const { error } = await update(3, { name: "updated name" })
     const stateError = selector(store.getState()).error("update")
@@ -63,6 +73,7 @@ test("Update - error", async t => {
       `Resolved error data same as slide data`
     )
   }
+
   {
     const { error } = await update(1, { name: "updated name" })
     const stateError = selector(store.getState()).error("update")

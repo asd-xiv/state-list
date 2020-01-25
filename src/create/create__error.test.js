@@ -18,7 +18,7 @@ test("Create - error", async t => {
   // WHAT TO TEST
   const todos = buildList("CREATE-ERROR_TODOS", {
     read: () => [],
-    create: ({ name }) => {
+    create: ({ id, name }) => {
       return name === "throw"
         ? Promise.reject(
             new RequestError("Something something API crash", {
@@ -26,7 +26,7 @@ test("Create - error", async t => {
               status: 409,
             })
           )
-        : Promise.resolve({ id: 1, name })
+        : Promise.resolve({ id, name })
     },
   })
 
@@ -42,7 +42,7 @@ test("Create - error", async t => {
   await read()
 
   {
-    const { error: apiError } = await create({ name: "throw" })
+    const { error: apiError } = await create({ id: 1, name: "throw" })
     const createError = selector(store.getState()).error("create")
 
     t.deepEquals(
@@ -63,8 +63,9 @@ test("Create - error", async t => {
       `Resolved error data same as slide data`
     )
   }
+
   {
-    const { error: apiError } = await create({ name: "dont throw" })
+    const { error: apiError } = await create({ id: 2, name: "dont throw" })
     const createError = selector(store.getState()).error("create")
 
     t.equals(
@@ -77,6 +78,26 @@ test("Create - error", async t => {
       apiError,
       undefined,
       "Resolved error is null after successfull create"
+    )
+  }
+
+  {
+    const { error } = await create({ name: "dont throw" })
+
+    t.equals(
+      error.data.message,
+      `ReduxList: "CREATE-ERROR_TODOS" Trying to create item without id property`,
+      "Creating item without id field should throw"
+    )
+  }
+
+  {
+    const { error } = await create({ id: 2, name: "dont throw" })
+
+    t.equals(
+      error.data.message,
+      `ReduxList: "CREATE-ERROR_TODOS".create ID "2" already exists`,
+      "Creating item with same id should throw"
     )
   }
 

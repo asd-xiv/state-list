@@ -74,7 +74,7 @@ test("ReadOne - error", async t => {
   } catch (error) {
     t.equals(
       error.message,
-      `ReduxList: readOneAction - cannot call readOne method without a valid "id" param. Expected something, got "undefined"`
+      `ReduxList: "READ-ONE-ERROR_TODOS".readOne ID param missing. Expected something, got "undefined"`
     )
   }
 

@@ -15,8 +15,6 @@ class RequestError extends Error {
 }
 
 test("Remove - error", async t => {
-  t.plan(5)
-
   // WHAT TO TEST
   const todos = buildList("DELETE-ERROR_TODOS", {
     read: () => [{ id: 1, name: "build gdpr startup" }, { id: 2 }],
@@ -28,7 +26,7 @@ test("Remove - error", async t => {
         })
       }
 
-      return { id: 1 }
+      return { id }
     },
   })
 
@@ -48,20 +46,13 @@ test("Remove - error", async t => {
   } catch (error) {
     t.equals(
       error.message,
-      `ReduxList: removeAction - cannot call remove method without a valid "id" param. Expected something, got "undefined"`,
+      `ReduxList: "DELETE-ERROR_TODOS".remove ID param missing. Expected something, got "undefined"`,
       "remove method called without valid id parameter should throw error"
     )
   }
 
   {
     const { error } = await remove(2)
-    const stateError = selector(store.getState()).error("remove")
-
-    t.deepEquals(
-      error,
-      stateError,
-      `Error data set to state equals error data the action promise resolves to`
-    )
 
     t.deepEquals(
       {
@@ -74,21 +65,39 @@ test("Remove - error", async t => {
       },
       `Resolved error data same as slide data`
     )
+
+    t.deepEquals(
+      error,
+      selector(store.getState()).error("remove"),
+      `Error data set to state equals error data the action promise resolves to`
+    )
   }
+
   {
     const { error } = await remove(1)
-    const stateError = selector(store.getState()).error("remove")
-
-    t.equals(
-      stateError,
-      null,
-      "State error is set to null after successfull delete"
-    )
 
     t.equals(
       error,
       undefined,
       "Resolved error is null after successfull delete"
     )
+
+    t.equals(
+      selector(store.getState()).error("remove"),
+      null,
+      "State error is set to null after successfull delete"
+    )
   }
+
+  {
+    const { error } = await remove(1)
+
+    t.equals(
+      error.data.message,
+      `ReduxList: "DELETE-ERROR_TODOS".remove ID "1" does not exist`,
+      "Calling .remove with id that does not exist should throw error"
+    )
+  }
+
+  t.end()
 })
