@@ -7,17 +7,11 @@
 
 # redux-list
 
-> Redux state slices as lists with a standard structure and behaviour
-
----
-
 <!-- vim-markdown-toc GFM -->
 
 * [Features](#features)
 * [Install](#install)
 * [Example](#example)
-* [API](#api)
-  * [Internal state slice](#internal-state-slice)
 * [Develop](#develop)
 * [Commit messages](#commit-messages)
 * [Changelog](#changelog)
@@ -30,7 +24,6 @@
 * [x] **Race free**: List operations are sequential. If `update` is issued after `delete`, the `update` promise will wait for `delete` to finish
 * [x] **It's Redux**: Treat Redux state data as simple lists with common metadata helpers (isLoading, isUpdating etc.)
 * [ ] **Real time**: WebSockets support
-* [ ] **Offline & [CRDT](https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type)**: Keep local changes while offline and sync with [automerge](https://github.com/automerge/automerge)
 
 ## Install
 
@@ -45,27 +38,57 @@ npm install @mutantlove/redux-list
 ```js
 import { buildList } from "@mutantlove/redux-list"
 
-const TodosList = buildList("PAGE__SECTION--TODOS", {
-  create: data =>
-    POST("/todos", data),
+const TodosList = buildList(
+  /**
+   * Unique name used as Redux store key. If multiple lists use the same
+   * name, an error will be thrown.
+   * List is ment to be added on the root level of the Redux store.
+   *
+   * Use BEM (getbem.com/naming) for naming, ex. `{page}__{section}--{entity}`
+   */
+  "PAGE__SECTION--TODOS",
 
-  read: () =>
-    GET("/todos"),
+  /**
+   * Define CRUD actions and map to one or more data sources (local storage,
+   * 3rd party APIs or own API).
+   *
+   * Only 5 actions can be defined: `create`, `read`, `readOne`, `update` and 
+   * `remove`. These have internaly 3 reducers each: onStart, onEnd and onError.
+   */
+  {
+    create: data =>
+      POST("/todos", data),
 
-  readOne: id =>
-    GET("/comments", {
-      query: { todoId: id },
-    }).then(result => ({
-      id,
-      comments: result,
-    })),
+    read: () =>
+      GET("/todos"),
 
-  update: (id, data) =>
-    PATCH(`/todos/${id}`, date),
+    readOne: id =>
+      GET("/comments", {
+        query: { todoId: id },
+      }).then(result => ({
+        id,
+        comments: result,
+      })),
 
-  delete: id =>
-    DELETE(`/todos/${id}`),
-})
+    update: (id, data) =>
+      PATCH(`/todos/${id}`, date),
+
+    remove: id =>
+      DELETE(`/todos/${id}`),
+  },
+
+  /**
+   * Before reducers update the state, this transformer function is applyed on 
+   * the elements inside the list. Triggered on all method calls (create, read, 
+   * readOne, update and remove).
+   *
+   * Usefull for enforcing common transformations on external data, sorting, etc.
+   *
+   * @param {Object[]} items  All list elements
+   * @param {String}   origin What method triggered the change
+   */
+  onChange: items => sortBy(prop("priority"), items)
+)
 
 export { TodosList }
 ```
@@ -129,53 +152,6 @@ const TodosContainer = () => {
 }
 
 export { TodosContainer }
-```
-
-## API
-
-```js
-const { buildList } from "@mutantlove/redux-list"
-
-buildList(
-  /**
-   * Unique name used as Redux store key. If multiple lists use the same
-   * name, an error will be thrown.
-   * List is ment to be added on the root level of the Redux store.
-   *
-   * Use BEM (getbem.com/naming) for naming, ex. `{page}__{section}--{entity}`
-   */
-  "PROFILE__LATEST--WRITTEN-ARTICLES",
-
-  /**
-   * Define list's CRUD actions and map to one or more data sources (local
-   * storage, 3rd party APIs or own API). There are only 4 actions that can
-   * be defined: `create`, `read`, `update` and `remove`.
-   */
-  {
-    create: (data, options, ...rest) => { ... }
-    read: (...rest) => { ... },
-    readOne: (id, options, ...rest) => { ... },
-    update: (id, data, options, ...rest) => { ... },
-    remove: (id, options, ...rest) => { ... }
-  }
-)
-```
-
-### Internal state slice
-
-```js
-{
-  ...
-  [list.name] : {
-    items: [],
-    creating: [],
-    updating: [],
-    deleting: [],
-    errors: {},
-    loadDate: null,
-    isLoading: false,
-  }
-}
 ```
 
 ## Develop
