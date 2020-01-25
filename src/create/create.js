@@ -1,118 +1,69 @@
-const debug = require("debug")("ReduxList:Create")
-
-import { findWith, isNothing, map, reduce, hasWith, is } from "@mutantlove/m"
+const debug = require("debug")("ReduxList:CreateAction")
 
 /**
- * Call API to create item. Dispatch actions before, after success and after
- * error
+ * Call list.create method to add result to slice.items
  *
- * @param  {Function}  dispatch       Redux dispatch
- * @param  {Function}  api            API method
- * @param  {string}    actionStart    Action before API call
- * @param  {string}    actionSuccess  Action after success
- * @param  {string}    actionError    Action after error
+ * @param {String}   listName    Slice name - for error messages
+ * @param {Function} dispatch    Redux dispatch
+ * @param {Function} api         API method
+ * @param {String}   actionStart Dispatch before API call
+ * @param {String}   actionEnd   Dispatch after successfull API call
+ * @param {String}   actionError Dispatch after failed API call
+ * @param {Function} onChange    Appy on items array before changing state
  *
- * @param  {Object}  data  Model data
+ * @param {Object} data Model data
+ * @param {Array}  rest Other paramaters passed when calling list.create
  *
- * @return {Promise<Object>}
+ * @return {Promise<Object<error, result>>}
  */
 export const createAction = ({
+  listName,
   dispatch,
   api,
   actionStart,
-  actionSuccess,
+  actionEnd,
   actionError,
-}) => async (data, ...rest) => {
+  onChange,
+}) => (data, ...rest) => {
   dispatch({
     type: actionStart,
-    payload: data,
+    payload: {
+      listName,
+      items: Array.isArray(data) ? data : [data],
+    },
   })
 
-  // Resolve promise on both success and error with {result, error} obj
-  try {
-    const result = await api(data, ...rest)
+  return Promise.resolve()
+    .then(() => api(data, ...rest))
+    .then(result => {
+      dispatch({
+        type: actionEnd,
+        payload: {
+          listName,
+          items: Array.isArray(result) ? result : [result],
+          onChange,
+        },
+      })
 
-    dispatch({
-      type: actionSuccess,
-      payload: result,
+      return { result }
     })
-
-    return { result }
-  } catch (error) {
-    // wrapping here and not in the reducer so that both resolved error and
-    // state error match
-    const stateError = {
-      date: new Date(),
-      data: {
-        name: error.name,
-        message: error.message,
-        status: error.status,
-        body: error.body,
-      },
-    }
-
-    dispatch({
-      type: actionError,
-      payload: stateError,
-    })
-
-    return { error: stateError }
-  }
-}
-
-export const createStartReducer = (state, payload) => ({
-  ...state,
-  creating: Array.isArray(payload) ? payload : [payload],
-})
-
-export const createSuccessReducer = (state, payload) => {
-  const items = Array.isArray(payload) ? payload : [payload]
-  const itemWithoutId = findWith({
-    id: isNothing,
-  })(items)
-
-  if (is(itemWithoutId)) {
-    throw new TypeError(
-      `createSuccessReducer: trying to create item "${itemWithoutId}" without id property`
-    )
-  }
-
-  return {
-    ...state,
-
-    // if exists, replace, else add to end of array
-    items: reduce((acc, item) => {
-      const exists = hasWith({ id: item.id })(state.items)
-
-      if (exists) {
-        debug(
-          `createSuccessReducer: ID "${item.id}" already exists, replacing`,
-          {
-            createdItem: item,
-            existingItems: state.items,
-          }
-        )
+    .catch(error => {
+      // reducer and promise resolve the same data
+      const stateError = {
+        date: new Date(),
+        data: {
+          name: error.name,
+          message: error.message,
+          status: error.status,
+          body: error.body,
+        },
       }
 
-      return exists
-        ? map(mItem => (mItem.id === item.id ? item : mItem))(acc)
-        : [...acc, item]
-    }, state.items)(items),
+      dispatch({
+        type: actionError,
+        payload: stateError,
+      })
 
-    // reset error after successfull action
-    errors: {
-      ...state.errors,
-      create: null,
-    },
-    creating: [],
-  }
+      return { error: stateError }
+    })
 }
-
-export const createErrorReducer = (state, error = {}) => ({
-  ...state,
-  errors: {
-    ...state.errors,
-    create: error,
-  },
-  creating: [],
-})

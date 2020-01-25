@@ -2,50 +2,56 @@
 const debug = require("debug")("ReduxList:Main")
 
 import { hasKey } from "@mutantlove/m"
+
+import { createAction } from "./create/create"
 import {
-  createAction,
-  createStartReducer,
-  createSuccessReducer,
-  createErrorReducer,
-} from "./create/create"
+  startReducer as createStartReducer,
+  endReducer as createEndReducer,
+  errorReducer as createErrorReducer,
+} from "./create/create.reducers"
+
+import { readAction } from "./read/read"
 import {
-  readAction,
-  readStartReducer,
-  readSuccessReducer,
-  readErrorReducer,
-} from "./read/read"
+  startReducer as readStartReducer,
+  endReducer as readEndReducer,
+  errorReducer as readErrorReducer,
+} from "./read/read.reducers"
+
+import { readOneAction } from "./read-one/read-one"
 import {
-  readOneAction,
-  readOneStartReducer,
-  readOneSuccessReducer,
-  readOneErrorReducer,
-} from "./read-one/read-one"
+  startReducer as readOneStartReducer,
+  endReducer as readOneEndReducer,
+  errorReducer as readOneErrorReducer,
+} from "./read-one/read-one.reducers"
+
+import { updateAction } from "./update/update"
 import {
-  updateAction,
-  updateStartReducer,
-  updateSuccessReducer,
-  updateErrorReducer,
-} from "./update/update"
+  startReducer as updateStartReducer,
+  endReducer as updateEndReducer,
+  errorReducer as updateErrorReducer,
+} from "./update/update.reducers"
+
+import { removeAction } from "./remove/remove"
 import {
-  removeAction,
-  removeStartReducer,
-  removeSuccessReducer,
-  removeErrorReducer,
-} from "./remove/remove"
+  startReducer as removeStartReducer,
+  endReducer as removeEndReducer,
+  errorReducer as removeErrorReducer,
+} from "./remove/remove.reducers"
 
 import { buildQueue } from "./lib/queue"
 
 const collections = Object.create(null)
 
 /**
- * List factory function
+ * Construct a set of actions and reducers to manage a state slice as an array
  *
- * @param {string} name    Unique name so actions dont overlap
- * @param {Object} methods Object with CRUD method
+ * @param {string}   name     Unique name so actions dont overlap
+ * @param {Object}   methods  Object with CRUD method
+ * @param {Function} onChange Function triggered on every list change
  *
  * @return {Object}
  */
-const buildList = (name, methods = {}) => {
+const buildList = (name, methods = {}, onChange) => {
   if (hasKey(name)(collections)) {
     throw new Error(`ReduxList: List with name "${name}" already exists`)
   }
@@ -54,33 +60,24 @@ const buildList = (name, methods = {}) => {
 
   const queue = buildQueue()
   const createStart = `${name}_CREATE_START`
-  const createSuccess = `${name}_CREATE_SUCCESS`
+  const createEnd = `${name}_CREATE_END`
   const createError = `${name}_CREATE_ERROR`
   const readStart = `${name}_READ_START`
-  const readSuccess = `${name}_READ_END`
+  const readEnd = `${name}_READ_END`
   const readError = `${name}_READ_ERROR`
   const readOneStart = `${name}_READ-ONE_START`
-  const readOneSuccess = `${name}_READ-ONE_END`
+  const readOneEnd = `${name}_READ-ONE_END`
   const readOneError = `${name}_READ-ONE_ERROR`
   const updateStart = `${name}_UPDATE_START`
-  const updateSuccess = `${name}_UPDATE_SUCCESS`
+  const updateEnd = `${name}_UPDATE_END`
   const updateError = `${name}_UPDATE_ERROR`
   const removeStart = `${name}_REMOVE_START`
-  const removeSuccess = `${name}_REMOVE_SUCCESS`
+  const removeEnd = `${name}_REMOVE_END`
   const removeError = `${name}_REMOVE_ERROR`
 
   return {
     name,
 
-    /**
-     * Create an item, dispatch events before and after API call
-     *
-     * @param {Function} dispatch Redux dispatch function
-     * @param {Object}   data     Item data
-     * @param {Object}   options  Action options
-     *
-     * @return {void}
-     */
     create: (
       dispatch,
       data,
@@ -95,20 +92,27 @@ const buildList = (name, methods = {}) => {
 
       if (isLocal) {
         dispatch({
-          type: createSuccess,
-          payload: data,
+          type: createEnd,
+          payload: {
+            listName: name,
+            items: Array.isArray(data) ? data : [data],
+            onChange,
+          },
         })
 
         return Promise.resolve({ result: data })
       }
 
       return queue.enqueue({
+        id: `${name}__create`,
         fn: createAction({
+          listName: name,
           dispatch,
           api: methods.create,
           actionStart: createStart,
-          actionSuccess: createSuccess,
+          actionEnd: createEnd,
           actionError: createError,
+          onChange,
         }),
 
         // queue calls fn(...args)
@@ -116,14 +120,6 @@ const buildList = (name, methods = {}) => {
       })
     },
 
-    /**
-     * Load list items, dispatch events before and after
-     *
-     * @param  {Function}  dispatch  Redux dispatch function
-     * @param  {Array}     args      API method parameters
-     *
-     * @return {void}
-     */
     read: (dispatch, ...args) => {
       if (typeof methods.read !== "function") {
         throw new TypeError(
@@ -132,12 +128,14 @@ const buildList = (name, methods = {}) => {
       }
 
       return queue.enqueue({
+        id: `${name}__read`,
         fn: readAction({
           dispatch,
           api: methods.read,
           actionStart: readStart,
-          actionSuccess: readSuccess,
+          actionEnd: readEnd,
           actionError: readError,
+          onChange,
         }),
 
         // queue calls fn(...args)
@@ -145,14 +143,6 @@ const buildList = (name, methods = {}) => {
       })
     },
 
-    /**
-     * Load one item, dispatch events before and after
-     *
-     * @param  {Function}  dispatch  Redux dispatch function
-     * @param  {Array}     args      API method parameters
-     *
-     * @return {void}
-     */
     readOne: (dispatch, ...args) => {
       if (typeof methods.readOne !== "function") {
         throw new TypeError(
@@ -161,12 +151,15 @@ const buildList = (name, methods = {}) => {
       }
 
       return queue.enqueue({
+        id: `${name}__readOne`,
         fn: readOneAction({
+          listName: name,
           dispatch,
           api: methods.readOne,
           actionStart: readOneStart,
-          actionSuccess: readOneSuccess,
+          actionEnd: readOneEnd,
           actionError: readOneError,
+          onChange,
         }),
 
         // queue calls fn(...args)
@@ -174,15 +167,6 @@ const buildList = (name, methods = {}) => {
       })
     },
 
-    /**
-     * Update an item, dispatch events before and after
-     *
-     * @param  {Function}      dispatch Redux dispatch function
-     * @param  {Number|string} id       Item id
-     * @param  {Object}        data     Item data
-     *
-     * @return {void}
-     */
     update: (
       dispatch,
       id,
@@ -198,20 +182,27 @@ const buildList = (name, methods = {}) => {
 
       if (isLocal) {
         dispatch({
-          type: updateSuccess,
-          payload: { id, ...data },
+          type: updateEnd,
+          payload: {
+            listName: name,
+            item: { id, ...data },
+            onChange,
+          },
         })
 
         return Promise.resolve({ result: { id, ...data } })
       }
 
       return queue.enqueue({
+        id: `${name}__update`,
         fn: updateAction({
+          listName: name,
           dispatch,
           api: methods.update,
           actionStart: updateStart,
-          actionSuccess: updateSuccess,
+          actionEnd: updateEnd,
           actionError: updateError,
+          onChange,
         }),
 
         // queue calls fn(...args)
@@ -219,16 +210,6 @@ const buildList = (name, methods = {}) => {
       })
     },
 
-    /**
-     * Delete an item, dispatch events before and after
-     *
-     * @param  {Function}       dispatch  Redux dispatch function
-     * @param  {Number|string}  id        Item id
-     *
-     * @param  {Array}  args  API method parameters
-     *
-     * @return {void}
-     */
     remove: (
       dispatch,
       id,
@@ -243,9 +224,11 @@ const buildList = (name, methods = {}) => {
 
       if (isLocal) {
         dispatch({
-          type: removeSuccess,
+          type: removeEnd,
           payload: {
-            id,
+            listName: name,
+            item: { id },
+            onChange,
           },
         })
 
@@ -253,12 +236,15 @@ const buildList = (name, methods = {}) => {
       }
 
       return queue.enqueue({
+        id: `${name}__remove`,
         fn: removeAction({
+          listName: name,
           dispatch,
           api: methods.remove,
           actionStart: removeStart,
-          actionSuccess: removeSuccess,
+          actionEnd: removeEnd,
           actionError: removeError,
+          onChange,
         }),
 
         // queue calls fn(...args)
@@ -266,16 +252,9 @@ const buildList = (name, methods = {}) => {
       })
     },
 
-    /**
-     * Empty list
-     *
-     * @param  {Function}  dispatch  Redux dispatch function
-     *
-     * @return {void}
-     */
     clear: dispatch => {
       dispatch({
-        type: readSuccess,
+        type: readEnd,
         payload: {
           items: [],
           shouldClear: true,
@@ -285,16 +264,6 @@ const buildList = (name, methods = {}) => {
       return Promise.resolve([])
     },
 
-    /**
-     * Instead of a traditional switch by type
-     *
-     * @param  {Object}  state         The state
-     * @param  {Object}  arg2          The argument 2
-     * @param  {string}  arg2.type     The type
-     * @param  {mixed}   arg2.payload  The payload
-     *
-     * @return {Object}
-     */
     reducer: (
       state = {
         items: [],
@@ -303,7 +272,14 @@ const buildList = (name, methods = {}) => {
         updating: [],
         removing: [],
 
-        errors: {},
+        errors: {
+          read: null,
+          readOne: null,
+          create: null,
+          remove: null,
+          update: null,
+        },
+
         loadDate: null,
         isLoading: false,
       },
@@ -313,40 +289,40 @@ const buildList = (name, methods = {}) => {
         // Create
         case createStart:
           return createStartReducer(state, payload)
-        case createSuccess:
-          return createSuccessReducer(state, payload)
+        case createEnd:
+          return createEndReducer(state, payload)
         case createError:
           return createErrorReducer(state, payload)
 
         // Read
         case readStart:
           return readStartReducer(state, payload)
-        case readSuccess:
-          return readSuccessReducer(state, payload)
+        case readEnd:
+          return readEndReducer(state, payload)
         case readError:
           return readErrorReducer(state, payload)
 
         // ReadOne
         case readOneStart:
           return readOneStartReducer(state, payload)
-        case readOneSuccess:
-          return readOneSuccessReducer(state, payload)
+        case readOneEnd:
+          return readOneEndReducer(state, payload)
         case readOneError:
           return readOneErrorReducer(state, payload)
 
         // Update
         case updateStart:
           return updateStartReducer(state, payload)
-        case updateSuccess:
-          return updateSuccessReducer(state, payload)
+        case updateEnd:
+          return updateEndReducer(state, payload)
         case updateError:
           return updateErrorReducer(state, payload)
 
         // Delete
         case removeStart:
           return removeStartReducer(state, payload)
-        case removeSuccess:
-          return removeSuccessReducer(state, payload)
+        case removeEnd:
+          return removeEndReducer(state, payload)
         case removeError:
           return removeErrorReducer(state, payload)
 

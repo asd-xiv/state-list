@@ -1,27 +1,37 @@
-const debug = require("debug")("ReduxList:ReadOne")
+const debug = require("debug")("ReduxList:ReadOneAction")
 
-import { hasKey, map, push, merge, when, hasWith, isEmpty } from "@mutantlove/m"
+import { hasKey, isEmpty } from "@mutantlove/m"
 
 /**
- * Call API to fetch one item, dispatch events before and after
+ * Call list.readOne method to add/update item in slice.items
  *
- * @param  {Function}  dispatch         Redux dispatch
- * @param  {Function}  api              API method
- * @param  {string}    actionStartName  Action dispatched before API call
- * @param  {string}    actionEndName    Action dispatched after API call
+ * @param {String}   listName    Slice name - for error messages
+ * @param {Function} dispatch    Redux dispatch
+ * @param {Function} api         API method
+ * @param {String}   actionStart Dispatch before API call
+ * @param {String}   actionEnd   Dispatch after successfull API call
+ * @param {String}   actionError Dispatched after failed API call
+ * @param {Function} onChange    Appy on items array before changing state
  *
- * @returns {Object[]}
+ *
+ * @param {string|number} id   Id of item to update or add
+ * @param {Array}         rest Other paramaters passed when calling list
+ *                             instance .readOne
+ *
+ * @return {Promise<Object<error, result>>}
  */
 export const readOneAction = ({
+  listName,
   dispatch,
   api,
   actionStart,
-  actionSuccess,
+  actionEnd,
   actionError,
-}) => async (id, ...args) => {
+  onChange,
+}) => (id, ...args) => {
   if (isEmpty(id)) {
     throw new TypeError(
-      `ReduxList: readOneAction - cannot call readOne method without a valid "id" param. Expected something, got "${JSON.stringify(
+      `ReduxList: "${listName}".readOne ID param missing. Expected something, got "${JSON.stringify(
         id
       )}"`
     )
@@ -32,64 +42,39 @@ export const readOneAction = ({
     payload: id,
   })
 
-  try {
-    const result = await api(id, ...args)
+  return Promise.resolve()
+    .then(() => api(id, ...args))
+    .then(result => {
+      dispatch({
+        type: actionEnd,
+        payload: {
+          item: {
+            ...result,
+            id: hasKey("id")(result) ? result.id : id,
+          },
+          onChange,
+        },
+      })
 
-    dispatch({
-      type: actionSuccess,
-      payload: {
-        ...result,
-        id: hasKey("id")(result) ? result.id : id,
-      },
+      return { result }
     })
+    .catch(error => {
+      // reducer and promise resolve the same data
+      const stateError = {
+        date: new Date(),
+        data: {
+          name: error.name,
+          message: error.message,
+          status: error.status,
+          body: error.body,
+        },
+      }
 
-    return { result }
-  } catch (error) {
-    // wrapping here so that both reducer and this current promise
-    // resolve/pass the same data
-    const stateError = {
-      date: new Date(),
-      data: {
-        name: error.name,
-        message: error.message,
-        status: error.status,
-        body: error.body,
-      },
-    }
+      dispatch({
+        type: actionError,
+        payload: stateError,
+      })
 
-    dispatch({
-      type: actionError,
-      payload: stateError,
+      return { error: stateError }
     })
-
-    return { error: stateError }
-  }
 }
-
-export const readOneStartReducer = (state, id) => ({
-  ...state,
-  reading: id,
-})
-
-export const readOneSuccessReducer = (state, payload) => ({
-  ...state,
-  items: when(
-    hasWith({ id: payload.id }),
-    map(item => (item.id === payload.id ? merge(item, payload) : item)),
-    push(payload)
-  )(state.items),
-  reading: null,
-  errors: {
-    ...state.errors,
-    readOne: null,
-  },
-})
-
-export const readOneErrorReducer = (state, error = {}) => ({
-  ...state,
-  errors: {
-    ...state.errors,
-    readOne: error,
-  },
-  reading: null,
-})

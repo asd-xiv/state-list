@@ -1,27 +1,35 @@
-const debug = require("debug")("ReduxList:Update")
+const debug = require("debug")("ReduxList:UpdateAction")
 
-import { map, merge, isEmpty, hasWith, hasKey } from "@mutantlove/m"
+import { isEmpty, hasKey } from "@mutantlove/m"
 
 /**
- * Call API to update an item, dispatch events before and after
+ * Call list.update method to change existing item in slice.items
  *
- * @param  {Function}  dispatch         Redux dispatch
- * @param  {Function}  api              API method
- * @param  {string}    actionStartName  Action dispatched before API call
- * @param  {string}    actionEndName    Action dispatched after API call
+ * @param {String}   listName    Slice name - for error messages
+ * @param {Function} dispatch    Redux dispatch
+ * @param {Function} api         API method
+ * @param {String}   actionStart Dispatch before API call
+ * @param {String}   actionEnd   Dispatch after successfull API call
+ * @param {String}   actionError Dispatch after failed API call
+ * @param {Function} onChange    Appy on items array before changing state
  *
- * @return {Promise<Object>}
+ * @param {string|number} id   Id of item to update
+ * @param {Array}         rest Other paramaters passed when calling list.update
+ *
+ * @return {Promise<Object<error, result>>}
  */
 export const updateAction = ({
+  listName,
   dispatch,
   api,
   actionStart,
-  actionSuccess,
+  actionEnd,
   actionError,
-}) => async (id, data, ...rest) => {
+  onChange,
+}) => (id, data, ...rest) => {
   if (isEmpty(id)) {
     throw new TypeError(
-      `ReduxList: updateAction - cannot call update method without a valid "id" param. Expected something, got "${JSON.stringify(
+      `ReduxList: "${listName}".update ID param missing. Expected something, got "${JSON.stringify(
         id
       )}"`
     )
@@ -32,75 +40,40 @@ export const updateAction = ({
     payload: { id, data },
   })
 
-  // Resolve promise on both success and error with {result, error} obj
-  try {
-    const result = await api(id, data, ...rest)
+  return Promise.resolve()
+    .then(() => api(id, data, ...rest))
+    .then(result => {
+      dispatch({
+        type: actionEnd,
+        payload: {
+          listName,
+          item: {
+            ...result,
+            id: hasKey("id")(result) ? result.id : id,
+          },
+          onChange,
+        },
+      })
 
-    dispatch({
-      type: actionSuccess,
-      payload: {
-        ...result,
-        id: hasKey("id")(result) ? result.id : id,
-      },
+      return { result }
     })
-
-    return { result }
-  } catch (error) {
-    // wrapping here so that both reducer and this current promise
-    // resolve/pass the same data
-    const stateError = {
-      date: new Date(),
-      data: {
-        name: error.name,
-        message: error.message,
-        status: error.status,
-        body: error.body,
-      },
-    }
-
-    dispatch({
-      type: actionError,
-      payload: stateError,
-    })
-
-    return { error: stateError }
-  }
-}
-
-export const updateStartReducer = (state, { id, data }) => ({
-  ...state,
-  updating: { id, data },
-})
-
-export const updateSuccessReducer = (state, payload) => {
-  if (hasWith({ id: payload.id })(state.items)) {
-    debug(
-      `updateSuccessReducer: ID "${payload.id}" does not exist, doint nothing (will still trigger a rerender)`,
-      {
-        payload,
-        existingItems: state.items,
+    .catch(error => {
+      // reducer and promise resolve the same data
+      const stateError = {
+        date: new Date(),
+        data: {
+          name: error.name,
+          message: error.message,
+          status: error.status,
+          body: error.body,
+        },
       }
-    )
-  }
 
-  return {
-    ...state,
-    items: map(item => (item.id === payload.id ? merge(item, payload) : item))(
-      state.items
-    ),
-    updating: {},
-    errors: {
-      ...state.errors,
-      update: null,
-    },
-  }
+      dispatch({
+        type: actionError,
+        payload: stateError,
+      })
+
+      return { error: stateError }
+    })
 }
-
-export const updateErrorReducer = (state, error = {}) => ({
-  ...state,
-  updating: {},
-  errors: {
-    ...state.errors,
-    update: error,
-  },
-})

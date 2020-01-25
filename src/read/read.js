@@ -1,32 +1,30 @@
-const debug = require("debug")("ReduxList:Read")
-
-import {
-  pipe,
-  push,
-  hasWith,
-  flatten,
-  reduce,
-  when,
-  merge,
-  map,
-} from "@mutantlove/m"
+const debug = require("debug")("ReduxList:ReadAction")
 
 /**
- * Call API to fetch items, dispatch events before and after
+ * Call list.read method to set slice.items array
  *
- * @param  {Function}  dispatch         Redux dispatch
- * @param  {Function}  api              API method
- * @param  {string}    actionStartName  Action dispatched before API call
- * @param  {string}    actionEndName    Action dispatched after API call
+ * @param {Function} dispatch    Redux dispatch
+ * @param {Function} api         API method
+ * @param {String}   actionStart Dispatch before API call
+ * @param {String}   actionEnd   Dispatch after successfull API call
+ * @param {String}   actionError Dispatched after failed API call
+ * @param {Function} onChange    Appy on items array before changing state
  *
- * @returns {Object[]}
+ * @param {Object}  query           Control/Filter attributes
+ * @param {Boolean} opt.shouldClear If true, method result will replace existing
+ *                                  items. Otherwise, merge both arrays by id
+ * @param {Object}  opt.rest        Other options passed when calling list
+ *                                  instance .read
+ *
+ * @return {Promise<Object<error, result>>}
  */
 export const readAction = ({
   dispatch,
   api,
   actionStart,
-  actionSuccess,
+  actionEnd,
   actionError,
+  onChange,
 }) => (query = {}, { shouldClear = true, ...rest } = {}) => {
   dispatch({
     type: actionStart,
@@ -36,17 +34,18 @@ export const readAction = ({
     .then(() => api(query, { shouldClear, ...rest }))
     .then(result => {
       dispatch({
-        type: actionSuccess,
+        type: actionEnd,
         payload: {
           items: Array.isArray(result) ? result : [result],
           shouldClear,
+          onChange,
         },
       })
 
       return { result }
     })
     .catch(error => {
-      // reducer and this promise resolve with the same data
+      // reducer and promise resolve the same data
       const stateError = {
         date: new Date(),
         data: {
@@ -65,40 +64,3 @@ export const readAction = ({
       return { error: stateError }
     })
 }
-
-export const readStartReducer = state => ({
-  ...state,
-  isLoading: true,
-})
-
-export const readSuccessReducer = (state, { items, shouldClear }) => ({
-  ...state,
-  items: shouldClear
-    ? items
-    : pipe(
-        flatten,
-        reduce(
-          (acc, accItem) =>
-            when(
-              hasWith({ id: accItem.id }),
-              map(item =>
-                item.id === accItem.id ? merge(item, accItem) : item
-              ),
-              push(accItem)
-            )(acc),
-          []
-        )
-      )([state.items, items]),
-  loadDate: new Date(),
-  isLoading: false,
-})
-
-export const readErrorReducer = (state, error = {}) => ({
-  ...state,
-  errors: {
-    ...state.errors,
-    read: error,
-  },
-  items: [],
-  isLoading: false,
-})

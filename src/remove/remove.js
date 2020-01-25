@@ -1,30 +1,36 @@
-const debug = require("debug")("ReduxList:Remove")
+const debug = require("debug")("ReduxList:RemoveAction")
 
-import { filterWith, findWith, isEmpty, hasWith, hasKey } from "@mutantlove/m"
+import { isEmpty, hasKey } from "@mutantlove/m"
 
 /**
- * Call API to delete an item, dispatch events before and after
+ * Call list.remove method to remove item from slice.items
  *
- * @param  {Function}  dispatch       Redux dispatch
- * @param  {Function}  api            API method
- * @param  {string}    actionStart    Action before API call
- * @param  {string}    actionSuccess  Action after success
- * @param  {string}    actionError    Action after error
+ * @param {String}   listName    Slice name - for error messages
+ * @param {Function} dispatch    Redux dispatch
+ * @param {Function} api         API method
+ * @param {String}   actionStart Dispatch before API call
+ * @param {String}   actionEnd   Dispatch after successfull API call
+ * @param {String}   actionError Dispatch after failed API call
+ * @param {Function} onChange    Appy on items array before changing state
  *
- * @param  {string|number} id  Id of item to delete
+ * @param {string|number} id   Id of item to delete
+ * @param {Array}         rest Other paramaters passed when calling list
+ *                             instance .remove
  *
- * @return {Object}
+ * @return {Promise<Object<error, result>>}
  */
 export const removeAction = ({
+  listName,
   dispatch,
   api,
   actionStart,
-  actionSuccess,
+  actionEnd,
   actionError,
-}) => async (id, ...rest) => {
+  onChange,
+}) => (id, ...rest) => {
   if (isEmpty(id)) {
     throw new TypeError(
-      `ReduxList: removeAction - cannot call remove method without a valid "id" param. Expected something, got "${JSON.stringify(
+      `ReduxList: "${listName}".remove ID param missing. Expected something, got "${JSON.stringify(
         id
       )}"`
     )
@@ -35,73 +41,40 @@ export const removeAction = ({
     payload: id,
   })
 
-  // Resolve promise on both success and error with {result, error} obj
-  try {
-    const result = await api(id, ...rest)
+  return Promise.resolve()
+    .then(() => api(id, ...rest))
+    .then(result => {
+      dispatch({
+        type: actionEnd,
+        payload: {
+          listName,
+          item: {
+            ...result,
+            id: hasKey("id")(result) ? result.id : id,
+          },
+          onChange,
+        },
+      })
 
-    dispatch({
-      type: actionSuccess,
-      payload: {
-        ...result,
-        id: hasKey("id")(result) ? result.id : id,
-      },
+      return { result }
     })
-
-    return { result }
-  } catch (error) {
-    // wrapping here so that both reducer and this current promise
-    // resolve/pass the same data
-    const stateError = {
-      date: new Date(),
-      data: {
-        name: error.name,
-        message: error.message,
-        status: error.status,
-        body: error.body,
-      },
-    }
-
-    dispatch({
-      type: actionError,
-      payload: stateError,
-    })
-
-    return { error: stateError }
-  }
-}
-
-export const removeStartReducer = (state, id) => ({
-  ...state,
-  removing: [findWith({ id })(state.items)],
-})
-
-export const removeSuccessReducer = (state, item) => {
-  if (!hasWith({ id: item.id })(state.items)) {
-    debug(
-      `removeSuccessReducer: ID "${item.id}" does not exist, doing nothing (will still trigger a rerender)`,
-      {
-        deletedItem: item,
-        existingItems: state.items,
+    .catch(error => {
+      // reducer and promise resolve the same data
+      const stateError = {
+        date: new Date(),
+        data: {
+          name: error.name,
+          message: error.message,
+          status: error.status,
+          body: error.body,
+        },
       }
-    )
-  }
 
-  return {
-    ...state,
-    items: filterWith({ "!id": item.id })(state.items),
-    errors: {
-      ...state.errors,
-      remove: null,
-    },
-    removing: [],
-  }
+      dispatch({
+        type: actionError,
+        payload: stateError,
+      })
+
+      return { error: stateError }
+    })
 }
-
-export const removeErrorReducer = (state, error = {}) => ({
-  ...state,
-  errors: {
-    ...state.errors,
-    remove: error,
-  },
-  removing: [],
-})
