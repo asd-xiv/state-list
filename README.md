@@ -52,7 +52,7 @@ const TodosList = buildList(
    * Define CRUD actions and map to one or more data sources (local storage,
    * 3rd party APIs or own API).
    *
-   * Only 5 actions can be defined: `create`, `read`, `readOne`, `update` and 
+   * Only 5 actions can be defined: `create`, `read`, `readOne`, `update` and
    * `remove`. These have internaly 3 reducers each: onStart, onEnd and onError.
    */
   {
@@ -78,8 +78,8 @@ const TodosList = buildList(
   },
 
   /**
-   * Before reducers update the state, this transformer function is applyed on 
-   * the elements inside the list. Triggered on all method calls (create, read, 
+   * Before reducers update the state, this transformer function is applyed on
+   * the elements inside the list. Triggered on all method calls (create, read,
    * readOne, update and remove).
    *
    * Usefull for enforcing common transformations on external data, sorting, etc.
