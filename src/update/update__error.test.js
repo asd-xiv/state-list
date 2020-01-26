@@ -48,17 +48,16 @@ test("Update - error", async t => {
     t.equals(
       error.message,
       `ReduxList: "UPDATE-ERROR_TODOS".update ID param missing. Expected something, got "undefined"`,
-      ".remove method called without valid id parameter should throw error"
+      ".update called without valid id parameter should throw error"
     )
   }
 
   {
     const { error } = await update(3, { name: "updated name" })
-    const stateError = selector(store.getState()).error("update")
 
     t.deepEquals(
       error,
-      stateError,
+      selector(store.getState()).error("update"),
       `Error data set to state equals error data the action promise resolves to`
     )
 
@@ -77,10 +76,9 @@ test("Update - error", async t => {
 
   {
     const { error } = await update(1, { name: "updated name" })
-    const stateError = selector(store.getState()).error("update")
 
     t.equals(
-      stateError,
+      selector(store.getState()).error("update"),
       null,
       "State error is set to null after successfull delete"
     )
@@ -89,6 +87,16 @@ test("Update - error", async t => {
       error,
       undefined,
       "Resolved error is null after successfull delete"
+    )
+  }
+
+  {
+    const { error } = await update(123, {})
+
+    t.equals(
+      error.data.message,
+      `ReduxList: "UPDATE-ERROR_TODOS".update ID "123" does not exist`,
+      ".update called with missing ID should throw error"
     )
   }
 
