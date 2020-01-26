@@ -18,7 +18,6 @@ import { findWith, last, deepEqual, is, isEmpty } from "@mutantlove/m"
  */
 export const buildQueue = () => {
   const jobsList = []
-
   let isProcessing = false
 
   return {
