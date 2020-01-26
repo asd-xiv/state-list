@@ -7,7 +7,7 @@ export const startReducer = (state, { id, data }) => ({
   updating: [{ id, data }],
 })
 
-export const endReducer = (state, { listName, item, onChange = i } = {}) => {
+export const endReducer = (state, { listName, item, onChange = i }) => {
   if (!hasWith({ id: item.id })(state.items)) {
     throw new TypeError(
       `ReduxList: "${listName}".update ID "${item.id}" does not exist`
@@ -30,7 +30,7 @@ export const endReducer = (state, { listName, item, onChange = i } = {}) => {
   }
 }
 
-export const errorReducer = (state, error = {}) => ({
+export const errorReducer = (state, error) => ({
   ...state,
   updating: [],
   errors: {

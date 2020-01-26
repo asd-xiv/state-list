@@ -7,7 +7,7 @@ export const startReducer = (state, id) => ({
   reading: id,
 })
 
-export const endReducer = (state, { item, onChange = i } = {}) => ({
+export const endReducer = (state, { item, onChange = i }) => ({
   ...state,
   items: pipe(
     when(
@@ -26,7 +26,7 @@ export const endReducer = (state, { item, onChange = i } = {}) => ({
   reading: null,
 })
 
-export const errorReducer = (state, error = {}) => ({
+export const errorReducer = (state, error) => ({
   ...state,
   errors: {
     ...state.errors,

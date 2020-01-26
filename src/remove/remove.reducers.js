@@ -9,7 +9,7 @@ export const startReducer = (state, id) => ({
 
 export const endReducer = (
   state,
-  { listName, item: { id } = {}, onChange = i } = {}
+  { listName, item: { id } = {}, onChange = i }
 ) => {
   if (!hasWith({ id })(state.items)) {
     throw new TypeError(
@@ -30,7 +30,7 @@ export const endReducer = (
   }
 }
 
-export const errorReducer = (state, error = {}) => ({
+export const errorReducer = (state, error) => ({
   ...state,
   errors: {
     ...state.errors,

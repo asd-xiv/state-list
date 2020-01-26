@@ -12,15 +12,12 @@ import {
   i,
 } from "@mutantlove/m"
 
-export const startReducer = (state, { items } = {}) => ({
+export const startReducer = (state, { items }) => ({
   ...state,
   creating: items,
 })
 
-export const endReducer = (
-  state,
-  { listName, items = [], onChange = i } = {}
-) => {
+export const endReducer = (state, { listName, items = [], onChange = i }) => {
   const itemWithoutId = findWith({
     id: isNothing,
   })(items)
@@ -57,7 +54,7 @@ export const endReducer = (
   }
 }
 
-export const errorReducer = (state, error = {}) => ({
+export const errorReducer = (state, error) => ({
   ...state,
   errors: {
     ...state.errors,

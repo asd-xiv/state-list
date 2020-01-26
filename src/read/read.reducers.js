@@ -48,7 +48,7 @@ export const endReducer = (
   isLoading: false,
 })
 
-export const errorReducer = (state, error = {}) => ({
+export const errorReducer = (state, error) => ({
   ...state,
   errors: {
     ...state.errors,
