@@ -8,18 +8,22 @@ test("Read", async t => {
   // WHAT TO TEST
   const todos = buildList({
     name: "READ_TODOS",
-    read: setNo =>
-      Promise.resolve(
-        setNo === 1
-          ? [
-              { id: 1, name: "lorem ipsum" },
-              { id: 2, name: "foo bar" },
-            ]
-          : [
-              { id: 1, name: "replaced ipsum" },
-              { id: 3, name: "shouldClear is false" },
-            ]
-      ),
+    read: setNo => {
+      switch (setNo) {
+        case 1:
+          return [
+            { id: 1, name: "lorem ipsum" },
+            { id: 2, name: "foo bar" },
+          ]
+        case 2:
+          return [
+            { id: 1, name: "replaced ipsum" },
+            { id: 3, name: "shouldClear is false" },
+          ]
+        default:
+          return { id: 4, name: "im lonely" }
+      }
+    },
     onChange: map(item => ({ ...item, onChange: true })),
   })
 
@@ -105,6 +109,17 @@ test("Read", async t => {
       items(),
       [],
       "Clearing list with items should return empty array"
+    )
+  }
+
+  {
+    await read()
+    const { items } = selector(store.getState())
+
+    t.deepEquals(
+      items(),
+      [{ id: 4, name: "im lonely", onChange: true }],
+      ".read returning a non-array result will still add"
     )
   }
 
