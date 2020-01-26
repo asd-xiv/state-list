@@ -1,17 +1,23 @@
 import test from "tape"
 import { createStore, combineReducers } from "redux"
+import { map } from "@mutantlove/m"
 
 import { buildList, useList } from ".."
 
 test("Create", async t => {
   // WHAT TO TEST
-  const todos = buildList("CREATE_TODOS", {
+  const todos = buildList({
+    name: "CREATE_TODOS",
     create: (data, options, other) => ({
       id: 1,
       ...data,
       options,
       other,
     }),
+    onChange: map((item, index, array) => ({
+      ...item,
+      onChange: array.length,
+    })),
   })
 
   // Redux store
@@ -51,7 +57,15 @@ test("Create", async t => {
 
     t.deepEquals(
       items(),
-      [result],
+      [
+        {
+          id: 1,
+          name: "New foo",
+          options: { isLocal: false, otherOption: "lorem" },
+          other: { restParam: "ipsum" },
+          onChange: 1,
+        },
+      ],
       "Created element should be added to items array"
     )
   }
@@ -80,8 +94,13 @@ test("Create", async t => {
           name: "New foo",
           options: { isLocal: false, otherOption: "lorem" },
           other: { restParam: "ipsum" },
+          onChange: 2,
         },
-        result,
+        {
+          id: 2,
+          foo: "bar-draft",
+          onChange: 2,
+        },
       ],
       "Created draft element should be added to items array"
     )
@@ -92,7 +111,8 @@ test("Create", async t => {
 
 test("Create - multiple", async t => {
   // WHAT TO TEST
-  const todos = buildList("CREATE-MULTIPLE_TODOS", {
+  const todos = buildList({
+    name: "CREATE-MULTIPLE_TODOS",
     create: items => items.map((item, index) => ({ id: index, ...item })),
   })
 

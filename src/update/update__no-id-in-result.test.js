@@ -5,7 +5,8 @@ import { buildList, useList } from ".."
 
 test("Update - id not in response", async t => {
   // WHAT TO TEST
-  const todos = buildList("UPDATE-ERROR-NO-ID_TODOS", {
+  const todos = buildList({
+    name: "UPDATE-ERROR-NO-ID_TODOS",
     read: () => [{ id: 1, name: "build gdpr startup" }, { id: 2 }],
     update: (id, data) => data,
   })

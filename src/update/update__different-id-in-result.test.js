@@ -5,7 +5,8 @@ import { buildList, useList } from ".."
 
 test("Update - different id in response", async t => {
   // WHAT TO TEST
-  const todos = buildList("UPDATE-ERROR-DIFFERENT-ID_TODOS", {
+  const todos = buildList({
+    name: "UPDATE-ERROR-DIFFERENT-ID_TODOS",
     read: () => [{ id: 1, name: "build gdpr startup" }, { id: 2 }],
     update: () => Promise.resolve({ id: 1, name: "updated different element" }),
   })

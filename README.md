@@ -38,7 +38,7 @@ npm install @mutantlove/redux-list
 ```js
 import { buildList } from "@mutantlove/redux-list"
 
-const TodosList = buildList(
+const TodosList = buildList({
   /**
    * Unique name used as Redux store key. If multiple lists use the same
    * name, an error will be thrown.
@@ -46,48 +46,46 @@ const TodosList = buildList(
    *
    * Use BEM (getbem.com/naming) for naming, ex. `{page}__{section}--{entity}`
    */
-  "PAGE__SECTION--TODOS",
+  name: "PAGE__SECTION--TODOS",
 
   /**
-   * Define CRUD actions and map to one or more data sources (local storage,
-   * 3rd party APIs or own API).
+   * Define CRUD actions and map the internal items to one or more data sources
+   * (local storage, 3rd party APIs or own API).
    *
    * Only 5 actions can be defined: `create`, `read`, `readOne`, `update` and
    * `remove`. These have internaly 3 reducers each: onStart, onEnd and onError.
    */
-  {
-    create: data =>
-      POST("/todos", data),
+  create: data =>
+    POST("/todos", data),
 
-    read: () =>
-      GET("/todos"),
+  read: () =>
+    GET("/todos"),
 
-    readOne: id =>
-      GET("/comments", {
-        query: { todoId: id },
-      }).then(result => ({
-        id,
-        comments: result,
-      })),
+  readOne: id =>
+    GET("/comments", {
+      query: { todoId: id },
+    }).then(result => ({
+      id,
+      comments: result,
+    })),
 
-    update: (id, data) =>
-      PATCH(`/todos/${id}`, date),
+  update: (id, data) =>
+    PATCH(`/todos/${id}`, date),
 
-    remove: id =>
-      DELETE(`/todos/${id}`),
-  },
+  remove: id =>
+    DELETE(`/todos/${id}`),
 
   /**
    * Before reducers update the state, this transformer function is applyed on
    * the elements inside the list. Triggered on all method calls (create, read,
    * readOne, update and remove).
    *
-   * Usefull for enforcing common transformations on external data, sorting, etc.
+   * Use for enforcing common transformations on external data, sorting, etc.
    *
    * @param {Object[]} items All items inside list internal array
    */
   onChange: items => sortBy(prop("priority"), items)
-)
+})
 
 export { TodosList }
 ```
@@ -113,11 +111,11 @@ import { useList as useMutantList } from "@mutantlove/redux-list"
 
 const useList = list => {
   const dispatch = useDispatch()
-  const { selector, ...actions } = useMutantList(list, dispatch)
+  const { selector, ...rest } = useMutantList(list, dispatch)
 
   return {
     selector: useSelector(selector),
-    ...actions,
+    ...rest,
   }
 }
 

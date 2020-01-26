@@ -5,7 +5,9 @@ import { buildList, useList } from "."
 
 test("List without API methods", async t => {
   // WHAT TO TEST
-  const todos = buildList("TODOS")
+  const todos = buildList({
+    name: "TODOS",
+  })
 
   // Redux store
   const store = createStore(
@@ -18,7 +20,7 @@ test("List without API methods", async t => {
 
   t.throws(
     () => {
-      buildList("TODOS")
+      buildList({ name: "TODOS" })
     },
     /ReduxList: List with name "TODOS" already exists/,
     "Throw exception when creating a list with a duplicate name"

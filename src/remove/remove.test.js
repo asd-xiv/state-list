@@ -1,16 +1,22 @@
 import test from "tape"
 import { createStore, combineReducers } from "redux"
+import { map } from "@mutantlove/m"
 
 import { buildList, useList } from ".."
 
 test("Remove", async t => {
   // WHAT TO TEST
-  const todos = buildList("DELETE_TODOS", {
+  const todos = buildList({
+    name: "DELETE_TODOS",
     read: () => [
       { id: 1, name: "lorem ipsum" },
       { id: 2, name: "foo bar" },
     ],
     remove: (id, options, ...rest) => ({ id, options, rest }),
+    onChange: map((item, index, array) => ({
+      ...item,
+      onChange: array.length,
+    })),
   })
 
   // Redux store
@@ -46,7 +52,7 @@ test("Remove", async t => {
 
     t.deepEquals(
       items(),
-      [{ id: 1, name: "lorem ipsum" }],
+      [{ id: 1, name: "lorem ipsum", onChange: 1 }],
       "element should be removed from items array"
     )
 
@@ -80,7 +86,7 @@ test("Remove", async t => {
 
     t.deepEquals(
       items(),
-      [{ id: 1, name: "lorem ipsum" }],
+      [{ id: 1, name: "lorem ipsum", onChange: 1 }],
       "Remove local element should be delete from items array"
     )
   }

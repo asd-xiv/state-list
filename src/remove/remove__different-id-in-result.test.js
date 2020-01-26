@@ -5,7 +5,8 @@ import { buildList, useList } from ".."
 
 test("Remove - different id in response", async t => {
   // WHAT TO TEST
-  const todos = buildList("DELETE-ERROR-DIFFERENT-ID_TODOS", {
+  const todos = buildList({
+    name: "DELETE-ERROR-DIFFERENT-ID_TODOS",
     read: () => [{ id: 1, name: "build gdpr startup" }, { id: 2 }],
     remove: () => Promise.resolve({ id: 1 }),
   })

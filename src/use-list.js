@@ -10,14 +10,18 @@ import { useListSelector } from "./use-list-selector"
  *
  * @returns {{selector, create, read, readOne, update, remove, clear}}
  */
-const useList = (list, dispatch) => ({
-  selector: useListSelector(list.name),
-  create: (...args) => list.create(dispatch, ...args),
-  read: (...args) => list.read(dispatch, ...args),
-  readOne: (...args) => list.readOne(dispatch, ...args),
-  update: (...args) => list.update(dispatch, ...args),
-  remove: (...args) => list.remove(dispatch, ...args),
-  clear: (...args) => list.clear(dispatch, ...args),
-})
+const useList = (list, dispatch) => {
+  list.setDispatch(dispatch)
+
+  return {
+    selector: useListSelector(list.name),
+    create: list.create,
+    read: list.read,
+    readOne: list.readOne,
+    update: list.update,
+    remove: list.remove,
+    clear: list.clear,
+  }
+}
 
 export { useList }

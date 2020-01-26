@@ -7,7 +7,8 @@ test("Read - race conditions", async t => {
   let callCount = 0
 
   // WHAT TO TEST
-  const todos = buildList("READ_RACE_TODOS", {
+  const todos = buildList({
+    name: "READ_RACE_TODOS",
     read: () => {
       callCount++
 

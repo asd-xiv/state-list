@@ -16,7 +16,8 @@ class RequestError extends Error {
 
 test("Create - error", async t => {
   // WHAT TO TEST
-  const todos = buildList("CREATE-ERROR_TODOS", {
+  const todos = buildList({
+    name: "CREATE-ERROR_TODOS",
     read: () => [],
     create: ({ id, name }) => {
       return name === "throw"

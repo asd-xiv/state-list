@@ -1,7 +1,7 @@
-/* eslint-disable no-multi-assign */
 const debug = require("debug")("ReduxList:Main")
 
 import { hasKey } from "@mutantlove/m"
+// import io from "socket.io-client"
 
 import { createAction } from "./create/create"
 import {
@@ -41,23 +41,48 @@ import {
 import { buildQueue } from "./lib/queue"
 
 const collections = Object.create(null)
+// const socketConnections = Object.create(null)
+
+// const connectOrReuse = ({ listName, url }) =>
+//   hasKey(listName)(socketConnections)
+//     ? socketConnections[listName]
+//     : (socketConnections[listName] = io(url, {
+//         transports: ["websocket"],
+//       }))
 
 /**
  * Construct a set of actions and reducers to manage a state slice as an array
  *
  * @param {string}   name     Unique name so actions dont overlap
  * @param {Object}   methods  Object with CRUD method
+ * @param {Object}   hooks    Transformer functions called when specific actions
+ *                            occur
  * @param {Function} onChange Function triggered on every list change
  *
  * @return {Object}
  */
-const buildList = (name, methods = {}, onChange) => {
+const buildList = ({
+  name,
+  // webSocketURL,
+
+  // crud
+  create,
+  read,
+  readOne,
+  update,
+  remove,
+
+  // hooks
+  onChange,
+  // onPush,
+} = {}) => {
   if (hasKey(name)(collections)) {
     throw new Error(`ReduxList: List with name "${name}" already exists`)
   }
 
   collections[name] = true
 
+  let dispatch = null
   const queue = buildQueue()
   const createStart = `${name}_CREATE_START`
   const createEnd = `${name}_CREATE_END`
@@ -75,18 +100,19 @@ const buildList = (name, methods = {}, onChange) => {
   const removeEnd = `${name}_REMOVE_END`
   const removeError = `${name}_REMOVE_ERROR`
 
+  // const socket = is(webSocketURL)
+  //   ? connectOrReuse({ listName: name, url: webSocketURL })
+  //   : null
+
   return {
     name,
 
-    create: (
-      dispatch,
-      data,
-      { isLocal = false, ...restOptions } = {},
-      ...rest
-    ) => {
-      if (typeof methods.create !== "function") {
+    setDispatch: source => (dispatch = source),
+
+    create: (data, { isLocal = false, ...restOptions } = {}, ...rest) => {
+      if (typeof create !== "function") {
         throw new TypeError(
-          `ReduxList: "${name}"."create" must be a function, got "${typeof methods.create}"`
+          `ReduxList: "${name}"."create" must be a function, got "${typeof create}"`
         )
       }
 
@@ -108,7 +134,7 @@ const buildList = (name, methods = {}, onChange) => {
         fn: createAction({
           listName: name,
           dispatch,
-          api: methods.create,
+          api: create,
           actionStart: createStart,
           actionEnd: createEnd,
           actionError: createError,
@@ -120,10 +146,10 @@ const buildList = (name, methods = {}, onChange) => {
       })
     },
 
-    read: (dispatch, ...args) => {
-      if (typeof methods.read !== "function") {
+    read: (...args) => {
+      if (typeof read !== "function") {
         throw new TypeError(
-          `ReduxList: "${name}"."read" must be a function, got "${typeof methods.read}"`
+          `ReduxList: "${name}"."read" must be a function, got "${typeof read}"`
         )
       }
 
@@ -131,7 +157,7 @@ const buildList = (name, methods = {}, onChange) => {
         id: `${name}__read`,
         fn: readAction({
           dispatch,
-          api: methods.read,
+          api: read,
           actionStart: readStart,
           actionEnd: readEnd,
           actionError: readError,
@@ -143,10 +169,10 @@ const buildList = (name, methods = {}, onChange) => {
       })
     },
 
-    readOne: (dispatch, ...args) => {
-      if (typeof methods.readOne !== "function") {
+    readOne: (...args) => {
+      if (typeof readOne !== "function") {
         throw new TypeError(
-          `ReduxList: "${name}"."readOne" must be a function, got "${typeof methods.readOne}"`
+          `ReduxList: "${name}"."readOne" must be a function, got "${typeof readOne}"`
         )
       }
 
@@ -155,7 +181,7 @@ const buildList = (name, methods = {}, onChange) => {
         fn: readOneAction({
           listName: name,
           dispatch,
-          api: methods.readOne,
+          api: readOne,
           actionStart: readOneStart,
           actionEnd: readOneEnd,
           actionError: readOneError,
@@ -167,16 +193,10 @@ const buildList = (name, methods = {}, onChange) => {
       })
     },
 
-    update: (
-      dispatch,
-      id,
-      data,
-      { isLocal = false, ...restOptions } = {},
-      ...rest
-    ) => {
-      if (typeof methods.update !== "function") {
+    update: (id, data, { isLocal = false, ...restOptions } = {}, ...rest) => {
+      if (typeof update !== "function") {
         throw new TypeError(
-          `ReduxList: "${name}"."update" must be a function, got "${typeof methods.update}"`
+          `ReduxList: "${name}"."update" must be a function, got "${typeof update}"`
         )
       }
 
@@ -198,7 +218,7 @@ const buildList = (name, methods = {}, onChange) => {
         fn: updateAction({
           listName: name,
           dispatch,
-          api: methods.update,
+          api: update,
           actionStart: updateStart,
           actionEnd: updateEnd,
           actionError: updateError,
@@ -210,15 +230,10 @@ const buildList = (name, methods = {}, onChange) => {
       })
     },
 
-    remove: (
-      dispatch,
-      id,
-      { isLocal = false, ...restOptions } = {},
-      ...rest
-    ) => {
-      if (typeof methods.remove !== "function") {
+    remove: (id, { isLocal = false, ...restOptions } = {}, ...rest) => {
+      if (typeof remove !== "function") {
         throw new TypeError(
-          `ReduxList: "${name}"."remove" must be a function, got "${typeof methods.remove}"`
+          `ReduxList: "${name}"."remove" must be a function, got "${typeof remove}"`
         )
       }
 
@@ -240,7 +255,7 @@ const buildList = (name, methods = {}, onChange) => {
         fn: removeAction({
           listName: name,
           dispatch,
-          api: methods.remove,
+          api: remove,
           actionStart: removeStart,
           actionEnd: removeEnd,
           actionError: removeError,
@@ -252,7 +267,7 @@ const buildList = (name, methods = {}, onChange) => {
       })
     },
 
-    clear: dispatch => {
+    clear: () => {
       dispatch({
         type: readEnd,
         payload: {

@@ -5,7 +5,8 @@ import { buildList, useList } from ".."
 
 test("Remove - id not in response", async t => {
   // WHAT TO TEST
-  const todos = buildList("DELETE-ERROR-NO-ID_TODOS", {
+  const todos = buildList({
+    name: "DELETE-ERROR-NO-ID_TODOS",
     read: () => [{ id: 1, name: "build gdpr startup" }, { id: 2 }],
     remove: () => ({ name: "I dont know who I am :(" }),
   })

@@ -16,7 +16,8 @@ class RequestError extends Error {
 
 test("Read - error", async t => {
   // WHAT TO TEST
-  const todos = buildList("READ-ERROR_TODOS", {
+  const todos = buildList({
+    name: "READ-ERROR_TODOS",
     read: ({ shouldThrow }) => {
       if (shouldThrow) {
         throw new RequestError("Something something API crash", {

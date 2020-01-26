@@ -18,7 +18,8 @@ test("ReadOne - error", async t => {
   t.plan(5)
 
   // WHAT TO TEST
-  const todos = buildList("READ-ONE-ERROR_TODOS", {
+  const todos = buildList({
+    name: "READ-ONE-ERROR_TODOS",
     read: () => [{ id: 1, name: "build gdpr startup" }, { id: 2 }],
     readOne: (id, data) => {
       return id === 3

@@ -1,12 +1,13 @@
 import test from "tape"
 import { createStore, combineReducers } from "redux"
-import { sortWith } from "@mutantlove/m"
+import { sortWith, map, pick } from "@mutantlove/m"
 
 import { buildList, useList } from ".."
 
 test("Read", async t => {
   // WHAT TO TEST
-  const todos = buildList("READ_TODOS", {
+  const todos = buildList({
+    name: "READ_TODOS",
     read: setNo =>
       Promise.resolve(
         setNo === 1
@@ -19,6 +20,7 @@ test("Read", async t => {
               { id: 3, name: "shouldClear is false" },
             ]
       ),
+    onChange: map(item => ({ ...item, onChange: true })),
   })
 
   // Redux store
@@ -49,26 +51,33 @@ test("Read", async t => {
 
     t.equals(isLoaded(), true, "isLoaded flag should be true after loading")
     t.equals(isLoading(), false, "isLoading flag should be false after loading")
-    t.deepEquals(result, items(), "list.read resolves with retrived items")
+    t.deepEquals(
+      result,
+
+      // selecting only remote fields since items() will also contain
+      // onChange changes
+      map(pick(["id", "name"]))(items()),
+      "list.read resolves with retrived items"
+    )
 
     t.deepEquals(
       items(),
       [
-        { id: 1, name: "lorem ipsum" },
-        { id: 2, name: "foo bar" },
+        { id: 1, name: "lorem ipsum", onChange: true },
+        { id: 2, name: "foo bar", onChange: true },
       ],
       "elements should be set in items array"
     )
 
     t.deepEquals(
       head(),
-      { id: 1, name: "lorem ipsum" },
+      { id: 1, name: "lorem ipsum", onChange: true },
       "head selector returns first element from items array"
     )
 
     t.deepEquals(
       byId(2),
-      { id: 2, name: "foo bar" },
+      { id: 2, name: "foo bar", onChange: true },
       "byId selector returns element from items array"
     )
   }
@@ -80,9 +89,9 @@ test("Read", async t => {
     t.deepEquals(
       sortWith("id")(items()),
       [
-        { id: 1, name: "replaced ipsum" },
-        { id: 2, name: "foo bar" },
-        { id: 3, name: "shouldClear is false" },
+        { id: 1, name: "replaced ipsum", onChange: true },
+        { id: 2, name: "foo bar", onChange: true },
+        { id: 3, name: "shouldClear is false", onChange: true },
       ],
       "Loading with shouldClear: false should append resulting items to already existing items"
     )

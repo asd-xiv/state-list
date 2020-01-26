@@ -1,11 +1,13 @@
 import test from "tape"
 import { createStore, combineReducers } from "redux"
+import { map } from "@mutantlove/m"
 
 import { buildList, useList } from ".."
 
 test("ReadOne", async t => {
   // WHAT TO TEST
-  const todos = buildList("READ-ONE_TODOS", {
+  const todos = buildList({
+    name: "READ-ONE_TODOS",
     read: () => [
       { id: 1, name: "lorem ipsum" },
       { id: 2, name: "foo bar" },
@@ -14,9 +16,11 @@ test("ReadOne", async t => {
       id,
       ...data,
     }),
+    onChange: map(item => ({ ...item, onChange: true })),
   })
 
-  const todos2 = buildList("READ-ONE_TODOS-2", {
+  const todos2 = buildList({
+    name: "READ-ONE_TODOS-2",
     read: () => [
       { id: 1, name: "lorem ipsum" },
       { id: 2, name: "foo bar" },
@@ -58,10 +62,12 @@ test("ReadOne", async t => {
           id: 1,
           name: "lorem ipsum",
           description: "Extending with more info",
+          onChange: true,
         },
         {
           id: 2,
           name: "foo bar",
+          onChange: true,
         },
       ],
       "element should be updated in items array"

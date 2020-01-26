@@ -16,7 +16,8 @@ class RequestError extends Error {
 
 test("Remove - error", async t => {
   // WHAT TO TEST
-  const todos = buildList("DELETE-ERROR_TODOS", {
+  const todos = buildList({
+    name: "DELETE-ERROR_TODOS",
     read: () => [{ id: 1, name: "build gdpr startup" }, { id: 2 }],
     remove: id => {
       if (id === 2) {

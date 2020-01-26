@@ -1,11 +1,13 @@
 import test from "tape"
 import { createStore, combineReducers } from "redux"
+import { map, is } from "@mutantlove/m"
 
 import { buildList, useList } from ".."
 
 test("Update", async t => {
   // WHAT TO TEST
-  const todos = buildList("UPDATE_TODOS", {
+  const todos = buildList({
+    name: "UPDATE_TODOS",
     read: () => [
       { id: 1, name: "lorem ipsum" },
       { id: 2, name: "foo bar" },
@@ -14,6 +16,10 @@ test("Update", async t => {
       id,
       ...data,
     }),
+    onChange: map(item => ({
+      ...item,
+      onChange: is(item.onChange) ? item.onChange + 1 : 1,
+    })),
   })
 
   // Redux store
@@ -40,8 +46,8 @@ test("Update", async t => {
     t.deepEquals(
       items(),
       [
-        { id: 1, name: "lorem ipsum" },
-        { id: 2, name: "Updated foo" },
+        { id: 1, name: "lorem ipsum", onChange: 2 },
+        { id: 2, name: "Updated foo", onChange: 2 },
       ],
       "element should be updated in items array"
     )
