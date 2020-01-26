@@ -26,6 +26,14 @@ test("List without API methods", async t => {
     "Throw exception when creating a list with a duplicate name"
   )
 
+  t.throws(
+    () => {
+      buildList()
+    },
+    /ReduxList: "name" property is required, received "undefined"/,
+    "Throw exception when creating a list without any params"
+  )
+
   const { selector, create, read, readOne, update, remove, clear } = useList(
     todos,
     store.dispatch

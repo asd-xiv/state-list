@@ -1,6 +1,6 @@
 const debug = require("debug")("ReduxList:Main")
 
-import { hasKey } from "@mutantlove/m"
+import { isEmpty, hasKey } from "@mutantlove/m"
 // import io from "socket.io-client"
 
 import { createAction } from "./create/create"
@@ -76,6 +76,14 @@ const buildList = ({
   onChange,
   // onPush,
 } = {}) => {
+  if (isEmpty(name)) {
+    throw new Error(
+      `ReduxList: "name" property is required, received "${JSON.stringify(
+        name
+      )}"`
+    )
+  }
+
   if (hasKey(name)(collections)) {
     throw new Error(`ReduxList: List with name "${name}" already exists`)
   }
