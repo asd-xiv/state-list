@@ -12,6 +12,8 @@
 * [Features](#features)
 * [Install](#install)
 * [Example](#example)
+* [Sane error messages](#sane-error-messages)
+* [Enforce model shape using JSON Schemas](#enforce-model-shape-using-json-schemas)
 * [Develop](#develop)
 * [Commit messages](#commit-messages)
 * [Changelog](#changelog)
@@ -76,11 +78,12 @@ const TodosList = buildList({
     DELETE(`/todos/${id}`),
 
   /**
-   * Before reducers update the state, this transformer function is applyed on
-   * the elements inside the list. Triggered on all method calls (create, read,
+   * Transformer function applyed on the elements inside the list before 
+   * reducers update state. Triggered on all method calls (create, read,
    * readOne, update and remove).
    *
-   * Use for enforcing common transformations on external data, sorting, etc.
+   * Use for enforcing common transformations on external data, sorting, 
+   * JSON Schema checks etc.
    *
    * @param {Object[]} items All items inside list internal array
    */
@@ -150,6 +153,10 @@ const TodosContainer = () => {
 
 export { TodosContainer }
 ```
+
+## Sane error messages
+
+## Enforce model shape using JSON Schemas
 
 ## Develop
 

@@ -88,7 +88,7 @@ test("Read", async t => {
 
   {
     await read(2, { shouldClear: false })
-    const { items } = selector(store.getState())
+    const { items, hasWithId } = selector(store.getState())
 
     t.deepEquals(
       sortWith("id")(items()),
@@ -98,6 +98,18 @@ test("Read", async t => {
         { id: 3, name: "shouldClear is false", onChange: true },
       ],
       "Loading with shouldClear: false should append resulting items to already existing items"
+    )
+
+    t.equals(
+      hasWithId(1),
+      true,
+      "hasWithId selector returns true when item exists"
+    )
+
+    t.equals(
+      hasWithId(4),
+      false,
+      "hasWithId selector returns false when item does not exists"
     )
   }
 

@@ -1,6 +1,6 @@
 const debug = require("debug")("ReduxList:useListSelector")
 
-import { pipe, get, findWith, isEmpty, when, is, hasWith } from "@mutantlove/m"
+import { pipe, get, hasWith, findWith, isEmpty, when, is } from "@mutantlove/m"
 
 const spreadObj = source => ({ ...source })
 
@@ -12,6 +12,7 @@ const useListSelector = namespace => state => ({
       findWith({ id }),
       when(is, spreadObj)
     )(state),
+  hasWithId: id => pipe(get([namespace, "items"]), hasWith({ id }))(state),
   items: () => [...get([namespace, "items"])(state)],
   creating: () => [...get([namespace, "creating"])(state)],
   updating: () => [...get([namespace, "updating"])(state)],
