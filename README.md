@@ -77,8 +77,8 @@ const TodosList = buildList({
     DELETE(`/todos/${id}`),
 
   /**
-   * Transformer function applyed on all list items before reducers update 
-   * state. Triggered on all method calls (create, read, readOne, update and 
+   * Transformer function applyed on all list items before reducers update
+   * state. Triggered on all method calls (create, read, readOne, update and
    * remove).
    *
    * Use for enforcing common transformations on external data, sorting,
