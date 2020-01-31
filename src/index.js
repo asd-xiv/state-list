@@ -118,7 +118,7 @@ const buildList = ({
     setDispatch: source => (dispatch = source),
 
     create: (data, { isLocal = false, ...restOptions } = {}, ...rest) => {
-      if (typeof create !== "function") {
+      if (isLocal === false && typeof create !== "function") {
         throw new TypeError(
           `ReduxList: "${name}"."create" must be a function, got "${typeof create}"`
         )
@@ -202,7 +202,7 @@ const buildList = ({
     },
 
     update: (id, data, { isLocal = false, ...restOptions } = {}, ...rest) => {
-      if (typeof update !== "function") {
+      if (isLocal === false && typeof update !== "function") {
         throw new TypeError(
           `ReduxList: "${name}"."update" must be a function, got "${typeof update}"`
         )
@@ -239,7 +239,7 @@ const buildList = ({
     },
 
     remove: (id, { isLocal = false, ...restOptions } = {}, ...rest) => {
-      if (typeof remove !== "function") {
+      if (isLocal === false && typeof remove !== "function") {
         throw new TypeError(
           `ReduxList: "${name}"."remove" must be a function, got "${typeof remove}"`
         )
