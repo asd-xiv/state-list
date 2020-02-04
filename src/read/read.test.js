@@ -84,6 +84,18 @@ test("Read", async t => {
       { id: 2, name: "foo bar", onChange: true },
       "byId selector returns element from items array"
     )
+
+    t.equals(
+      byId(123),
+      undefined,
+      "byId selector returns undefined when element not found and no default set"
+    )
+
+    t.deepEquals(
+      byId(123, {}),
+      {},
+      "byId selector returns default when element not found"
+    )
   }
 
   {

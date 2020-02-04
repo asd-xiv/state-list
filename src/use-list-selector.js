@@ -6,10 +6,10 @@ const spreadObj = source => ({ ...source })
 
 const useListSelector = namespace => state => ({
   head: () => pipe(get([namespace, "items", 0]), when(is, spreadObj))(state),
-  byId: id =>
+  byId: (id, notFoundDefault) =>
     pipe(
       get([namespace, "items"]),
-      findWith({ id }),
+      findWith({ id }, notFoundDefault),
       when(is, spreadObj)
     )(state),
   hasWithId: id => pipe(get([namespace, "items"]), hasWith({ id }))(state),
