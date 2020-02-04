@@ -35,6 +35,14 @@ export const updateAction = ({
     )
   }
 
+  if (isEmpty(data)) {
+    throw new TypeError(
+      `ReduxList: "${listName}".update DATA param is empty. Expected non empty object, got "${JSON.stringify(
+        data
+      )}"`
+    )
+  }
+
   dispatch({
     type: actionStart,
     payload: { id, data },

@@ -91,7 +91,7 @@ test("Update - error", async t => {
   }
 
   {
-    const { error } = await update(123, {})
+    const { error } = await update(123, { something: "" })
 
     t.equals(
       error.data.message,
