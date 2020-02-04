@@ -41,8 +41,9 @@
   },
   "dependencies": {
     "@babel/runtime-corejs3": "7.8.4",
-    "@mutantlove/m": "1.5.0",
+    "@mutantlove/m": "1.7.0",
     "core-js": "3.6.4",
+    "fast-deep-equal": "3.1.1",
     "regenerator-runtime": "0.13.3"
   },
   "devDependencies": {
@@ -56,12 +57,12 @@
     "coveralls": "3.0.9",
     "eslint": "6.8.0",
     "eslint-config-prettier": "6.10.0",
-    "eslint-plugin-import": "2.20.0",
+    "eslint-plugin-import": "2.20.1",
     "eslint-plugin-json": "2.0.1",
     "eslint-plugin-no-inferred-method-name": "2.0.0",
     "eslint-plugin-prettier": "3.1.2",
     "eslint-plugin-promise": "4.2.1",
-    "eslint-plugin-unicorn": "15.0.1",
+    "eslint-plugin-unicorn": "16.0.0",
     "markdownlint-cli": "0.21.0",
     "nodemon": "2.0.2",
     "npm-check": "5.9.0",
