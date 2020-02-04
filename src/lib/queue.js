@@ -1,4 +1,5 @@
-import { findWith, last, deepEqual, is, isEmpty } from "@mutantlove/m"
+import { findWith, last, is, isEmpty } from "@mutantlove/m"
+import isDeepEqual from "fast-deep-equal"
 
 /**
  * Unique, sequential, promise based queue
@@ -24,7 +25,7 @@ export const buildQueue = () => {
     enqueue({ id, fn, args }) {
       const runningJob = findWith({
         id,
-        args: deepEqual(args),
+        args: source => isDeepEqual(source, args),
       })(jobsList)
 
       if (is(runningJob)) {
