@@ -127,16 +127,22 @@ export { useList }
 `src/todos.container.jsx` - Use list's selector to access the data
 
 ```js
-import React from "react"
+import React, { useEffect } from "react"
 import cx from "classnames"
 
 import { useList } from "./use-list"
 import { TodosList } from "./todos.state"
 
-const TodosContainer = () => {
+const TodosContainer = ({ projectId }) => {
   const {
     selector: { items, isLoading },
+    read
   } = useList(TodosList)
+
+  // data fetching
+  useEffect(() => {
+    read({ projectId })
+  }, [projectId, read])
 
   return (
     <div
