@@ -10,7 +10,7 @@ version: 2
 job_defaults: &job_defaults
   working_directory: ~/redux-list
   docker:
-    - image: circleci/node:10
+    - image: circleci/node:lts
 
 job_filter: &job_filter
   filters:
