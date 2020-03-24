@@ -1,6 +1,6 @@
 const debug = require("debug")("ReduxList:UpdateAction")
 
-import { isEmpty, hasKey } from "@mutantlove/m"
+import { isEmpty, hasKey } from "@mutant-ws/m"
 
 /**
  * Call list.update method to change existing item in slice.items

@@ -1,6 +1,6 @@
 const debug = require("debug")("ReduxList:useList")
 
-import { pipe, get, hasWith, findWith, isNotEmpty, is } from "@mutantlove/m"
+import { pipe, get, hasWith, findWith, isNotEmpty, is } from "@mutant-ws/m"
 
 /**
  * Custom hook for easy interfacing Redux List

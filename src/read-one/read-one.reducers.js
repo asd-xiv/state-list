@@ -1,6 +1,6 @@
 const debug = require("debug")("ReduxList:ReadOneReducers")
 
-import { pipe, map, push, merge, when, hasWith, i } from "@mutantlove/m"
+import { pipe, map, push, merge, when, hasWith, i } from "@mutant-ws/m"
 
 export const startReducer = (state, id) => ({
   ...state,

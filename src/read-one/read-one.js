@@ -1,6 +1,6 @@
 const debug = require("debug")("ReduxList:ReadOneAction")
 
-import { hasKey, isEmpty } from "@mutantlove/m"
+import { hasKey, isEmpty } from "@mutant-ws/m"
 
 /**
  * Call list.readOne method to add/update item in slice.items

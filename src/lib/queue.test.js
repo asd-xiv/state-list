@@ -1,6 +1,6 @@
 /* eslint-disable no-loop-func */
 import test from "tape"
-import { map } from "@mutantlove/m"
+import { map } from "@mutant-ws/m"
 
 import { buildQueue } from "./queue"
 

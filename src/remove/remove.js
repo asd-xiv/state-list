@@ -1,6 +1,6 @@
 const debug = require("debug")("ReduxList:RemoveAction")
 
-import { isEmpty, hasKey } from "@mutantlove/m"
+import { isEmpty, hasKey } from "@mutant-ws/m"
 
 /**
  * Call list.remove method to remove item from slice.items

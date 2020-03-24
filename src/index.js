@@ -1,6 +1,6 @@
 const debug = require("debug")("ReduxList:Main")
 
-import { isEmpty, hasKey } from "@mutantlove/m"
+import { isEmpty, hasKey } from "@mutant-ws/m"
 // import io from "socket.io-client"
 
 import { createAction } from "./create/create"

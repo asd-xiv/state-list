@@ -10,7 +10,7 @@ import {
   push,
   is,
   i,
-} from "@mutantlove/m"
+} from "@mutant-ws/m"
 
 export const startReducer = (state, { items }) => ({
   ...state,

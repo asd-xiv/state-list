@@ -1,6 +1,6 @@
 const debug = require("debug")("ReduxList:RemoveReducers")
 
-import { pipe, filterWith, findWith, hasWith, i } from "@mutantlove/m"
+import { pipe, filterWith, findWith, hasWith, i } from "@mutant-ws/m"
 
 export const startReducer = (state, id) => ({
   ...state,

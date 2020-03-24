@@ -1,9 +1,9 @@
 <!-- markdownlint-disable first-line-h1 line-length -->
 
-[![CircleCI](https://circleci.com/gh/mutantlove/redux-list.svg?style=svg)](https://circleci.com/gh/mutantlove/redux-list)
-[![npm version](https://badge.fury.io/js/%40mutantlove%2Fredux-list.svg)](https://badge.fury.io/js/%40mutantlove%2Fredux-list)
-[![dev-badge](https://david-dm.org/mutantlove/redux-list.svg)](https://david-dm.org/mutantlove/redux-list)
-[![Coverage Status](https://coveralls.io/repos/github/mutantlove/redux-list/badge.svg)](https://coveralls.io/github/mutantlove/redux-list)
+[![CircleCI](https://circleci.com/gh/mutant-ws/redux-list.svg?style=svg)](https://circleci.com/gh/mutant-ws/redux-list)
+[![npm version](https://badge.fury.io/js/%40mutant-ws%2Fredux-list.svg)](https://badge.fury.io/js/%40mutant-ws%2Fredux-list)
+[![dev-badge](https://david-dm.org/mutant-ws/redux-list.svg)](https://david-dm.org/mutant-ws/redux-list)
+[![Coverage Status](https://coveralls.io/repos/github/mutant-ws/redux-list/badge.svg)](https://coveralls.io/github/mutant-ws/redux-list)
 
 # redux-list
 
@@ -29,7 +29,7 @@
 ## Install
 
 ```bash
-npm install @mutantlove/redux-list
+npm install @mutant-ws/redux-list
 ```
 
 ## Example
@@ -37,7 +37,7 @@ npm install @mutantlove/redux-list
 `src/todos.list.js` - Define a list of Todos from our API.
 
 ```js
-import { buildList } from "@mutantlove/redux-list"
+import { buildList } from "@mutant-ws/redux-list"
 
 const TodosList = buildList({
   /**
@@ -109,7 +109,7 @@ const store = createStore(
 
 ```js
 import { useDispatch, useSelector } from "react-redux"
-import { useList as useMutantList } from "@mutantlove/redux-list"
+import { useList as useMutantList } from "@mutant-ws/redux-list"
 
 const useList = list => {
   const dispatch = useDispatch()
@@ -164,7 +164,7 @@ export { TodosContainer }
 ## Develop
 
 ```bash
-git clone git@github.com:mutantlove/redux-list.git && \
+git clone git@github.com:mutant-ws/redux-list.git && \
   cd redux-list && \
   npm run setup
 ```
@@ -205,4 +205,4 @@ BREAKING CHANGE: Half of features not working anymore
 
 ## Changelog
 
-See the [releases section](https://github.com/mutantlove/redux-list/releases) for details.
+See the [releases section](https://github.com/mutant-ws/redux-list/releases) for details.

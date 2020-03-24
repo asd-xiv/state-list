@@ -1,4 +1,4 @@
-import { findWith, last, is, isEmpty } from "@mutantlove/m"
+import { findWith, last, is, isEmpty } from "@mutant-ws/m"
 import isDeepEqual from "fast-deep-equal"
 
 /**

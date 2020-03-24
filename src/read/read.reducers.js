@@ -10,7 +10,7 @@ import {
   map,
   i,
   same,
-} from "@mutantlove/m"
+} from "@mutant-ws/m"
 
 export const startReducer = state => ({
   ...state,
