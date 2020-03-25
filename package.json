@@ -15,6 +15,7 @@
     "url": "https://github.com/andrei-dumitrescu"
   },
   "keywords": [
+    "state-management",
     "redux",
     "react"
   ],
