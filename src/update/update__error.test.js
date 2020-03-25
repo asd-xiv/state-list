@@ -63,8 +63,8 @@ test("Update - error", async t => {
 
     t.deepEquals(
       {
-        body: error.data.body,
-        status: error.data.status,
+        body: error.body,
+        status: error.status,
       },
       {
         body: { message: "resource not found" },
@@ -94,7 +94,7 @@ test("Update - error", async t => {
     const { error } = await update(123, { something: "" })
 
     t.equals(
-      error.data.message,
+      error.message,
       `ReduxList: "UPDATE-ERROR_TODOS".update ID "123" does not exist`,
       ".update called with missing ID should throw error"
     )

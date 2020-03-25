@@ -57,8 +57,8 @@ test("Remove - error", async t => {
 
     t.deepEquals(
       {
-        body: error.data.body,
-        status: error.data.status,
+        body: error.body,
+        status: error.status,
       },
       {
         body: { message: "resource not found" },
@@ -94,7 +94,7 @@ test("Remove - error", async t => {
     const { error } = await remove(1)
 
     t.equals(
-      error.data.message,
+      error.message,
       `ReduxList: "DELETE-ERROR_TODOS".remove ID "1" does not exist`,
       "Calling .remove with id that does not exist should throw error"
     )

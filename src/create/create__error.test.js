@@ -54,8 +54,8 @@ test("Create - error", async t => {
 
     t.deepEquals(
       {
-        body: createError.data.body,
-        status: createError.data.status,
+        body: createError.body,
+        status: createError.status,
       },
       {
         body: { validationData: "from server" },
@@ -86,7 +86,7 @@ test("Create - error", async t => {
     const { error } = await create({ name: "dont throw" })
 
     t.equals(
-      error.data.message,
+      error.message,
       `ReduxList: "CREATE-ERROR_TODOS" Trying to create item without id property`,
       "Creating item without id field should throw"
     )
@@ -96,7 +96,7 @@ test("Create - error", async t => {
     const { error } = await create({ id: 2, name: "dont throw" })
 
     t.equals(
-      error.data.message,
+      error.message,
       `ReduxList: "CREATE-ERROR_TODOS".create ID "2" already exists`,
       "Creating item with same id should throw"
     )

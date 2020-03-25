@@ -67,21 +67,13 @@ export const updateAction = ({
     })
     .catch(error => {
       // reducer and promise resolve the same data
-      const stateError = {
-        date: new Date(),
-        data: {
-          name: error.name,
-          message: error.message,
-          status: error.status,
-          body: error.body,
-        },
-      }
+      error.date = new Date()
 
       dispatch({
         type: actionError,
-        payload: stateError,
+        payload: error,
       })
 
-      return { error: stateError }
+      return { error }
     })
 }

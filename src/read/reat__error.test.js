@@ -50,8 +50,8 @@ test("Read - error", async t => {
 
     t.deepEquals(
       {
-        body: error.data.body,
-        status: error.data.status,
+        body: error.body,
+        status: error.status,
       },
       {
         body: { validationData: "from server" },

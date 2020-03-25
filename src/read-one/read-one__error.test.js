@@ -49,18 +49,17 @@ test("ReadOne - error", async t => {
       name: "updated name",
       blue: "monday",
     })
-    const stateError = selector(store.getState()).error("readOne")
 
     t.deepEquals(
       error,
-      stateError,
+      selector(store.getState()).error("readOne"),
       `Error data set to state equals error data the action promise resolves to`
     )
 
     t.deepEquals(
       {
-        body: error.data.body,
-        status: error.data.status,
+        body: error.body,
+        status: error.status,
       },
       {
         body: { message: "resource not found" },
@@ -83,10 +82,9 @@ test("ReadOne - error", async t => {
     const { error } = await readOne(1, {
       description: "updated item",
     })
-    const stateError = selector(store.getState()).error("readOne")
 
     t.equals(
-      stateError,
+      selector(store.getState()).error("readOne"),
       null,
       "State error is set to null after successfull readOne"
     )
