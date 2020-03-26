@@ -1,7 +1,7 @@
 import test from "tape"
 import { createStore, combineReducers } from "redux"
 
-import { buildList, useList } from ".."
+import { buildList } from ".."
 
 test("Read - race conditions", async t => {
   let callCount = 0
@@ -30,19 +30,19 @@ test("Read - race conditions", async t => {
     })
   )
 
-  const { read } = useList(todos, store.dispatch)
+  todos.setDispatch(store.dispatch)
 
   await Promise.all([
-    read(),
-    read(),
-    read(),
-    read(),
-    read(),
-    read(),
+    todos.read(),
+    todos.read(),
+    todos.read(),
+    todos.read(),
+    todos.read(),
+    todos.read(),
     new Promise(resolve => {
       // run another .read after the others ended
       setTimeout(() => {
-        resolve(read())
+        resolve(todos.read())
       }, 150)
     }),
   ])

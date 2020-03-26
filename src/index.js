@@ -1,7 +1,6 @@
 const debug = require("debug")("ReduxList:Main")
 
-import { isEmpty, hasKey } from "@mutant-ws/m"
-// import io from "socket.io-client"
+import { get, pipe, findWith, hasWith, is, isEmpty, hasKey } from "@mutant-ws/m"
 
 import { createAction } from "./create/create"
 import {
@@ -41,14 +40,6 @@ import {
 import { buildQueue } from "./lib/queue"
 
 const collections = Object.create(null)
-// const socketConnections = Object.create(null)
-
-// const connectOrReuse = ({ listName, url }) =>
-//   hasKey(listName)(socketConnections)
-//     ? socketConnections[listName]
-//     : (socketConnections[listName] = io(url, {
-//         transports: ["websocket"],
-//       }))
 
 /**
  * Construct a set of actions and reducers to manage a state slice as an array
@@ -63,7 +54,6 @@ const collections = Object.create(null)
  */
 const buildList = ({
   name,
-  // webSocketURL,
 
   // crud
   create,
@@ -74,7 +64,6 @@ const buildList = ({
 
   // hooks
   onChange,
-  // onPush,
 } = {}) => {
   if (isEmpty(name)) {
     throw new Error(
@@ -107,10 +96,6 @@ const buildList = ({
   const removeStart = `${name}_REMOVE_START`
   const removeEnd = `${name}_REMOVE_END`
   const removeError = `${name}_REMOVE_ERROR`
-
-  // const socket = is(webSocketURL)
-  //   ? connectOrReuse({ listName: name, url: webSocketURL })
-  //   : null
 
   return {
     name,
@@ -353,8 +338,35 @@ const buildList = ({
           return state
       }
     },
+
+    selector: state => ({
+      head: () => get([name, "items", 0])(state),
+
+      byId: (id, notFoundDefault) =>
+        pipe(get([name, "items"]), findWith({ id }, notFoundDefault))(state),
+
+      items: () => get([name, "items"])(state),
+      creating: () => get([name, "creating"])(state),
+      updating: () => get([name, "updating"])(state),
+      removing: () => get([name, "removing"])(state),
+      error: action => get([name, "errors", action])(state),
+
+      hasWithId: id => pipe(get([name, "items"]), hasWith({ id }))(state),
+      isCreating: () => !pipe(get([name, "creating"]), isEmpty)(state),
+      isRemoving: id => {
+        const removing = get([name, "removing"])(state)
+
+        return is(id) ? hasWith({ id })(removing) : !isEmpty(removing)
+      },
+      isUpdating: id => {
+        const updating = get([name, "updating"])(state)
+
+        return is(id) ? hasWith({ id })(updating) : !isEmpty(updating)
+      },
+      isLoading: () => get([name, "isLoading"])(state),
+      isLoaded: () => pipe(get([name, "loadDate"]), is)(state),
+    }),
   }
 }
 
 export { buildList }
-export { useList } from "./use-list"

@@ -2,7 +2,7 @@ import test from "tape"
 import { createStore, combineReducers } from "redux"
 import { sortWith, map, pick } from "@mutant-ws/m"
 
-import { buildList, useList } from ".."
+import { buildList } from ".."
 
 test("Read", async t => {
   // WHAT TO TEST
@@ -34,12 +34,12 @@ test("Read", async t => {
     })
   )
 
-  const { selector, read, clear } = useList(todos, store.dispatch)
+  todos.setDispatch(store.dispatch)
 
   // Trigger read action and check intermediate state
   const { result } = await Promise.resolve().then(() => {
-    const readPromise = read(1)
-    const { items, isLoaded } = selector(store.getState())
+    const readPromise = todos.read(1)
+    const { items, isLoaded } = todos.selector(store.getState())
 
     t.deepEquals(items(), [], "items array should be empty")
     t.equals(isLoaded(), false, "isLoaded flag should be false before loading")
@@ -49,7 +49,7 @@ test("Read", async t => {
 
   {
     // Check state after read
-    const { items, byId, head, isLoaded, isLoading } = selector(
+    const { items, byId, head, isLoaded, isLoading } = todos.selector(
       store.getState()
     )
 
@@ -99,8 +99,8 @@ test("Read", async t => {
   }
 
   {
-    await read(2, { shouldClear: false })
-    const { items, hasWithId } = selector(store.getState())
+    await todos.read(2, { shouldClear: false })
+    const { items, hasWithId } = todos.selector(store.getState())
 
     t.deepEquals(
       sortWith("id")(items()),
@@ -126,8 +126,8 @@ test("Read", async t => {
   }
 
   {
-    await clear()
-    const { items } = selector(store.getState())
+    await todos.clear()
+    const { items } = todos.selector(store.getState())
 
     t.deepEquals(
       items(),
@@ -137,8 +137,8 @@ test("Read", async t => {
   }
 
   {
-    await read()
-    const { items } = selector(store.getState())
+    await todos.read()
+    const { items } = todos.selector(store.getState())
 
     t.deepEquals(
       items(),

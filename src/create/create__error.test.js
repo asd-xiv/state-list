@@ -1,7 +1,7 @@
 import test from "tape"
 import { createStore, combineReducers } from "redux"
 
-import { buildList, useList } from ".."
+import { buildList } from ".."
 
 // Dummy Error with api data inside
 class RequestError extends Error {
@@ -38,13 +38,13 @@ test("Create - error", async t => {
     })
   )
 
-  const { selector, create, read } = useList(todos, store.dispatch)
+  todos.setDispatch(store.dispatch)
 
-  await read()
+  await todos.read()
 
   {
-    const { error: apiError } = await create({ id: 1, name: "throw" })
-    const createError = selector(store.getState()).error("create")
+    const { error: apiError } = await todos.create({ id: 1, name: "throw" })
+    const createError = todos.selector(store.getState()).error("create")
 
     t.deepEquals(
       apiError,
@@ -66,8 +66,11 @@ test("Create - error", async t => {
   }
 
   {
-    const { error: apiError } = await create({ id: 2, name: "dont throw" })
-    const createError = selector(store.getState()).error("create")
+    const { error: apiError } = await todos.create({
+      id: 2,
+      name: "dont throw",
+    })
+    const createError = todos.selector(store.getState()).error("create")
 
     t.equals(
       createError,
@@ -83,7 +86,7 @@ test("Create - error", async t => {
   }
 
   {
-    const { error } = await create({ name: "dont throw" })
+    const { error } = await todos.create({ name: "dont throw" })
 
     t.equals(
       error.message,
@@ -93,7 +96,7 @@ test("Create - error", async t => {
   }
 
   {
-    const { error } = await create({ id: 2, name: "dont throw" })
+    const { error } = await todos.create({ id: 2, name: "dont throw" })
 
     t.equals(
       error.message,

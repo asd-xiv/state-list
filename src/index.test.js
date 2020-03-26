@@ -1,7 +1,7 @@
 import test from "tape"
 import { createStore, combineReducers } from "redux"
 
-import { buildList, useList } from "."
+import { buildList } from "."
 
 test("List without API methods", async t => {
   // WHAT TO TEST
@@ -34,10 +34,8 @@ test("List without API methods", async t => {
     "Throw exception when creating a list without any params"
   )
 
-  const { selector, create, read, readOne, update, remove, clear } = useList(
-    todos,
-    store.dispatch
-  )
+  todos.setDispatch(store.dispatch)
+
   const {
     head,
     items,
@@ -49,7 +47,7 @@ test("List without API methods", async t => {
     isLoading,
     isUpdating,
     isRemoving,
-  } = selector(store.getState())
+  } = todos.selector(store.getState())
 
   t.deepEquals(
     {
@@ -81,7 +79,7 @@ test("List without API methods", async t => {
 
   t.throws(
     () => {
-      create({ id: 2 })
+      todos.create({ id: 2 })
     },
     /ReduxList: "TODOS"."create" must be a function, got "undefined"/,
     'Throw exception when calling "create" on list without methods'
@@ -89,7 +87,7 @@ test("List without API methods", async t => {
 
   t.throws(
     () => {
-      read()
+      todos.read()
     },
     /ReduxList: "TODOS"."read" must be a function, got "undefined"/,
     'Throw exception when calling "read" on list without methods'
@@ -97,7 +95,7 @@ test("List without API methods", async t => {
 
   t.throws(
     () => {
-      readOne()
+      todos.readOne()
     },
     /ReduxList: "TODOS"."readOne" must be a function, got "undefined"/,
     'Throw exception when calling "readOne" on list without methods'
@@ -105,7 +103,7 @@ test("List without API methods", async t => {
 
   t.throws(
     () => {
-      update(1, { test: 2 })
+      todos.update(1, { test: 2 })
     },
     /ReduxList: "TODOS"."update" must be a function, got "undefined"/,
     'Throw exception when calling "update" on list without methods'
@@ -113,16 +111,16 @@ test("List without API methods", async t => {
 
   t.throws(
     () => {
-      remove(1, { test: 2 })
+      todos.remove(1, { test: 2 })
     },
     /ReduxList: "TODOS"."remove" must be a function, got "undefined"/,
     'Throw exception when calling "remove" on list without methods'
   )
 
-  await clear()
+  await todos.clear()
 
   t.deepEquals(
-    selector(store.getState()).items(),
+    todos.selector(store.getState()).items(),
     [],
     "Builtin .clear should remove all items from state"
   )

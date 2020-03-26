@@ -2,7 +2,7 @@ import test from "tape"
 import { createStore, combineReducers } from "redux"
 import { map } from "@mutant-ws/m"
 
-import { buildList, useList } from ".."
+import { buildList } from ".."
 
 test("Create", async t => {
   // WHAT TO TEST
@@ -27,14 +27,15 @@ test("Create", async t => {
     })
   )
 
+  todos.setDispatch(store.dispatch)
+
   {
-    const { selector, create } = useList(todos, store.dispatch)
-    const { result } = await create(
+    const { result } = await todos.create(
       { name: "New foo" },
       { otherOption: "lorem" },
       { restParam: "ipsum" }
     )
-    const { creating, items, isCreating } = selector(store.getState())
+    const { creating, items, isCreating } = todos.selector(store.getState())
 
     t.deepEquals(creating(), [], "selector.creating should be empty array")
 
@@ -70,12 +71,11 @@ test("Create", async t => {
     )
   }
   {
-    const { selector, create } = useList(todos, store.dispatch)
-    const { result } = await create(
+    const { result } = await todos.create(
       { id: 2, foo: "bar-draft" },
       { isLocal: true }
     )
-    const { items } = selector(store.getState())
+    const { items } = todos.selector(store.getState())
 
     t.deepEquals(
       result,
@@ -123,9 +123,13 @@ test("Create - multiple", async t => {
     })
   )
 
-  const { selector, create } = useList(todos, store.dispatch)
-  const { result } = await create([{ name: "New foo" }, { name: "New foo 2" }])
-  const { items } = selector(store.getState())
+  todos.setDispatch(store.dispatch)
+
+  const { result } = await todos.create([
+    { name: "New foo" },
+    { name: "New foo 2" },
+  ])
+  const { items } = todos.selector(store.getState())
 
   t.deepEquals(
     result,

@@ -1,7 +1,7 @@
 import test from "tape"
 import { createStore, combineReducers } from "redux"
 
-import { buildList, useList } from ".."
+import { buildList } from ".."
 
 // Dummy Error with api data inside
 class RequestError extends Error {
@@ -38,12 +38,12 @@ test("Update - error", async t => {
     })
   )
 
-  const { selector, read, update } = useList(todos, store.dispatch)
+  todos.setDispatch(store.dispatch)
 
-  await read()
+  await todos.read()
 
   try {
-    await update()
+    await todos.update()
   } catch (error) {
     t.equals(
       error.message,
@@ -53,11 +53,11 @@ test("Update - error", async t => {
   }
 
   {
-    const { error } = await update(3, { name: "updated name" })
+    const { error } = await todos.update(3, { name: "updated name" })
 
     t.deepEquals(
       error,
-      selector(store.getState()).error("update"),
+      todos.selector(store.getState()).error("update"),
       `Error data set to state equals error data the action promise resolves to`
     )
 
@@ -75,10 +75,10 @@ test("Update - error", async t => {
   }
 
   {
-    const { error } = await update(1, { name: "updated name" })
+    const { error } = await todos.update(1, { name: "updated name" })
 
     t.equals(
-      selector(store.getState()).error("update"),
+      todos.selector(store.getState()).error("update"),
       null,
       "State error is set to null after successfull delete"
     )
@@ -91,7 +91,7 @@ test("Update - error", async t => {
   }
 
   {
-    const { error } = await update(123, { something: "" })
+    const { error } = await todos.update(123, { something: "" })
 
     t.equals(
       error.message,

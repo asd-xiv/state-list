@@ -2,7 +2,7 @@ import test from "tape"
 import { createStore, combineReducers } from "redux"
 import { map, is } from "@mutant-ws/m"
 
-import { buildList, useList } from ".."
+import { buildList } from ".."
 
 test("Update", async t => {
   // WHAT TO TEST
@@ -29,13 +29,13 @@ test("Update", async t => {
     })
   )
 
-  const { selector, read, update } = useList(todos, store.dispatch)
+  todos.setDispatch(store.dispatch)
 
-  await read()
+  await todos.read()
 
   {
-    const { result } = await update(2, { name: "Updated foo" })
-    const { items } = selector(store.getState())
+    const { result } = await todos.update(2, { name: "Updated foo" })
+    const { items } = todos.selector(store.getState())
 
     t.deepEquals(
       result,
@@ -53,7 +53,11 @@ test("Update", async t => {
     )
   }
   {
-    const { result } = await update(2, { name: "Draft" }, { isLocal: true })
+    const { result } = await todos.update(
+      2,
+      { name: "Draft" },
+      { isLocal: true }
+    )
 
     t.deepEquals(
       result,

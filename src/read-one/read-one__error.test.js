@@ -1,7 +1,7 @@
 import test from "tape"
 import { createStore, combineReducers } from "redux"
 
-import { buildList, useList } from ".."
+import { buildList } from ".."
 
 // Dummy Error with api data inside
 class RequestError extends Error {
@@ -40,19 +40,19 @@ test("ReadOne - error", async t => {
     })
   )
 
-  const { selector, read, readOne } = useList(todos, store.dispatch)
+  todos.setDispatch(store.dispatch)
 
-  await read()
+  await todos.read()
 
   {
-    const { error } = await readOne(3, {
+    const { error } = await todos.readOne(3, {
       name: "updated name",
       blue: "monday",
     })
 
     t.deepEquals(
       error,
-      selector(store.getState()).error("readOne"),
+      todos.selector(store.getState()).error("readOne"),
       `Error data set to state equals error data the action promise resolves to`
     )
 
@@ -70,7 +70,7 @@ test("ReadOne - error", async t => {
   }
 
   try {
-    await readOne()
+    await todos.readOne()
   } catch (error) {
     t.equals(
       error.message,
@@ -79,12 +79,12 @@ test("ReadOne - error", async t => {
   }
 
   {
-    const { error } = await readOne(1, {
+    const { error } = await todos.readOne(1, {
       description: "updated item",
     })
 
     t.equals(
-      selector(store.getState()).error("readOne"),
+      todos.selector(store.getState()).error("readOne"),
       null,
       "State error is set to null after successfull readOne"
     )

@@ -1,7 +1,7 @@
 import test from "tape"
 import { createStore, combineReducers } from "redux"
 
-import { buildList, useList } from ".."
+import { buildList } from ".."
 
 test("Remove - different id in response", async t => {
   // WHAT TO TEST
@@ -18,12 +18,12 @@ test("Remove - different id in response", async t => {
     })
   )
 
-  const { selector, read, remove } = useList(todos, store.dispatch)
+  todos.setDispatch(store.dispatch)
 
-  await read()
-  await remove(2)
+  await todos.read()
+  await todos.remove(2)
 
-  const { items } = selector(store.getState())
+  const { items } = todos.selector(store.getState())
 
   t.deepEquals(
     items(),
