@@ -1,6 +1,16 @@
 const debug = require("debug")("ReduxList:Main")
 
-import { get, pipe, findWith, hasWith, is, isEmpty, hasKey } from "@mutant-ws/m"
+import {
+  get,
+  pipe,
+  forEach,
+  findWith,
+  hasWith,
+  is,
+  isEmpty,
+  hasKey,
+} from "@mutant-ws/m"
+import io from "socket.io-client"
 
 import { createAction } from "./create/create"
 import {
@@ -80,6 +90,7 @@ const buildList = ({
   collections[name] = true
 
   let dispatch = null
+  let socket = null
   const queue = buildQueue()
   const createStart = `${name}_CREATE_START`
   const createEnd = `${name}_CREATE_END`
@@ -101,6 +112,20 @@ const buildList = ({
     name,
 
     setDispatch: source => (dispatch = source),
+
+    socketConnect: ({ url, namespace, events, onData }) => {
+      socket = io(`${url}/${namespace}`, {
+        transports: ["websocket"],
+      })
+
+      forEach(item => {
+        socket.on(item, (...data) => onData(item, ...data))
+      })(Array.isArray(events) ? events : [events])
+
+      return socket
+    },
+
+    socketDisconnect: () => socket.disconnect(),
 
     create: (data, { isLocal = false, ...restOptions } = {}, ...rest) => {
       if (isLocal === false && typeof create !== "function") {
@@ -131,6 +156,7 @@ const buildList = ({
           actionStart: createStart,
           actionEnd: createEnd,
           actionError: createError,
+          hasSocket: is(socket) && socket.connected,
           onChange,
         }),
 
@@ -215,6 +241,7 @@ const buildList = ({
           actionStart: updateStart,
           actionEnd: updateEnd,
           actionError: updateError,
+          hasSocket: is(socket) && socket.connected,
           onChange,
         }),
 
@@ -252,6 +279,7 @@ const buildList = ({
           actionStart: removeStart,
           actionEnd: removeEnd,
           actionError: removeError,
+          hasSocket: is(socket) && socket.connected,
           onChange,
         }),
 

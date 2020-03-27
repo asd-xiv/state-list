@@ -25,6 +25,7 @@ export const updateAction = ({
   actionStart,
   actionEnd,
   actionError,
+  hasSocket,
   onChange,
 }) => (id, data, ...rest) => {
   if (isEmpty(id)) {
@@ -51,17 +52,21 @@ export const updateAction = ({
   return Promise.resolve()
     .then(() => api(id, data, ...rest))
     .then(result => {
-      dispatch({
-        type: actionEnd,
-        payload: {
-          listName,
-          item: {
-            ...result,
-            id: hasKey("id")(result) ? result.id : id,
+      // - If present, websocket is responsable for keeping state in sync
+      // - Save a redundant state update
+      if (!hasSocket) {
+        dispatch({
+          type: actionEnd,
+          payload: {
+            listName,
+            item: {
+              ...result,
+              id: hasKey("id")(result) ? result.id : id,
+            },
+            onChange,
           },
-          onChange,
-        },
-      })
+        })
+      }
 
       return { result }
     })

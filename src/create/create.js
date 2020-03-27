@@ -23,6 +23,7 @@ export const createAction = ({
   actionStart,
   actionEnd,
   actionError,
+  hasSocket,
   onChange,
 }) => (data, ...rest) => {
   dispatch({
@@ -36,14 +37,20 @@ export const createAction = ({
   return Promise.resolve()
     .then(() => api(data, ...rest))
     .then(result => {
-      dispatch({
-        type: actionEnd,
-        payload: {
-          listName,
-          items: Array.isArray(result) ? result : [result],
-          onChange,
-        },
-      })
+      // - If present, websocket is responsable for keeping state in sync
+      // - Save a redundant state update
+      // - If both sources create an item with the same id, one of them will
+      // throw
+      if (!hasSocket) {
+        dispatch({
+          type: actionEnd,
+          payload: {
+            listName,
+            items: Array.isArray(result) ? result : [result],
+            onChange,
+          },
+        })
+      }
 
       return { result }
     })
