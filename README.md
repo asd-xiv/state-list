@@ -10,6 +10,7 @@
 <!-- vim-markdown-toc GFM -->
 
 * [Features](#features)
+* [Easy to integrate with](#easy-to-integrate-with)
 * [Install](#install)
 * [Example](#example)
 * [Enforce model shape using JSON Schemas](#enforce-model-shape-using-json-schemas)
@@ -21,10 +22,13 @@
 
 ## Features
 
-* [x] **Aggregate**: Combine data coming from different sources (users from own api, tweet count from Twitter)
+* [x] **Backend agnostic**: Combine data coming from different sources (users from own api, tweet count from Twitter)
 * [x] **Race free**: List operations are sequential. If `update` is issued after `delete`, the `update` promise will wait for `delete` to finish
 * [x] **It's Redux**: Treat Redux state data as simple lists with common metadata helpers (isLoading, isUpdating etc.)
-* [ ] **Real time**: WebSockets support
+
+## Easy to integrate with
+* [x] **Real time updates**
+* [z] **Model validation** 
 
 ## Install
 
@@ -109,15 +113,19 @@ const store = createStore(
 
 ```js
 import { useDispatch, useSelector } from "react-redux"
-import { useList as useMutantList } from "@mutant-ws/redux-list"
 
 const useList = list => {
-  const dispatch = useDispatch()
-  const { selector, ...rest } = useMutantList(list, dispatch)
+  // List actions dispatch to Redux store
+  list.setDispatch(useDispatch())
 
   return {
-    selector: useSelector(selector),
-    ...rest,
+    selector: useSelector(list.selector),
+    create: list.create,
+    read: list.read,
+    readOne: list.readOne,
+    update: list.update,
+    remove: list.remove,
+    clear: list.clear,
   }
 }
 
