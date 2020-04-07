@@ -39,8 +39,8 @@ test("ReadOne", async t => {
     })
   )
 
-  todos.setDispatch(store.dispatch)
-  todos2.setDispatch(store.dispatch)
+  todos.set({ dispatch: store.dispatch })
+  todos2.set({ dispatch: store.dispatch })
 
   {
     await todos.read()

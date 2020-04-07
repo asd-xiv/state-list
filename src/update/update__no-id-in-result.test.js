@@ -18,7 +18,7 @@ test("Update - id not in response", async t => {
     })
   )
 
-  todos.setDispatch(store.dispatch)
+  todos.set({ dispatch: store.dispatch })
 
   await todos.read()
   await todos.update(1, { name: "updated" })

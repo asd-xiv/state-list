@@ -38,7 +38,7 @@ test("Remove - error", async t => {
     })
   )
 
-  todos.setDispatch(store.dispatch)
+  todos.set({ dispatch: store.dispatch })
 
   await todos.read()
 

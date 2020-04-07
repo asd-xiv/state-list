@@ -6,9 +6,6 @@ const debug = require("debug")("ReduxList:CreateAction")
  * @param {String}   listName    Slice name - for error messages
  * @param {Function} dispatch    Redux dispatch
  * @param {Function} api         API method
- * @param {String}   actionStart Dispatch before API call
- * @param {String}   actionEnd   Dispatch after successfull API call
- * @param {String}   actionError Dispatch after failed API call
  * @param {Function} onChange    Appy on items array before changing state
  *
  * @param {Object} data Model data
@@ -20,30 +17,26 @@ export const createAction = ({
   listName,
   dispatch,
   api,
-  actionStart,
-  actionEnd,
-  actionError,
-  hasSocket,
+  hasDispatchStart,
+  hasDispatchEnd,
   onChange,
 }) => (data, ...rest) => {
-  dispatch({
-    type: actionStart,
-    payload: {
-      listName,
-      items: Array.isArray(data) ? data : [data],
-    },
-  })
+  if (hasDispatchStart) {
+    dispatch({
+      type: `${listName}_CREATE_START`,
+      payload: {
+        listName,
+        items: Array.isArray(data) ? data : [data],
+      },
+    })
+  }
 
   return Promise.resolve()
     .then(() => api(data, ...rest))
     .then(result => {
-      // - If present, websocket is responsable for keeping state in sync
-      // - Save a redundant state update
-      // - If both sources create an item with the same id, one of them will
-      // throw
-      if (!hasSocket) {
+      if (hasDispatchEnd) {
         dispatch({
-          type: actionEnd,
+          type: `${listName}_CREATE_END`,
           payload: {
             listName,
             items: Array.isArray(result) ? result : [result],
@@ -59,7 +52,7 @@ export const createAction = ({
       error.date = new Date()
 
       dispatch({
-        type: actionError,
+        type: `${listName}_CREATE_ERROR`,
         payload: error,
       })
 

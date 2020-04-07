@@ -8,11 +8,10 @@ test("Create", async t => {
   // WHAT TO TEST
   const todos = buildList({
     name: "CREATE_TODOS",
-    create: (data, options, other) => ({
+    create: (data, options) => ({
       id: 1,
       ...data,
       options,
-      other,
     }),
     onChange: map((item, index, array) => ({
       ...item,
@@ -27,13 +26,12 @@ test("Create", async t => {
     })
   )
 
-  todos.setDispatch(store.dispatch)
+  todos.set({ dispatch: store.dispatch })
 
   {
     const { result } = await todos.create(
       { name: "New foo" },
-      { otherOption: "lorem" },
-      { restParam: "ipsum" }
+      { otherOption: "lorem" }
     )
     const { creating, items, isCreating } = todos.selector(store.getState())
 
@@ -51,7 +49,6 @@ test("Create", async t => {
         id: 1,
         name: "New foo",
         options: { isLocal: false, otherOption: "lorem" },
-        other: { restParam: "ipsum" },
       },
       "list.create resolves with created item"
     )
@@ -63,13 +60,13 @@ test("Create", async t => {
           id: 1,
           name: "New foo",
           options: { isLocal: false, otherOption: "lorem" },
-          other: { restParam: "ipsum" },
           onChange: 1,
         },
       ],
       "Created element should be added to items array"
     )
   }
+
   {
     const { result } = await todos.create(
       { id: 2, foo: "bar-draft" },
@@ -93,7 +90,6 @@ test("Create", async t => {
           id: 1,
           name: "New foo",
           options: { isLocal: false, otherOption: "lorem" },
-          other: { restParam: "ipsum" },
           onChange: 2,
         },
         {
@@ -123,7 +119,7 @@ test("Create - multiple", async t => {
     })
   )
 
-  todos.setDispatch(store.dispatch)
+  todos.set({ dispatch: store.dispatch })
 
   const { result } = await todos.create([
     { name: "New foo" },

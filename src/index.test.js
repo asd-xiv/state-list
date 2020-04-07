@@ -34,7 +34,7 @@ test("List without API methods", async t => {
     "Throw exception when creating a list without any params"
   )
 
-  todos.setDispatch(store.dispatch)
+  todos.set({ dispatch: store.dispatch })
 
   const {
     head,

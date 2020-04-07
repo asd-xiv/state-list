@@ -38,7 +38,7 @@ test("Create - error", async t => {
     })
   )
 
-  todos.setDispatch(store.dispatch)
+  todos.set({ dispatch: store.dispatch })
 
   await todos.read()
 
@@ -66,7 +66,7 @@ test("Create - error", async t => {
   }
 
   {
-    const { error: apiError } = await todos.create({
+    const { error } = await todos.create({
       id: 2,
       name: "dont throw",
     })
@@ -79,7 +79,7 @@ test("Create - error", async t => {
     )
 
     t.equals(
-      apiError,
+      error,
       undefined,
       "Resolved error is null after successfull create"
     )
@@ -96,12 +96,14 @@ test("Create - error", async t => {
   }
 
   {
-    const { error } = await todos.create({ id: 2, name: "dont throw" })
+    await todos.create({ id: 2, name: "bar" })
 
-    t.equals(
-      error.message,
-      `ReduxList: "CREATE-ERROR_TODOS".create ID "2" already exists`,
-      "Creating item with same id should throw"
+    const { items } = todos.selector(store.getState())
+
+    t.deepEquals(
+      items(),
+      [{ id: 2, name: "bar" }],
+      "Items matching by id are merged"
     )
   }
 

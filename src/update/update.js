@@ -8,9 +8,6 @@ import { isEmpty, hasKey } from "@mutant-ws/m"
  * @param {String}   listName    Slice name - for error messages
  * @param {Function} dispatch    Redux dispatch
  * @param {Function} api         API method
- * @param {String}   actionStart Dispatch before API call
- * @param {String}   actionEnd   Dispatch after successfull API call
- * @param {String}   actionError Dispatch after failed API call
  * @param {Function} onChange    Appy on items array before changing state
  *
  * @param {string|number} id   Id of item to update
@@ -22,10 +19,8 @@ export const updateAction = ({
   listName,
   dispatch,
   api,
-  actionStart,
-  actionEnd,
-  actionError,
-  hasSocket,
+  hasDispatchStart,
+  hasDispatchEnd,
   onChange,
 }) => (id, data, ...rest) => {
   if (isEmpty(id)) {
@@ -44,19 +39,19 @@ export const updateAction = ({
     )
   }
 
-  dispatch({
-    type: actionStart,
-    payload: { id, data },
-  })
+  if (hasDispatchStart) {
+    dispatch({
+      type: `${listName}_UPDATE_START`,
+      payload: { id, data },
+    })
+  }
 
   return Promise.resolve()
     .then(() => api(id, data, ...rest))
     .then(result => {
-      // - If present, websocket is responsable for keeping state in sync
-      // - Save a redundant state update
-      if (!hasSocket) {
+      if (hasDispatchEnd) {
         dispatch({
-          type: actionEnd,
+          type: `${listName}_UPDATE_END`,
           payload: {
             listName,
             item: {
@@ -75,7 +70,7 @@ export const updateAction = ({
       error.date = new Date()
 
       dispatch({
-        type: actionError,
+        type: `${listName}_UPDATE_ERROR`,
         payload: error,
       })
 

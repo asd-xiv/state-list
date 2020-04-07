@@ -34,7 +34,7 @@ test("Read", async t => {
     })
   )
 
-  todos.setDispatch(store.dispatch)
+  todos.set({ dispatch: store.dispatch })
 
   // Trigger read action and check intermediate state
   const { result } = await Promise.resolve().then(() => {

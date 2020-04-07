@@ -1,16 +1,6 @@
 const debug = require("debug")("ReduxList:Main")
 
-import {
-  get,
-  pipe,
-  forEach,
-  findWith,
-  hasWith,
-  is,
-  isEmpty,
-  hasKey,
-} from "@mutant-ws/m"
-import io from "socket.io-client"
+import { get, pipe, findWith, hasWith, is, isEmpty, hasKey } from "@mutant-ws/m"
 
 import { createAction } from "./create/create"
 import {
@@ -90,7 +80,8 @@ const buildList = ({
   collections[name] = true
 
   let dispatch = null
-  let socket = null
+  let hasDispatchStart = true
+  let hasDispatchEnd = true
   const queue = buildQueue()
   const createStart = `${name}_CREATE_START`
   const createEnd = `${name}_CREATE_END`
@@ -111,23 +102,21 @@ const buildList = ({
   return {
     name,
 
-    setDispatch: source => (dispatch = source),
+    set: props => {
+      if (is(props.dispatch)) {
+        dispatch = props.dispatch
+      }
 
-    socketConnect: ({ url, namespace, events, onData }) => {
-      socket = io(`${url}/${namespace}`, {
-        transports: ["websocket"],
-      })
+      if (is(props.hasDispatchStart)) {
+        hasDispatchStart = props.hasDispatchStart
+      }
 
-      forEach(item => {
-        socket.on(item, (...data) => onData(item, ...data))
-      })(Array.isArray(events) ? events : [events])
-
-      return socket
+      if (is(props.hasDispatchEnd)) {
+        hasDispatchEnd = props.hasDispatchEnd
+      }
     },
 
-    socketDisconnect: () => socket.disconnect(),
-
-    create: (data, { isLocal = false, ...restOptions } = {}, ...rest) => {
+    create: (data, { isLocal = false, ...options } = {}) => {
       if (isLocal === false && typeof create !== "function") {
         throw new TypeError(
           `ReduxList: "${name}"."create" must be a function, got "${typeof create}"`
@@ -153,19 +142,17 @@ const buildList = ({
           listName: name,
           dispatch,
           api: create,
-          actionStart: createStart,
-          actionEnd: createEnd,
-          actionError: createError,
-          hasSocket: is(socket) && socket.connected,
+          hasDispatchStart,
+          hasDispatchEnd,
           onChange,
         }),
 
         // queue calls fn(...args)
-        args: [data, { isLocal, ...restOptions }, ...rest],
+        args: [data, { isLocal, ...options }],
       })
     },
 
-    read: (...args) => {
+    read: (query, options) => {
       if (typeof read !== "function") {
         throw new TypeError(
           `ReduxList: "${name}"."read" must be a function, got "${typeof read}"`
@@ -175,20 +162,20 @@ const buildList = ({
       return queue.enqueue({
         id: `${name}__read`,
         fn: readAction({
+          listName: name,
           dispatch,
           api: read,
-          actionStart: readStart,
-          actionEnd: readEnd,
-          actionError: readError,
+          hasDispatchStart,
+          hasDispatchEnd,
           onChange,
         }),
 
         // queue calls fn(...args)
-        args,
+        args: [query, options],
       })
     },
 
-    readOne: (...args) => {
+    readOne: (query, options) => {
       if (typeof readOne !== "function") {
         throw new TypeError(
           `ReduxList: "${name}"."readOne" must be a function, got "${typeof readOne}"`
@@ -201,18 +188,17 @@ const buildList = ({
           listName: name,
           dispatch,
           api: readOne,
-          actionStart: readOneStart,
-          actionEnd: readOneEnd,
-          actionError: readOneError,
+          hasDispatchStart,
+          hasDispatchEnd,
           onChange,
         }),
 
         // queue calls fn(...args)
-        args,
+        args: [query, options],
       })
     },
 
-    update: (id, data, { isLocal = false, ...restOptions } = {}, ...rest) => {
+    update: (id, data, { isLocal = false, ...options } = {}) => {
       if (isLocal === false && typeof update !== "function") {
         throw new TypeError(
           `ReduxList: "${name}"."update" must be a function, got "${typeof update}"`
@@ -238,19 +224,17 @@ const buildList = ({
           listName: name,
           dispatch,
           api: update,
-          actionStart: updateStart,
-          actionEnd: updateEnd,
-          actionError: updateError,
-          hasSocket: is(socket) && socket.connected,
+          hasDispatchStart,
+          hasDispatchEnd,
           onChange,
         }),
 
         // queue calls fn(...args)
-        args: [id, data, { isLocal, ...restOptions }, ...rest],
+        args: [id, data, { isLocal, ...options }],
       })
     },
 
-    remove: (id, { isLocal = false, ...restOptions } = {}, ...rest) => {
+    remove: (id, { isLocal = false, ...options } = {}) => {
       if (isLocal === false && typeof remove !== "function") {
         throw new TypeError(
           `ReduxList: "${name}"."remove" must be a function, got "${typeof remove}"`
@@ -276,15 +260,13 @@ const buildList = ({
           listName: name,
           dispatch,
           api: remove,
-          actionStart: removeStart,
-          actionEnd: removeEnd,
-          actionError: removeError,
-          hasSocket: is(socket) && socket.connected,
+          hasDispatchStart,
+          hasDispatchEnd,
           onChange,
         }),
 
         // queue calls fn(...args)
-        args: [id, { isLocal, ...restOptions }, ...rest],
+        args: [id, { isLocal, ...options }],
       })
     },
 

@@ -5,9 +5,6 @@ const debug = require("debug")("ReduxList:ReadAction")
  *
  * @param {Function} dispatch    Redux dispatch
  * @param {Function} api         API method
- * @param {String}   actionStart Dispatch before API call
- * @param {String}   actionEnd   Dispatch after successfull API call
- * @param {String}   actionError Dispatched after failed API call
  * @param {Function} onChange    Appy on items array before changing state
  *
  * @param {Object}  query           Control/Filter attributes
@@ -19,28 +16,32 @@ const debug = require("debug")("ReduxList:ReadAction")
  * @return {Promise<Object<error, result>>}
  */
 export const readAction = ({
+  listName,
   dispatch,
   api,
-  actionStart,
-  actionEnd,
-  actionError,
+  hasDispatchStart,
+  hasDispatchEnd,
   onChange,
 }) => (query = {}, { shouldClear = true, ...rest } = {}) => {
-  dispatch({
-    type: actionStart,
-  })
+  if (hasDispatchStart) {
+    dispatch({
+      type: `${listName}_READ_START`,
+    })
+  }
 
   return Promise.resolve()
     .then(() => api(query, { shouldClear, ...rest }))
     .then(result => {
-      dispatch({
-        type: actionEnd,
-        payload: {
-          items: Array.isArray(result) ? result : [result],
-          shouldClear,
-          onChange,
-        },
-      })
+      if (hasDispatchEnd) {
+        dispatch({
+          type: `${listName}_READ_END`,
+          payload: {
+            items: Array.isArray(result) ? result : [result],
+            shouldClear,
+            onChange,
+          },
+        })
+      }
 
       return { result }
     })
@@ -49,7 +50,7 @@ export const readAction = ({
       error.date = new Date()
 
       dispatch({
-        type: actionError,
+        type: `${listName}_READ_ERROR`,
         payload: error,
       })
 

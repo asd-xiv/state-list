@@ -8,9 +8,6 @@ import { isEmpty, hasKey } from "@mutant-ws/m"
  * @param {String}   listName    Slice name - for error messages
  * @param {Function} dispatch    Redux dispatch
  * @param {Function} api         API method
- * @param {String}   actionStart Dispatch before API call
- * @param {String}   actionEnd   Dispatch after successfull API call
- * @param {String}   actionError Dispatch after failed API call
  * @param {Function} onChange    Appy on items array before changing state
  *
  * @param {string|number} id   Id of item to delete
@@ -23,10 +20,8 @@ export const removeAction = ({
   listName,
   dispatch,
   api,
-  actionStart,
-  actionEnd,
-  actionError,
-  hasSocket,
+  hasDispatchStart,
+  hasDispatchEnd,
   onChange,
 }) => (id, ...rest) => {
   if (isEmpty(id)) {
@@ -37,19 +32,19 @@ export const removeAction = ({
     )
   }
 
-  dispatch({
-    type: actionStart,
-    payload: id,
-  })
+  if (hasDispatchStart) {
+    dispatch({
+      type: `${listName}_REMOVE_START`,
+      payload: id,
+    })
+  }
 
   return Promise.resolve()
     .then(() => api(id, ...rest))
     .then(result => {
-      // - If present, websocket is responsable for keeping state in sync
-      // - Save a redundant state update
-      if (!hasSocket) {
+      if (hasDispatchEnd) {
         dispatch({
-          type: actionEnd,
+          type: `${listName}_REMOVE_END`,
           payload: {
             listName,
             item: {
@@ -68,7 +63,7 @@ export const removeAction = ({
       error.date = new Date()
 
       dispatch({
-        type: actionError,
+        type: `${listName}_REMOVE_ERROR`,
         payload: error,
       })
 

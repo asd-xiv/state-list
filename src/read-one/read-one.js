@@ -8,11 +8,7 @@ import { hasKey, isEmpty } from "@mutant-ws/m"
  * @param {String}   listName    Slice name - for error messages
  * @param {Function} dispatch    Redux dispatch
  * @param {Function} api         API method
- * @param {String}   actionStart Dispatch before API call
- * @param {String}   actionEnd   Dispatch after successfull API call
- * @param {String}   actionError Dispatched after failed API call
  * @param {Function} onChange    Appy on items array before changing state
- *
  *
  * @param {string|number} id   Id of item to update or add
  * @param {Array}         rest Other paramaters passed when calling list
@@ -24,9 +20,8 @@ export const readOneAction = ({
   listName,
   dispatch,
   api,
-  actionStart,
-  actionEnd,
-  actionError,
+  hasDispatchStart,
+  hasDispatchEnd,
   onChange,
 }) => (id, ...args) => {
   if (isEmpty(id)) {
@@ -37,24 +32,28 @@ export const readOneAction = ({
     )
   }
 
-  dispatch({
-    type: actionStart,
-    payload: id,
-  })
+  if (hasDispatchStart) {
+    dispatch({
+      type: `${listName}_READ-ONE_START`,
+      payload: id,
+    })
+  }
 
   return Promise.resolve()
     .then(() => api(id, ...args))
     .then(result => {
-      dispatch({
-        type: actionEnd,
-        payload: {
-          item: {
-            ...result,
-            id: hasKey("id")(result) ? result.id : id,
+      if (hasDispatchEnd) {
+        dispatch({
+          type: `${listName}_READ-ONE_END`,
+          payload: {
+            item: {
+              ...result,
+              id: hasKey("id")(result) ? result.id : id,
+            },
+            onChange,
           },
-          onChange,
-        },
-      })
+        })
+      }
 
       return { result }
     })
@@ -63,7 +62,7 @@ export const readOneAction = ({
       error.date = new Date()
 
       dispatch({
-        type: actionError,
+        type: `${listName}_READ-ONE_ERROR`,
         payload: error,
       })
 

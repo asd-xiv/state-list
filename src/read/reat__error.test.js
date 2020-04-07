@@ -37,7 +37,7 @@ test("Read - error", async t => {
     })
   )
 
-  todos.setDispatch(store.dispatch)
+  todos.set({ dispatch: store.dispatch })
 
   {
     const { error } = await todos.read({ shouldThrow: true })

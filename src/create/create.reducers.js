@@ -1,16 +1,6 @@
 const debug = require("debug")("ReduxList:CreateReducers")
 
-import {
-  pipe,
-  findWith,
-  isNothing,
-  reduce,
-  hasWith,
-  when,
-  push,
-  is,
-  i,
-} from "@mutant-ws/m"
+import { hasWith, intersect, not, is, i } from "@mutant-ws/m"
 
 export const startReducer = (state, { items }) => ({
   ...state,
@@ -18,11 +8,11 @@ export const startReducer = (state, { items }) => ({
 })
 
 export const endReducer = (state, { listName, items = [], onChange = i }) => {
-  const itemWithoutId = findWith({
-    id: isNothing,
+  const itemWithoutId = hasWith({
+    id: not(is),
   })(items)
 
-  if (is(itemWithoutId)) {
+  if (itemWithoutId) {
     throw new TypeError(
       `ReduxList: "${listName}" Trying to create item without id property`
     )
@@ -30,20 +20,12 @@ export const endReducer = (state, { listName, items = [], onChange = i }) => {
 
   return {
     ...state,
-    items: pipe(
-      reduce((acc = state.items, item) =>
-        when(
-          hasWith({ id: item.id }),
-          () => {
-            throw new TypeError(
-              `ReduxList: "${listName}".create ID "${item.id}" already exists`
-            )
-          },
-          push(item)
-        )(acc)
-      ),
-      onChange
-    )(items),
+    items: onChange(
+      intersect(
+        (a, b) => a.id === b.id,
+        (a, b) => ({ ...a, ...b })
+      )(state.items, items)
+    ),
 
     // reset error after successfull action
     errors: {

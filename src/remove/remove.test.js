@@ -12,7 +12,7 @@ test("Remove", async t => {
       { id: 1, name: "lorem ipsum" },
       { id: 2, name: "foo bar" },
     ],
-    remove: (id, options, ...rest) => ({ id, options, rest }),
+    remove: (id, options) => ({ id, options }),
     onChange: map((item, index, array) => ({
       ...item,
       onChange: array.length,
@@ -26,18 +26,14 @@ test("Remove", async t => {
     })
   )
 
-  todos.setDispatch(store.dispatch)
+  todos.set({ dispatch: store.dispatch })
 
   {
     await todos.read()
 
-    const { result } = await todos.remove(
-      2,
-      {
-        testOption: "other",
-      },
-      "test-rest-params"
-    )
+    const { result } = await todos.remove(2, {
+      testOption: "other",
+    })
     const { items, isRemoving } = todos.selector(store.getState())
 
     t.deepEquals(
@@ -45,7 +41,6 @@ test("Remove", async t => {
       {
         id: 2,
         options: { isLocal: false, testOption: "other" },
-        rest: ["test-rest-params"],
       },
       "list.remove resolves with element id"
     )
