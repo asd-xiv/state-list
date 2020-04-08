@@ -90,15 +90,5 @@ test("Update - error", async t => {
     )
   }
 
-  {
-    const { error } = await todos.update(123, { something: "" })
-
-    t.equals(
-      error.message,
-      `ReduxList: "UPDATE-ERROR_TODOS".update ID "123" does not exist`,
-      ".update called with missing ID should throw error"
-    )
-  }
-
   t.end()
 })

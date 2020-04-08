@@ -1,25 +1,21 @@
 const debug = require("debug")("ReduxList:UpdateReducers")
 
-import { map, pipe, merge, hasWith, i } from "@mutant-ws/m"
+import { intersect, i } from "@mutant-ws/m"
 
 export const startReducer = (state, { id, data }) => ({
   ...state,
   updating: [{ id, data }],
 })
 
-export const endReducer = (state, { listName, item, onChange = i }) => {
-  if (!hasWith({ id: item.id })(state.items)) {
-    throw new TypeError(
-      `ReduxList: "${listName}".update ID "${item.id}" does not exist`
-    )
-  }
-
+export const endReducer = (state, { item, onChange = i }) => {
   return {
     ...state,
-    items: pipe(
-      map(mapItem => (mapItem.id === item.id ? merge(mapItem, item) : mapItem)),
-      onChange
-    )(state.items),
+    items: onChange(
+      intersect(
+        (a, b) => a.id === b.id,
+        (a, b) => ({ ...a, ...b })
+      )(state.items, [item])
+    ),
 
     // reset error after successfull action
     errors: {
