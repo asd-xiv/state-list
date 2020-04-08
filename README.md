@@ -27,8 +27,9 @@
 * [x] **It's Redux**: Treat Redux state data as simple lists with common metadata helpers (isLoading, isUpdating etc.)
 
 ## Easy to integrate with
+
 * [x] **Real time updates**
-* [z] **Model validation** 
+* [z] **Model validation**
 
 ## Install
 
