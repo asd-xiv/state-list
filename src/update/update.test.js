@@ -1,6 +1,6 @@
 import test from "tape"
 import { createStore, combineReducers } from "redux"
-import { map, is } from "@mutant-ws/m"
+import { map, concat, is } from "@mutant-ws/m"
 
 import { buildList } from ".."
 
@@ -10,7 +10,7 @@ test("Update", async t => {
     name: "UPDATE_TODOS",
     read: () => [
       { id: 1, name: "lorem ipsum" },
-      { id: 2, name: "foo bar" },
+      { id: 2, name: "foo bar", items: [{ id: 1, label: "item 1" }] },
     ],
     update: (id, data) => ({
       id,
@@ -47,11 +47,17 @@ test("Update", async t => {
       items(),
       [
         { id: 1, name: "lorem ipsum", onChange: 2 },
-        { id: 2, name: "Updated foo", onChange: 2 },
+        {
+          id: 2,
+          name: "Updated foo",
+          items: [{ id: 1, label: "item 1" }],
+          onChange: 2,
+        },
       ],
       "element should be updated in items array"
     )
   }
+
   {
     const { result } = await todos.update(
       2,
@@ -63,6 +69,40 @@ test("Update", async t => {
       result,
       { id: 2, name: "Draft" },
       "Draft .update() resolves with item without calling method"
+    )
+  }
+
+  {
+    await todos.update(
+      2,
+      { name: "Updated foo", items: [{ id: 2 }] },
+      {
+        onMerge: (
+          { items: aItems = [], ...aRest },
+          { items: bItems = [], ...bRest }
+        ) => {
+          return {
+            ...aRest,
+            ...bRest,
+            items: concat(aItems)(bItems),
+          }
+        },
+      }
+    )
+    const { items } = todos.selector(store.getState())
+
+    t.deepEquals(
+      items(),
+      [
+        { id: 1, name: "lorem ipsum", onChange: 4 },
+        {
+          id: 2,
+          name: "Updated foo",
+          items: [{ id: 1, label: "item 1" }, { id: 2 }],
+          onChange: 4,
+        },
+      ],
+      "element should be updated in items array via custom onMerge function"
     )
   }
 

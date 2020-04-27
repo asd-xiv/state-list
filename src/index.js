@@ -198,7 +198,7 @@ const buildList = ({
       })
     },
 
-    update: (id, data, { isLocal = false, ...options } = {}) => {
+    update: (id, data, { isLocal = false, onMerge, ...options } = {}) => {
       if (isLocal === false && typeof update !== "function") {
         throw new TypeError(
           `ReduxList: "${name}"."update" must be a function, got "${typeof update}"`
@@ -211,6 +211,7 @@ const buildList = ({
           payload: {
             listName: name,
             item: { id, ...data },
+            onMerge,
             onChange,
           },
         })
@@ -226,11 +227,12 @@ const buildList = ({
           api: update,
           hasDispatchStart,
           hasDispatchEnd,
+          onMerge,
           onChange,
         }),
 
         // queue calls fn(...args)
-        args: [id, data, { isLocal, ...options }],
+        args: [id, data, options],
       })
     },
 

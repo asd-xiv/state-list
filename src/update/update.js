@@ -21,6 +21,7 @@ export const updateAction = ({
   api,
   hasDispatchStart,
   hasDispatchEnd,
+  onMerge,
   onChange,
 }) => (id, data, ...rest) => {
   if (isEmpty(id)) {
@@ -58,6 +59,7 @@ export const updateAction = ({
               ...result,
               id: hasKey("id")(result) ? result.id : id,
             },
+            onMerge,
             onChange,
           },
         })
