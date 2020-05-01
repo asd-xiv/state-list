@@ -79,9 +79,20 @@ const buildList = ({
 
   collections[name] = true
 
-  let dispatch = null
-  let hasDispatchStart = true
-  let hasDispatchEnd = true
+  let props = {
+    dispatch: null,
+    createHasDispatchStart: true,
+    createHasDispatchEnd: true,
+    readHasDispatchStart: true,
+    readHasDispatchEnd: true,
+    readOneHasDispatchStart: true,
+    readOneHasDispatchEnd: true,
+    updateHasDispatchStart: true,
+    updateHasDispatchEnd: true,
+    removeHasDispatchStart: true,
+    removeHasDispatchEnd: true,
+  }
+
   const queue = buildQueue()
   const createStart = `${name}_CREATE_START`
   const createEnd = `${name}_CREATE_END`
@@ -102,17 +113,10 @@ const buildList = ({
   return {
     name,
 
-    set: props => {
-      if (is(props.dispatch)) {
-        dispatch = props.dispatch
-      }
-
-      if (is(props.hasDispatchStart)) {
-        hasDispatchStart = props.hasDispatchStart
-      }
-
-      if (is(props.hasDispatchEnd)) {
-        hasDispatchEnd = props.hasDispatchEnd
+    set: source => {
+      props = {
+        ...props,
+        ...source,
       }
     },
 
@@ -124,7 +128,7 @@ const buildList = ({
       }
 
       if (isLocal) {
-        dispatch({
+        props.dispatch({
           type: createEnd,
           payload: {
             listName: name,
@@ -140,10 +144,10 @@ const buildList = ({
         id: `${name}__create`,
         fn: createAction({
           listName: name,
-          dispatch,
+          dispatch: props.dispatch,
           api: create,
-          hasDispatchStart,
-          hasDispatchEnd,
+          hasDispatchStart: props.createHasDispatchStart,
+          hasDispatchEnd: props.createHasDispatchEnd,
           onChange,
         }),
 
@@ -163,10 +167,10 @@ const buildList = ({
         id: `${name}__read`,
         fn: readAction({
           listName: name,
-          dispatch,
+          dispatch: props.dispatch,
           api: read,
-          hasDispatchStart,
-          hasDispatchEnd,
+          hasDispatchStart: props.readHasDispatchStart,
+          hasDispatchEnd: props.readHasDispatchEnd,
           onChange,
         }),
 
@@ -186,10 +190,10 @@ const buildList = ({
         id: `${name}__readOne`,
         fn: readOneAction({
           listName: name,
-          dispatch,
+          dispatch: props.dispatch,
           api: readOne,
-          hasDispatchStart,
-          hasDispatchEnd,
+          hasDispatchStart: props.readOneHasDispatchStart,
+          hasDispatchEnd: props.readOneHasDispatchEnd,
           onChange,
         }),
 
@@ -206,7 +210,7 @@ const buildList = ({
       }
 
       if (isLocal) {
-        dispatch({
+        props.dispatch({
           type: updateEnd,
           payload: {
             listName: name,
@@ -223,10 +227,10 @@ const buildList = ({
         id: `${name}__update`,
         fn: updateAction({
           listName: name,
-          dispatch,
+          dispatch: props.dispatch,
           api: update,
-          hasDispatchStart,
-          hasDispatchEnd,
+          hasDispatchStart: props.updateHasDispatchStart,
+          hasDispatchEnd: props.updateHasDispatchEnd,
           onMerge,
           onChange,
         }),
@@ -244,7 +248,7 @@ const buildList = ({
       }
 
       if (isLocal) {
-        dispatch({
+        props.dispatch({
           type: removeEnd,
           payload: {
             listName: name,
@@ -260,10 +264,10 @@ const buildList = ({
         id: `${name}__remove`,
         fn: removeAction({
           listName: name,
-          dispatch,
+          dispatch: props.dispatch,
           api: remove,
-          hasDispatchStart,
-          hasDispatchEnd,
+          hasDispatchStart: props.removeHasDispatchStart,
+          hasDispatchEnd: props.removeHasDispatchEnd,
           onChange,
         }),
 
@@ -273,7 +277,7 @@ const buildList = ({
     },
 
     clear: () => {
-      dispatch({
+      props.dispatch({
         type: readEnd,
         payload: {
           items: [],
