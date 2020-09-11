@@ -1,58 +1,43 @@
 <!-- markdownlint-disable first-line-h1 line-length -->
 
-[![CircleCI](https://circleci.com/gh/mutant-ws/redux-list.svg?style=svg)](https://circleci.com/gh/mutant-ws/redux-list)
-[![npm version](https://badge.fury.io/js/%40mutant-ws%2Fredux-list.svg)](https://badge.fury.io/js/%40mutant-ws%2Fredux-list)
-[![dev-badge](https://david-dm.org/mutant-ws/redux-list.svg)](https://david-dm.org/mutant-ws/redux-list)
-[![Coverage Status](https://coveralls.io/repos/github/mutant-ws/redux-list/badge.svg)](https://coveralls.io/github/mutant-ws/redux-list)
+[![CircleCI](https://circleci.com/gh/andreidmt/just-a-list.redux.svg?style=svg)](https://circleci.com/gh/andreidmt/just-a-list.redux)
+[![npm version](https://badge.fury.io/js/just-a-list.redux.svg)](https://badge.fury.io/js/just-a-list.redux)
+[![dev-badge](https://david-dm.org/andreidmt/just-a-list.redux.svg)](https://david-dm.org/andreidmt/just-a-list.redux)
+[![Coverage Status](https://coveralls.io/repos/github/andreidmt/just-a-list.redux/badge.svg)](https://coveralls.io/github/andreidmt/just-a-list.redux)
 
 # redux-list
 
 <!-- vim-markdown-toc GFM -->
 
-* [Features](#features)
-* [Easy to integrate with](#easy-to-integrate-with)
 * [Install](#install)
 * [Example](#example)
-* [Enforce model shape using JSON Schemas](#enforce-model-shape-using-json-schemas)
 * [Develop](#develop)
-* [Commit messages](#commit-messages)
 * [Changelog](#changelog)
 
 <!-- vim-markdown-toc -->
 
-## Features
-
-* [x] **Backend agnostic**: Combine data coming from different sources (users from own api, tweet count from Twitter)
-* [x] **Race free**: List operations are sequential. If `update` is issued after `delete`, the `update` promise will wait for `delete` to finish
-* [x] **It's Redux**: Treat Redux state data as simple lists with common metadata helpers (isLoading, isUpdating etc.)
-
-## Easy to integrate with
-
-* [x] **Real time updates**
-* [z] **Model validation**
-
 ## Install
 
 ```bash
-npm install @mutant-ws/redux-list
+npm install just-a-list.redux 
 ```
 
 ## Example
 
-`src/todos.list.js` - Define a list of Todos from our API.
+Get some Toto's from an API and list them in a React component.
+
+`src/todos.list.js` 
 
 ```js
-import { buildList } from "@mutant-ws/redux-list"
+import { buildList } from "just-a-list.redux"
 
-const TodosList = buildList({
+export const TodosList = buildList({
   /**
    * Unique name used as Redux store key. If multiple lists use the same
-   * name, an error will be thrown.
-   * List is ment to be added on the root level of the Redux store.
-   *
-   * Use BEM (getbem.com/naming) for naming, ex. `{page}__{section}--{entity}`
+   * name, an error will be thrown. List is added on the root level of the 
+   * Redux store.
    */
-  name: "PAGE__SECTION--TODOS",
+  name: "PAGE.SECTION.TODOS",
 
   /**
    * Define CRUD actions and map the internal items to one or more data sources
@@ -93,8 +78,6 @@ const TodosList = buildList({
    */
   onChange: items => sortBy(prop("priority"), items)
 })
-
-export { TodosList }
 ```
 
 `src/store.js` - Hook internal list reducers into the state store.
@@ -115,9 +98,9 @@ const store = createStore(
 ```js
 import { useDispatch, useSelector } from "react-redux"
 
-const useList = list => {
+export const useList = list => {
   // List actions dispatch to Redux store
-  list.setDispatch(useDispatch())
+  list.set({ dispatch: useDispatch() })
 
   return {
     selector: useSelector(list.selector),
@@ -129,8 +112,6 @@ const useList = list => {
     clear: list.clear,
   }
 }
-
-export { useList }
 ```
 
 `src/todos.container.jsx` - Use list's selector to access the data
@@ -164,17 +145,13 @@ const TodosContainer = ({ projectId }) => {
     </div>
   )
 }
-
-export { TodosContainer }
 ```
-
-## Enforce model shape using JSON Schemas
 
 ## Develop
 
 ```bash
-git clone git@github.com:mutant-ws/redux-list.git && \
-  cd redux-list && \
+git clone git@github.com:andreidmt/just-a-list.redux.git && \
+  cd just-a-list.redux && \
   npm run setup
 ```
 
@@ -190,28 +167,6 @@ Watch `src` folder for changes and re-run tests
 npm run tdd
 ```
 
-## Commit messages
-
-Using Angular's [conventions](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#-git-commit-guidelines).
-
-```text
-<type>(<scope>): <subject>
-<BLANK LINE>
-<body>
-<BLANK LINE>
-<footer>
-BREAKING CHANGE: Half of features not working anymore
-```
-
-* **feat**: A new feature
-* **fix**: A bug fix
-* **docs**: Documentation only changes
-* **style**: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
-* **refactor**: A code change that neither fixes a bug nor adds a feature
-* **perf**: A code change that improves performance
-* **test**: Adding missing or correcting existing tests
-* **chore**: Changes to the build process or auxiliary tools and libraries such as documentation generation
-
 ## Changelog
 
-See the [releases section](https://github.com/mutant-ws/redux-list/releases) for details.
+See the [releases section](https://github.com/andreidmt/just-a-list.redux/releases) for details.
