@@ -1,6 +1,6 @@
 import test from "tape"
 import { createStore, combineReducers } from "redux"
-import { map, concat, is } from "@mutant-ws/m"
+import { map, concat, is } from "m.xyz"
 
 import { buildList } from ".."
 

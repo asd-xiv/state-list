@@ -20,7 +20,7 @@ test("Update - error", async t => {
     name: "UPDATE-ERROR_TODOS",
     read: () => [{ id: 1, name: "build gdpr startup" }, { id: 2 }],
     update: (id, data) => {
-      return id === 3
+      return id === 2
         ? Promise.reject(
             new RequestError("Something something API crash", {
               body: { message: "resource not found" },
@@ -47,13 +47,13 @@ test("Update - error", async t => {
   } catch (error) {
     t.equals(
       error.message,
-      `ReduxList: "UPDATE-ERROR_TODOS".update ID param missing. Expected something, got "undefined"`,
+      `JustAList: "UPDATE-ERROR_TODOS".update ID param missing. Expected something, got "undefined"`,
       ".update called without valid id parameter should throw error"
     )
   }
 
   {
-    const { error } = await todos.update(3, { name: "updated name" })
+    const { error } = await todos.update(2, { name: "updated name" })
 
     t.deepEquals(
       error,
@@ -87,6 +87,16 @@ test("Update - error", async t => {
       error,
       undefined,
       "Resolved error is null after successfull delete"
+    )
+  }
+
+  try {
+    await todos.update(10, { does: "not exist" })
+  } catch (error) {
+    t.equals(
+      error.message,
+      `JustAList: "UPDATE-ERROR_TODOS".update ID "10" does not exist`,
+      "Calling .update with id that does not exist should throw error"
     )
   }
 

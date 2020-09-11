@@ -1,6 +1,6 @@
-const debug = require("debug")("ReduxList:UpdateAction")
+const debug = require("debug")("JustAList:UpdateAction")
 
-import { isEmpty, hasKey } from "@mutant-ws/m"
+import { isEmpty, get } from "m.xyz"
 
 /**
  * Call list.update method to change existing item in slice.items
@@ -23,10 +23,10 @@ export const updateAction = ({
   hasDispatchEnd,
   onMerge,
   onChange,
-}) => (id, data, ...rest) => {
+}) => (id, data = {}, options = {}) => {
   if (isEmpty(id)) {
     throw new TypeError(
-      `ReduxList: "${listName}".update ID param missing. Expected something, got "${JSON.stringify(
+      `JustAList: "${listName}".update ID param missing. Expected something, got "${JSON.stringify(
         id
       )}"`
     )
@@ -34,7 +34,7 @@ export const updateAction = ({
 
   if (isEmpty(data)) {
     throw new TypeError(
-      `ReduxList: "${listName}".update DATA param is empty. Expected non empty object, got "${JSON.stringify(
+      `JustAList: "${listName}".update DATA param is empty. Expected non empty object, got "${JSON.stringify(
         data
       )}"`
     )
@@ -43,12 +43,18 @@ export const updateAction = ({
   if (hasDispatchStart) {
     dispatch({
       type: `${listName}_UPDATE_START`,
-      payload: { id, data },
+      payload: {
+        id,
+        data,
+        isOptimist: options.isOptimist,
+        onMerge,
+        onChange,
+      },
     })
   }
 
   return Promise.resolve()
-    .then(() => api(id, data, ...rest))
+    .then(() => api(id, data, options))
     .then(result => {
       if (hasDispatchEnd) {
         dispatch({
@@ -57,7 +63,7 @@ export const updateAction = ({
             listName,
             item: {
               ...result,
-              id: hasKey("id")(result) ? result.id : id,
+              id: get("id", id)(result),
             },
             onMerge,
             onChange,
@@ -73,7 +79,11 @@ export const updateAction = ({
 
       dispatch({
         type: `${listName}_UPDATE_ERROR`,
-        payload: error,
+        payload: {
+          id,
+          error,
+          isOptimist: options.isOptimist,
+        },
       })
 
       return { error }

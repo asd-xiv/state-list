@@ -47,7 +47,7 @@ test("Remove - error", async t => {
   } catch (error) {
     t.equals(
       error.message,
-      `ReduxList: "DELETE-ERROR_TODOS".remove ID param missing. Expected something, got "undefined"`,
+      `JustAList: "DELETE-ERROR_TODOS".remove ID param missing. Expected something, got "undefined"`,
       "remove method called without valid id parameter should throw error"
     )
   }
@@ -90,12 +90,12 @@ test("Remove - error", async t => {
     )
   }
 
-  {
-    const { error } = await todos.remove(1)
-
+  try {
+    await todos.remove(1)
+  } catch (error) {
     t.equals(
       error.message,
-      `ReduxList: "DELETE-ERROR_TODOS".remove ID "1" does not exist`,
+      `JustAList: "DELETE-ERROR_TODOS".remove ID "1" does not exist`,
       "Calling .remove with id that does not exist should throw error"
     )
   }

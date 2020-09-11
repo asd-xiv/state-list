@@ -90,7 +90,7 @@ test("Create - error", async t => {
 
     t.equals(
       error.message,
-      `ReduxList: "CREATE-ERROR_TODOS" Trying to create item without id property`,
+      `JustAList: "CREATE-ERROR_TODOS" Trying to create item without id property`,
       "Creating item without id field should throw"
     )
   }

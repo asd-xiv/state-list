@@ -1,4 +1,4 @@
-const debug = require("debug")("ReduxList:CreateAction")
+const debug = require("debug")("JustAList:CreateAction")
 
 /**
  * Call list.create method to add result to slice.items

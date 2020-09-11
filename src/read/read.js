@@ -1,4 +1,4 @@
-const debug = require("debug")("ReduxList:ReadAction")
+const debug = require("debug")("JustAList:ReadAction")
 
 /**
  * Call list.read method to set slice.items array

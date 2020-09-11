@@ -1,6 +1,6 @@
-const debug = require("debug")("ReduxList:CreateReducers")
+const debug = require("debug")("JustAList:CreateReducers")
 
-import { hasWith, intersect, not, is, i } from "@mutant-ws/m"
+import { hasWith, intersect, not, is, i } from "m.xyz"
 
 export const startReducer = (state, { items }) => ({
   ...state,
@@ -14,7 +14,7 @@ export const endReducer = (state, { listName, items = [], onChange = i }) => {
 
   if (itemWithoutId) {
     throw new TypeError(
-      `ReduxList: "${listName}" Trying to create item without id property`
+      `JustAList: "${listName}" Trying to create item without id property`
     )
   }
 

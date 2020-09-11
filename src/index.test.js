@@ -22,7 +22,7 @@ test("List without API methods", async t => {
     () => {
       buildList({ name: "TODOS" })
     },
-    /ReduxList: List with name "TODOS" already exists/,
+    /JustAList: List with name "TODOS" already exists/,
     "Throw exception when creating a list with a duplicate name"
   )
 
@@ -30,7 +30,7 @@ test("List without API methods", async t => {
     () => {
       buildList()
     },
-    /ReduxList: "name" property is required, received "undefined"/,
+    /JustAList: "name" property is required, received "undefined"/,
     "Throw exception when creating a list without any params"
   )
 
@@ -81,7 +81,7 @@ test("List without API methods", async t => {
     () => {
       todos.create({ id: 2 })
     },
-    /ReduxList: "TODOS"."create" must be a function, got "undefined"/,
+    /JustAList: "TODOS"."create" must be a function, got "undefined"/,
     'Throw exception when calling "create" on list without methods'
   )
 
@@ -89,7 +89,7 @@ test("List without API methods", async t => {
     () => {
       todos.read()
     },
-    /ReduxList: "TODOS"."read" must be a function, got "undefined"/,
+    /JustAList: "TODOS"."read" must be a function, got "undefined"/,
     'Throw exception when calling "read" on list without methods'
   )
 
@@ -97,7 +97,7 @@ test("List without API methods", async t => {
     () => {
       todos.readOne()
     },
-    /ReduxList: "TODOS"."readOne" must be a function, got "undefined"/,
+    /JustAList: "TODOS"."readOne" must be a function, got "undefined"/,
     'Throw exception when calling "readOne" on list without methods'
   )
 
@@ -105,7 +105,7 @@ test("List without API methods", async t => {
     () => {
       todos.update(1, { test: 2 })
     },
-    /ReduxList: "TODOS"."update" must be a function, got "undefined"/,
+    /JustAList: "TODOS"."update" must be a function, got "undefined"/,
     'Throw exception when calling "update" on list without methods'
   )
 
@@ -113,7 +113,7 @@ test("List without API methods", async t => {
     () => {
       todos.remove(1, { test: 2 })
     },
-    /ReduxList: "TODOS"."remove" must be a function, got "undefined"/,
+    /JustAList: "TODOS"."remove" must be a function, got "undefined"/,
     'Throw exception when calling "remove" on list without methods'
   )
 

@@ -1,6 +1,6 @@
-const debug = require("debug")("ReduxList:ReadOneAction")
+const debug = require("debug")("JustAList:ReadOneAction")
 
-import { hasKey, isEmpty } from "@mutant-ws/m"
+import { hasKey, isEmpty } from "m.xyz"
 
 /**
  * Call list.readOne method to add/update item in slice.items
@@ -26,7 +26,7 @@ export const readOneAction = ({
 }) => (id, ...args) => {
   if (isEmpty(id)) {
     throw new TypeError(
-      `ReduxList: "${listName}".readOne ID param missing. Expected something, got "${JSON.stringify(
+      `JustAList: "${listName}".readOne ID param missing. Expected something, got "${JSON.stringify(
         id
       )}"`
     )

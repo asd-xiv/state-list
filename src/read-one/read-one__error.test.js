@@ -74,7 +74,7 @@ test("ReadOne - error", async t => {
   } catch (error) {
     t.equals(
       error.message,
-      `ReduxList: "READ-ONE-ERROR_TODOS".readOne ID param missing. Expected something, got "undefined"`
+      `JustAList: "READ-ONE-ERROR_TODOS".readOne ID param missing. Expected something, got "undefined"`
     )
   }
 

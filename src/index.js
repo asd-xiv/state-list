@@ -1,6 +1,6 @@
-const debug = require("debug")("ReduxList:Main")
+const debug = require("debug")("JustAList:Main")
 
-import { get, pipe, findWith, hasWith, is, isEmpty, hasKey } from "@mutant-ws/m"
+import { get, pipe, findWith, hasWith, is, isEmpty, hasKey } from "m.xyz"
 
 import { createAction } from "./create/create"
 import {
@@ -37,17 +37,12 @@ import {
   errorReducer as removeErrorReducer,
 } from "./remove/remove.reducers"
 
-import { buildQueue } from "./lib/queue"
-
 const collections = Object.create(null)
 
 /**
  * Construct a set of actions and reducers to manage a state slice as an array
  *
- * @param {string}   name     Unique name so actions dont overlap
- * @param {Object}   methods  Object with CRUD method
- * @param {Object}   hooks    Transformer functions called when specific actions
- *                            occur
+ * @param {string}   name     Unique list name
  * @param {Function} onChange Function triggered on every list change
  *
  * @return {Object}
@@ -67,14 +62,14 @@ const buildList = ({
 } = {}) => {
   if (isEmpty(name)) {
     throw new Error(
-      `ReduxList: "name" property is required, received "${JSON.stringify(
+      `JustAList: "name" property is required, received "${JSON.stringify(
         name
       )}"`
     )
   }
 
   if (hasKey(name)(collections)) {
-    throw new Error(`ReduxList: List with name "${name}" already exists`)
+    throw new Error(`JustAList: List with name "${name}" already exists`)
   }
 
   collections[name] = true
@@ -93,7 +88,6 @@ const buildList = ({
     removeHasDispatchEnd: true,
   }
 
-  const queue = buildQueue()
   const createStart = `${name}_CREATE_START`
   const createEnd = `${name}_CREATE_END`
   const createError = `${name}_CREATE_ERROR`
@@ -123,7 +117,7 @@ const buildList = ({
     create: (data, { isLocal = false, ...options } = {}) => {
       if (isLocal === false && typeof create !== "function") {
         throw new TypeError(
-          `ReduxList: "${name}"."create" must be a function, got "${typeof create}"`
+          `JustAList: "${name}"."create" must be a function, got "${typeof create}"`
         )
       }
 
@@ -140,72 +134,54 @@ const buildList = ({
         return Promise.resolve({ result: data })
       }
 
-      return queue.enqueue({
-        id: `${name}__create`,
-        fn: createAction({
-          listName: name,
-          dispatch: props.dispatch,
-          api: create,
-          hasDispatchStart: props.createHasDispatchStart,
-          hasDispatchEnd: props.createHasDispatchEnd,
-          onChange,
-        }),
-
-        // queue calls fn(...args)
-        args: [data, { isLocal, ...options }],
-      })
+      return createAction({
+        listName: name,
+        dispatch: props.dispatch,
+        api: create,
+        hasDispatchStart: props.createHasDispatchStart,
+        hasDispatchEnd: props.createHasDispatchEnd,
+        onChange,
+      })(data, { isLocal, ...options })
     },
 
     read: (query, options) => {
       if (typeof read !== "function") {
         throw new TypeError(
-          `ReduxList: "${name}"."read" must be a function, got "${typeof read}"`
+          `JustAList: "${name}"."read" must be a function, got "${typeof read}"`
         )
       }
 
-      return queue.enqueue({
-        id: `${name}__read`,
-        fn: readAction({
-          listName: name,
-          dispatch: props.dispatch,
-          api: read,
-          hasDispatchStart: props.readHasDispatchStart,
-          hasDispatchEnd: props.readHasDispatchEnd,
-          onChange,
-        }),
-
-        // queue calls fn(...args)
-        args: [query, options],
-      })
+      return readAction({
+        listName: name,
+        dispatch: props.dispatch,
+        api: read,
+        hasDispatchStart: props.readHasDispatchStart,
+        hasDispatchEnd: props.readHasDispatchEnd,
+        onChange,
+      })(query, options)
     },
 
     readOne: (query, options) => {
       if (typeof readOne !== "function") {
         throw new TypeError(
-          `ReduxList: "${name}"."readOne" must be a function, got "${typeof readOne}"`
+          `JustAList: "${name}"."readOne" must be a function, got "${typeof readOne}"`
         )
       }
 
-      return queue.enqueue({
-        id: `${name}__readOne`,
-        fn: readOneAction({
-          listName: name,
-          dispatch: props.dispatch,
-          api: readOne,
-          hasDispatchStart: props.readOneHasDispatchStart,
-          hasDispatchEnd: props.readOneHasDispatchEnd,
-          onChange,
-        }),
-
-        // queue calls fn(...args)
-        args: [query, options],
-      })
+      return readOneAction({
+        listName: name,
+        dispatch: props.dispatch,
+        api: readOne,
+        hasDispatchStart: props.readOneHasDispatchStart,
+        hasDispatchEnd: props.readOneHasDispatchEnd,
+        onChange,
+      })(query, options)
     },
 
     update: (id, data, { isLocal = false, onMerge, ...options } = {}) => {
       if (isLocal === false && typeof update !== "function") {
         throw new TypeError(
-          `ReduxList: "${name}"."update" must be a function, got "${typeof update}"`
+          `JustAList: "${name}"."update" must be a function, got "${typeof update}"`
         )
       }
 
@@ -223,27 +199,21 @@ const buildList = ({
         return Promise.resolve({ result: { id, ...data } })
       }
 
-      return queue.enqueue({
-        id: `${name}__update`,
-        fn: updateAction({
-          listName: name,
-          dispatch: props.dispatch,
-          api: update,
-          hasDispatchStart: props.updateHasDispatchStart,
-          hasDispatchEnd: props.updateHasDispatchEnd,
-          onMerge,
-          onChange,
-        }),
-
-        // queue calls fn(...args)
-        args: [id, data, options],
-      })
+      return updateAction({
+        listName: name,
+        dispatch: props.dispatch,
+        api: update,
+        hasDispatchStart: props.updateHasDispatchStart,
+        hasDispatchEnd: props.updateHasDispatchEnd,
+        onMerge,
+        onChange,
+      })(id, data, options)
     },
 
-    remove: (id, { isLocal = false, ...options } = {}) => {
+    remove: (id, { isLocal = false, ...restOptions } = {}) => {
       if (isLocal === false && typeof remove !== "function") {
         throw new TypeError(
-          `ReduxList: "${name}"."remove" must be a function, got "${typeof remove}"`
+          `JustAList: "${name}"."remove" must be a function, got "${typeof remove}"`
         )
       }
 
@@ -251,8 +221,7 @@ const buildList = ({
         props.dispatch({
           type: removeEnd,
           payload: {
-            listName: name,
-            item: { id },
+            id,
             onChange,
           },
         })
@@ -260,20 +229,14 @@ const buildList = ({
         return Promise.resolve({ result: { id } })
       }
 
-      return queue.enqueue({
-        id: `${name}__remove`,
-        fn: removeAction({
-          listName: name,
-          dispatch: props.dispatch,
-          api: remove,
-          hasDispatchStart: props.removeHasDispatchStart,
-          hasDispatchEnd: props.removeHasDispatchEnd,
-          onChange,
-        }),
-
-        // queue calls fn(...args)
-        args: [id, { isLocal, ...options }],
-      })
+      return removeAction({
+        listName: name,
+        dispatch: props.dispatch,
+        api: remove,
+        hasDispatchStart: props.removeHasDispatchStart,
+        hasDispatchEnd: props.removeHasDispatchEnd,
+        onChange,
+      })(id, { isLocal, ...restOptions })
     },
 
     clear: () => {
@@ -290,9 +253,11 @@ const buildList = ({
 
     reducer: (
       state = {
+        listName: name,
         items: [],
-        reading: null,
+        optimistItems: [],
         creating: [],
+        reading: null,
         updating: [],
         removing: [],
 
@@ -300,12 +265,16 @@ const buildList = ({
           read: null,
           readOne: null,
           create: null,
-          remove: null,
           update: null,
+          remove: null,
         },
 
         loadDate: null,
+        isCreating: false,
         isLoading: false,
+        isLoadingOne: false,
+        isUpdating: false,
+        isRemoving: false,
       },
       { type, payload }
     ) => {
@@ -372,14 +341,15 @@ const buildList = ({
       isRemoving: id => {
         const removing = get([name, "removing"])(state)
 
-        return is(id) ? hasWith({ id })(removing) : !isEmpty(removing)
+        return is(id) ? hasWith({ id }, removing) : !isEmpty(removing)
       },
       isUpdating: id => {
         const updating = get([name, "updating"])(state)
 
-        return is(id) ? hasWith({ id })(updating) : !isEmpty(updating)
+        return is(id) ? hasWith({ id }, updating) : !isEmpty(updating)
       },
       isLoading: () => get([name, "isLoading"])(state),
+      isLoadingOne: () => get([name, "isLoadingOne"])(state),
       isLoaded: () => pipe(get([name, "loadDate"]), is)(state),
     }),
   }

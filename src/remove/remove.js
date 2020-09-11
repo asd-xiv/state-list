@@ -1,6 +1,6 @@
-const debug = require("debug")("ReduxList:RemoveAction")
+const debug = require("debug")("JustAList:RemoveAction")
 
-import { isEmpty, hasKey } from "@mutant-ws/m"
+import { isEmpty, get } from "m.xyz"
 
 /**
  * Call list.remove method to remove item from slice.items
@@ -23,10 +23,10 @@ export const removeAction = ({
   hasDispatchStart,
   hasDispatchEnd,
   onChange,
-}) => (id, ...rest) => {
+}) => (id, options = {}) => {
   if (isEmpty(id)) {
     throw new TypeError(
-      `ReduxList: "${listName}".remove ID param missing. Expected something, got "${JSON.stringify(
+      `JustAList: "${listName}".remove ID param missing. Expected something, got "${JSON.stringify(
         id
       )}"`
     )
@@ -35,22 +35,21 @@ export const removeAction = ({
   if (hasDispatchStart) {
     dispatch({
       type: `${listName}_REMOVE_START`,
-      payload: id,
+      payload: {
+        id,
+        isOptimist: options.isOptimist,
+      },
     })
   }
 
   return Promise.resolve()
-    .then(() => api(id, ...rest))
+    .then(() => api(id, options))
     .then(result => {
       if (hasDispatchEnd) {
         dispatch({
           type: `${listName}_REMOVE_END`,
           payload: {
-            listName,
-            item: {
-              ...result,
-              id: hasKey("id")(result) ? result.id : id,
-            },
+            id: get("id", id)(result),
             onChange,
           },
         })
@@ -64,7 +63,11 @@ export const removeAction = ({
 
       dispatch({
         type: `${listName}_REMOVE_ERROR`,
-        payload: error,
+        payload: {
+          id,
+          error,
+          isOptimist: options.isOptimist,
+        },
       })
 
       return { error }

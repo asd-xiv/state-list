@@ -1,22 +1,26 @@
-const debug = require("debug")("ReduxList:ReadOneReducers")
+const debug = require("debug")("JustAList:ReadOneReducers")
 
-import { pipe, map, push, merge, when, hasWith, i } from "@mutant-ws/m"
+import { intersect, merge, i } from "m.xyz"
 
-export const startReducer = (state, id) => ({
-  ...state,
-  reading: id,
-})
+export const startReducer = (state, id) => {
+  if (state.isLoadingOne) {
+    debug(
+      `JustAList: "${state.listName}".readOne has already been called, use .isLoadingOne() selector to know if list is already loading.`
+    )
+  }
+
+  return {
+    ...state,
+    reading: id,
+  }
+}
 
 export const endReducer = (state, { item, onChange = i }) => ({
   ...state,
-  items: pipe(
-    when(
-      hasWith({ id: item.id }),
-      map(mapItem => (mapItem.id === item.id ? merge(mapItem, item) : mapItem)),
-      push(item)
-    ),
-    onChange
-  )(state.items),
+
+  items: onChange(
+    intersect((a, b) => a.id === b.id, merge)(state.items, [item])
+  ),
 
   // reset error after successfull action
   errors: {
