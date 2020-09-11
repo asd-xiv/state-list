@@ -2,7 +2,7 @@
   "root": true,
   "parser": "babel-eslint",
   "extends": [
-    "@mutant-ws/eslint-config/targets/node"
+    "./node_modules/eslint-config.xyz/targets/node"
   ],
   "settings": {
     // Recommended if you use eslint_d
