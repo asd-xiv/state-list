@@ -71,10 +71,6 @@ test("Remove, isOptimist = true", async t => {
   )
 
   return updatePromise.then(() => {
-    console.log({
-      errors: store.getState()["REMOVE-OPTIMIST-TRUE_TODOS"].errors,
-    })
-
     t.deepEquals(
       todos.selector(store.getState()).items(),
       [{ id: 2 }],

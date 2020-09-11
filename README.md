@@ -19,14 +19,14 @@
 ## Install
 
 ```bash
-npm install just-a-list.redux 
+npm install just-a-list.redux
 ```
 
 ## Example
 
-Get some Toto's from an API and list them in a React component.
+Get Todo items from API and list them in React component.
 
-`src/todos.list.js` 
+`src/todos.list.js`
 
 ```js
 import { buildList } from "just-a-list.redux"
@@ -34,7 +34,7 @@ import { buildList } from "just-a-list.redux"
 export const TodosList = buildList({
   /**
    * Unique name used as Redux store key. If multiple lists use the same
-   * name, an error will be thrown. List is added on the root level of the 
+   * name, an error will be thrown. List is added on the root level of the
    * Redux store.
    */
   name: "PAGE.SECTION.TODOS",
