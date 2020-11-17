@@ -69,3 +69,5 @@ bin/
 lib/
 docs/
 .coveralls.yml
+tags
+.tern-port

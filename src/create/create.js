@@ -3,15 +3,15 @@ const debug = require("debug")("JustAList:CreateAction")
 /**
  * Call list.create method to add result to slice.items
  *
- * @param {String}   listName    Slice name - for error messages
- * @param {Function} dispatch    Redux dispatch
- * @param {Function} api         API method
- * @param {Function} onChange    Appy on items array before changing state
+ * @param {string}   listName Slice name - for error messages
+ * @param {Function} dispatch Redux dispatch
+ * @param {Function} api      API method
+ * @param {Function} onChange Appy on items array before changing state
  *
- * @param {Object} data Model data
- * @param {Array}  rest Other paramaters passed when calling list.create
+ * @param {object}   data     Model data
+ * @param {Array}    rest     Other paramaters passed when calling list.create
  *
- * @return {Promise<Object<error, result>>}
+ * @returns {Promise<object<error, result>>}
  */
 export const createAction = ({
   listName,

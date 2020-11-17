@@ -10,7 +10,7 @@ import {
   push,
   i,
   isEmpty,
-} from "m.xyz"
+} from "@asd14/m"
 
 export const startReducer = (
   state,

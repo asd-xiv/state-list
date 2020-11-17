@@ -1,20 +1,19 @@
 const debug = require("debug")("JustAList:ReadOneAction")
 
-import { hasKey, isEmpty } from "m.xyz"
+import { hasKey, isEmpty } from "@asd14/m"
 
 /**
  * Call list.readOne method to add/update item in slice.items
  *
- * @param {String}   listName    Slice name - for error messages
- * @param {Function} dispatch    Redux dispatch
- * @param {Function} api         API method
- * @param {Function} onChange    Appy on items array before changing state
+ * @param {string}        listName Slice name - for error messages
+ * @param {Function}      dispatch Redux dispatch
+ * @param {Function}      api      API method
+ * @param {Function}      onChange Appy on items array before changing state
  *
- * @param {string|number} id   Id of item to update or add
- * @param {Array}         rest Other paramaters passed when calling list
- *                             instance .readOne
+ * @param {string|number} id       Id of item to update or add
+ * @param {Array}         rest     Other paramaters passed when calling list instance .readOne
  *
- * @return {Promise<Object<error, result>>}
+ * @returns {Promise<object<error, result>>}
  */
 export const readOneAction = ({
   listName,

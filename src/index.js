@@ -1,6 +1,6 @@
 const debug = require("debug")("JustAList:Main")
 
-import { get, pipe, findWith, hasWith, is, isEmpty, hasKey } from "m.xyz"
+import { get, pipe, findWith, hasWith, is, isEmpty, hasKey } from "@asd14/m"
 
 import { createAction } from "./create/create"
 import {

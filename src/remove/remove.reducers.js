@@ -1,6 +1,6 @@
 const debug = require("debug")("JustAList:RemoveReducers")
 
-import { findWith, hasWith, removeWith, i, isEmpty } from "m.xyz"
+import { findWith, hasWith, removeWith, i, isEmpty } from "@asd14/m"
 
 export const startReducer = (state, { id, isOptimist }) => {
   if (!isEmpty(state.removing)) {

@@ -1,6 +1,6 @@
 const debug = require("debug")("JustAList:ReadOneReducers")
 
-import { intersect, merge, i } from "m.xyz"
+import { intersect, merge, i } from "@asd14/m"
 
 export const startReducer = (state, id) => {
   if (state.isLoadingOne) {

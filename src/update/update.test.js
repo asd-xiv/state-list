@@ -1,6 +1,6 @@
 import test from "tape"
 import { createStore, combineReducers } from "redux"
-import { map, concat, is } from "m.xyz"
+import { map, concat, is } from "@asd14/m"
 
 import { buildList } from ".."
 
@@ -98,7 +98,7 @@ test("Update", async t => {
         {
           id: 2,
           name: "Updated foo",
-          items: [{ id: 1, label: "item 1" }, { id: 2 }],
+          items: [{ id: 2 }, { id: 1, label: "item 1" }],
           onChange: 4,
         },
       ],

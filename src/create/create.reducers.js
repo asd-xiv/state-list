@@ -1,6 +1,6 @@
 const debug = require("debug")("JustAList:CreateReducers")
 
-import { hasWith, intersect, not, is, i } from "m.xyz"
+import { hasWith, intersect, not, is, i } from "@asd14/m"
 
 export const startReducer = (state, { items }) => ({
   ...state,

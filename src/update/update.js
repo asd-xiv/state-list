@@ -1,19 +1,19 @@
 const debug = require("debug")("JustAList:UpdateAction")
 
-import { isEmpty, get } from "m.xyz"
+import { isEmpty, get } from "@asd14/m"
 
 /**
  * Call list.update method to change existing item in slice.items
  *
- * @param {String}   listName    Slice name - for error messages
- * @param {Function} dispatch    Redux dispatch
- * @param {Function} api         API method
- * @param {Function} onChange    Appy on items array before changing state
+ * @param {string}        listName Slice name - for error messages
+ * @param {Function}      dispatch Redux dispatch
+ * @param {Function}      api      API method
+ * @param {Function}      onChange Appy on items array before changing state
  *
- * @param {string|number} id   Id of item to update
- * @param {Array}         rest Other paramaters passed when calling list.update
+ * @param {string|number} id       Id of item to update
+ * @param {Array}         rest     Other paramaters passed when calling list.update
  *
- * @return {Promise<Object<error, result>>}
+ * @returns {Promise<object<error, result>>}
  */
 export const updateAction = ({
   listName,

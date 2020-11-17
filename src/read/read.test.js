@@ -1,6 +1,6 @@
 import test from "tape"
 import { createStore, combineReducers } from "redux"
-import { sortWith, map, pick } from "m.xyz"
+import { sortWith, map, pick } from "@asd14/m"
 
 import { buildList } from ".."
 

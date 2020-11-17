@@ -1,20 +1,20 @@
 const debug = require("debug")("JustAList:RemoveAction")
 
-import { isEmpty, get } from "m.xyz"
+import { isEmpty, get } from "@asd14/m"
 
 /**
  * Call list.remove method to remove item from slice.items
  *
- * @param {String}   listName    Slice name - for error messages
- * @param {Function} dispatch    Redux dispatch
- * @param {Function} api         API method
- * @param {Function} onChange    Appy on items array before changing state
+ * @param {string}        listName Slice name - for error messages
+ * @param {Function}      dispatch Redux dispatch
+ * @param {Function}      api      API method
+ * @param {Function}      onChange Appy on items array before changing state
  *
- * @param {string|number} id   Id of item to delete
- * @param {Array}         rest Other paramaters passed when calling list
- *                             instance .remove
+ * @param {string|number} id       Id of item to delete
+ * @param {Array}         rest     Other paramaters passed when calling list
+ * instance .remove
  *
- * @return {Promise<Object<error, result>>}
+ * @returns {Promise<object<error, result>>}
  */
 export const removeAction = ({
   listName,

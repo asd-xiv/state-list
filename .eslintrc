@@ -2,7 +2,7 @@
   "root": true,
   "parser": "babel-eslint",
   "extends": [
-    "./node_modules/eslint-config.xyz/targets/node"
+    "@asd14/eslint-config/targets/node"
   ],
   "settings": {
     // Recommended if you use eslint_d
