@@ -1,6 +1,6 @@
 import test from "tape"
 import { createStore, combineReducers } from "redux"
-import { sortWith, map, pick } from "@asd14/m"
+import { sortWith, map, pluck } from "@asd14/m"
 
 import { buildList } from ".."
 
@@ -60,7 +60,7 @@ test("Read", async t => {
 
       // selecting only remote fields since items() will also contain
       // onChange changes
-      map(pick(["id", "name"]))(items()),
+      map(pluck(["id", "name"]))(items()),
       "list.read resolves with retrived items"
     )
 

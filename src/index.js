@@ -37,6 +37,8 @@ import {
   errorReducer as removeErrorReducer,
 } from "./remove/remove.reducers"
 
+import { buildQueue } from "./lib/queue"
+
 const collections = Object.create(null)
 
 /**
@@ -45,7 +47,7 @@ const collections = Object.create(null)
  * @param {string}   name     Unique list name
  * @param {Function} onChange Function triggered on every list change
  *
- * @return {Object}
+ * @returns {object}
  */
 const buildList = ({
   name,
@@ -88,6 +90,7 @@ const buildList = ({
     removeHasDispatchEnd: true,
   }
 
+  const queue = buildQueue()
   const createStart = `${name}_CREATE_START`
   const createEnd = `${name}_CREATE_END`
   const createError = `${name}_CREATE_ERROR`
@@ -134,14 +137,20 @@ const buildList = ({
         return Promise.resolve({ result: data })
       }
 
-      return createAction({
-        listName: name,
-        dispatch: props.dispatch,
-        api: create,
-        hasDispatchStart: props.createHasDispatchStart,
-        hasDispatchEnd: props.createHasDispatchEnd,
-        onChange,
-      })(data, { isLocal, ...options })
+      return queue.enqueue({
+        id: `${name}__create`,
+        fn: createAction({
+          listName: name,
+          dispatch: props.dispatch,
+          api: create,
+          hasDispatchStart: props.createHasDispatchStart,
+          hasDispatchEnd: props.createHasDispatchEnd,
+          onChange,
+        }),
+
+        // queue calls fn(...args)
+        args: [data, { isLocal, ...options }],
+      })
     },
 
     read: (query, options) => {
@@ -151,14 +160,20 @@ const buildList = ({
         )
       }
 
-      return readAction({
-        listName: name,
-        dispatch: props.dispatch,
-        api: read,
-        hasDispatchStart: props.readHasDispatchStart,
-        hasDispatchEnd: props.readHasDispatchEnd,
-        onChange,
-      })(query, options)
+      return queue.enqueue({
+        id: `${name}__read`,
+        fn: readAction({
+          listName: name,
+          dispatch: props.dispatch,
+          api: read,
+          hasDispatchStart: props.readHasDispatchStart,
+          hasDispatchEnd: props.readHasDispatchEnd,
+          onChange,
+        }),
+
+        // queue calls fn(...args)
+        args: [query, options],
+      })
     },
 
     readOne: (query, options) => {
@@ -168,14 +183,20 @@ const buildList = ({
         )
       }
 
-      return readOneAction({
-        listName: name,
-        dispatch: props.dispatch,
-        api: readOne,
-        hasDispatchStart: props.readOneHasDispatchStart,
-        hasDispatchEnd: props.readOneHasDispatchEnd,
-        onChange,
-      })(query, options)
+      return queue.enqueue({
+        id: `${name}__readOne`,
+        fn: readOneAction({
+          listName: name,
+          dispatch: props.dispatch,
+          api: readOne,
+          hasDispatchStart: props.readOneHasDispatchStart,
+          hasDispatchEnd: props.readOneHasDispatchEnd,
+          onChange,
+        }),
+
+        // queue calls fn(...args)
+        args: [query, options],
+      })
     },
 
     update: (id, data, { isLocal = false, onMerge, ...options } = {}) => {
@@ -199,15 +220,21 @@ const buildList = ({
         return Promise.resolve({ result: { id, ...data } })
       }
 
-      return updateAction({
-        listName: name,
-        dispatch: props.dispatch,
-        api: update,
-        hasDispatchStart: props.updateHasDispatchStart,
-        hasDispatchEnd: props.updateHasDispatchEnd,
-        onMerge,
-        onChange,
-      })(id, data, options)
+      return queue.enqueue({
+        id: `${name}__update`,
+        fn: updateAction({
+          listName: name,
+          dispatch: props.dispatch,
+          api: update,
+          hasDispatchStart: props.updateHasDispatchStart,
+          hasDispatchEnd: props.updateHasDispatchEnd,
+          onMerge,
+          onChange,
+        }),
+
+        // queue calls fn(...args)
+        args: [id, data, options],
+      })
     },
 
     remove: (id, { isLocal = false, ...restOptions } = {}) => {
@@ -229,14 +256,20 @@ const buildList = ({
         return Promise.resolve({ result: { id } })
       }
 
-      return removeAction({
-        listName: name,
-        dispatch: props.dispatch,
-        api: remove,
-        hasDispatchStart: props.removeHasDispatchStart,
-        hasDispatchEnd: props.removeHasDispatchEnd,
-        onChange,
-      })(id, { isLocal, ...restOptions })
+      return queue.enqueue({
+        id: `${name}__remove`,
+        fn: removeAction({
+          listName: name,
+          dispatch: props.dispatch,
+          api: remove,
+          hasDispatchStart: props.removeHasDispatchStart,
+          hasDispatchEnd: props.removeHasDispatchEnd,
+          onChange,
+        }),
+
+        // queue calls fn(...args)
+        args: [id, { isLocal, ...restOptions }],
+      })
     },
 
     clear: () => {
