@@ -33,9 +33,11 @@ test("Create", async t => {
       { name: "New foo" },
       { otherOption: "lorem" }
     )
-    const { creating, items, isCreating } = todos.selector(store.getState())
+    const { itemsCreating, items, isCreating } = todos.selector(
+      store.getState()
+    )
 
-    t.deepEquals(creating(), [], "selector.creating should be empty array")
+    t.deepEquals(itemsCreating(), [], "selector.creating should be empty array")
 
     t.equals(
       isCreating(),

@@ -14,14 +14,14 @@ class RequestError extends Error {
   }
 }
 
-test("ReadOne - error", async t => {
+test("Read - error", async t => {
   t.plan(5)
 
   // WHAT TO TEST
   const todos = buildList({
-    name: "READ-ONE-ERROR_TODOS",
-    read: () => [{ id: 1, name: "build gdpr startup" }, { id: 2 }],
-    readOne: (id, data) => {
+    name: "READ-ERROR_TODOS",
+    readMany: () => [{ id: 1, name: "build gdpr startup" }, { id: 2 }],
+    read: (id, data) => {
       return id === 3
         ? Promise.reject(
             new RequestError("Something something API crash", {
@@ -52,7 +52,7 @@ test("ReadOne - error", async t => {
 
     t.deepEquals(
       error,
-      todos.selector(store.getState()).error("readOne"),
+      todos.selector(store.getState()).errors("readOne"),
       `Error data set to state equals error data the action promise resolves to`
     )
 
@@ -84,7 +84,7 @@ test("ReadOne - error", async t => {
     })
 
     t.equals(
-      todos.selector(store.getState()).error("readOne"),
+      todos.selector(store.getState()).error("read"),
       null,
       "State error is set to null after successfull readOne"
     )

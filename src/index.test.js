@@ -36,38 +36,28 @@ test("List without API methods", async t => {
 
   todos.set({ dispatch: store.dispatch })
 
-  const {
-    head,
-    items,
-    creating,
-    removing,
-    updating,
-    isCreating,
-    isLoaded,
-    isLoading,
-    isUpdating,
-    isRemoving,
-  } = todos.selector(store.getState())
+  const { items, is, logs } = todos.selector(store.getState())
 
   t.deepEquals(
     {
-      head: head(),
       items: items(),
-      creating: creating(),
-      updating: updating(),
-      removing: removing(),
-      isCreating: isCreating(),
-      isLoaded: isLoaded(),
-      isLoading: isLoading(),
-      isUpdating: isUpdating(),
-      isRemoving: isRemoving(),
+      itemsCreating: items({ status: "creating" }),
+      itemsUpdating: items({ status: "updating" }),
+      itemsRemoving: items({ status: "removing" }),
+
+      isLoaded: logs({ type: "read" }).length > 0,
+
+      isCreating: is({ status: "creating" }),
+      isReading: is({ status: "reading" }),
+      isUpdating: is({ status: "updating" }),
+      isRemoving: is({ status: "removing" }),
     },
     {
-      head: undefined,
       items: [],
-      updating: [],
-      removing: [],
-      creating: [],
+      itemsUpdating: [],
+      itemsRemoving: [],
+      itemsCreating: [],
+
       isLoading: false,
       isLoaded: false,
       isCreating: false,

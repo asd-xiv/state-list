@@ -11,6 +11,7 @@
     }
   },
   "rules": {
-    "newline-after-var": "off"
+    "newline-after-var": "off",
+    "valid-jsdoc": "off"
   },
 }

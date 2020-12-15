@@ -1,6 +1,17 @@
 const debug = require("debug")("JustAList:Main")
 
-import { get, pipe, findWith, hasWith, is, isEmpty, hasKey } from "@asd14/m"
+import {
+  get,
+  pipe,
+  when,
+  hasWith,
+  filterWith,
+  is,
+  isEmpty,
+  hasKey,
+  not,
+  i,
+} from "@asd14/m"
 
 import { createAction } from "./create/create"
 import {
@@ -9,19 +20,19 @@ import {
   errorReducer as createErrorReducer,
 } from "./create/create.reducers"
 
+import { readManyAction } from "./read-many/read-many"
+import {
+  startReducer as readManyStartReducer,
+  endReducer as readManyEndReducer,
+  errorReducer as readManyErrorReducer,
+} from "./read-many/read-many.reducers"
+
 import { readAction } from "./read/read"
 import {
   startReducer as readStartReducer,
   endReducer as readEndReducer,
   errorReducer as readErrorReducer,
 } from "./read/read.reducers"
-
-import { readOneAction } from "./read-one/read-one"
-import {
-  startReducer as readOneStartReducer,
-  endReducer as readOneEndReducer,
-  errorReducer as readOneErrorReducer,
-} from "./read-one/read-one.reducers"
 
 import { updateAction } from "./update/update"
 import {
@@ -45,7 +56,7 @@ const collections = Object.create(null)
  * @param {string}   name     Unique list name
  * @param {Function} onChange Function triggered on every list change
  *
- * @return {Object}
+ * @returns {object}
  */
 const buildList = ({
   name,
@@ -53,7 +64,7 @@ const buildList = ({
   // crud
   create,
   read,
-  readOne,
+  readMany,
   update,
   remove,
 
@@ -68,7 +79,7 @@ const buildList = ({
     )
   }
 
-  if (hasKey(name)(collections)) {
+  if (hasKey(name, collections)) {
     throw new Error(`JustAList: List with name "${name}" already exists`)
   }
 
@@ -76,27 +87,17 @@ const buildList = ({
 
   let props = {
     dispatch: null,
-    createHasDispatchStart: true,
-    createHasDispatchEnd: true,
-    readHasDispatchStart: true,
-    readHasDispatchEnd: true,
-    readOneHasDispatchStart: true,
-    readOneHasDispatchEnd: true,
-    updateHasDispatchStart: true,
-    updateHasDispatchEnd: true,
-    removeHasDispatchStart: true,
-    removeHasDispatchEnd: true,
   }
 
   const createStart = `${name}_CREATE_START`
   const createEnd = `${name}_CREATE_END`
   const createError = `${name}_CREATE_ERROR`
+  const readManyStart = `${name}_READ-MANY_START`
+  const readManyEnd = `${name}_READ-MANY_END`
+  const readManyError = `${name}_READ-MANY_ERROR`
   const readStart = `${name}_READ_START`
   const readEnd = `${name}_READ_END`
   const readError = `${name}_READ_ERROR`
-  const readOneStart = `${name}_READ-ONE_START`
-  const readOneEnd = `${name}_READ-ONE_END`
-  const readOneError = `${name}_READ-ONE_ERROR`
   const updateStart = `${name}_UPDATE_START`
   const updateEnd = `${name}_UPDATE_END`
   const updateError = `${name}_UPDATE_ERROR`
@@ -114,6 +115,14 @@ const buildList = ({
       }
     },
 
+    /**
+     * @param {object}  data
+     * @param {object}  options
+     * @param {boolean} options.isLocal
+     * @param {boolean} options.isSilent
+     *
+     * @returns {Promise<{result: object, error: object}>}
+     */
     create: (data, { isLocal = false, ...options } = {}) => {
       if (isLocal === false && typeof create !== "function") {
         throw new TypeError(
@@ -138,10 +147,31 @@ const buildList = ({
         listName: name,
         dispatch: props.dispatch,
         api: create,
-        hasDispatchStart: props.createHasDispatchStart,
-        hasDispatchEnd: props.createHasDispatchEnd,
         onChange,
       })(data, { isLocal, ...options })
+    },
+
+    /**
+     * @param {object}  query
+     * @param {object}  options
+     * @param {boolean} options.isSilent
+     * @param {boolean} options.shouldClear
+     *
+     * @returns {Promise<{result: object, error: object}>}
+     */
+    readMany: (query, options) => {
+      if (typeof readMany !== "function") {
+        throw new TypeError(
+          `JustAList: "${name}"."readMany" must be a function, got "${typeof readMany}"`
+        )
+      }
+
+      return readManyAction({
+        listName: name,
+        dispatch: props.dispatch,
+        api: readMany,
+        onChange,
+      })(query, options)
     },
 
     read: (query, options) => {
@@ -157,23 +187,6 @@ const buildList = ({
         api: read,
         hasDispatchStart: props.readHasDispatchStart,
         hasDispatchEnd: props.readHasDispatchEnd,
-        onChange,
-      })(query, options)
-    },
-
-    readOne: (query, options) => {
-      if (typeof readOne !== "function") {
-        throw new TypeError(
-          `JustAList: "${name}"."readOne" must be a function, got "${typeof readOne}"`
-        )
-      }
-
-      return readOneAction({
-        listName: name,
-        dispatch: props.dispatch,
-        api: readOne,
-        hasDispatchStart: props.readOneHasDispatchStart,
-        hasDispatchEnd: props.readOneHasDispatchEnd,
         onChange,
       })(query, options)
     },
@@ -254,27 +267,33 @@ const buildList = ({
     reducer: (
       state = {
         listName: name,
-        items: [],
-        optimistItems: [],
-        creating: [],
-        reading: null,
-        updating: [],
-        removing: [],
 
-        errors: {
-          read: null,
-          readOne: null,
-          create: null,
-          update: null,
-          remove: null,
-        },
+        // reality
+        items: [],
+
+        // buffer items while methods successfuly ends
+        items_optimist: [],
+
+        // buffer items
+        items_local: [],
+
+        items_reading: [],
+        items_creating: [],
+        items_updating: [],
+        items_removing: [],
+
+        logs: [],
+        errors: [],
+
+        // errors: {
+        //   read: null,
+        //   readMany: null,
+        //   create: null,
+        //   update: null,
+        //   remove: null,
+        // },
 
         loadDate: null,
-        isCreating: false,
-        isLoading: false,
-        isLoadingOne: false,
-        isUpdating: false,
-        isRemoving: false,
       },
       { type, payload }
     ) => {
@@ -287,6 +306,14 @@ const buildList = ({
         case createError:
           return createErrorReducer(state, payload)
 
+        // Read many
+        case readManyStart:
+          return readManyStartReducer(state, payload)
+        case readManyEnd:
+          return readManyEndReducer(state, payload)
+        case readManyError:
+          return readManyErrorReducer(state, payload)
+
         // Read
         case readStart:
           return readStartReducer(state, payload)
@@ -294,14 +321,6 @@ const buildList = ({
           return readEndReducer(state, payload)
         case readError:
           return readErrorReducer(state, payload)
-
-        // ReadOne
-        case readOneStart:
-          return readOneStartReducer(state, payload)
-        case readOneEnd:
-          return readOneEndReducer(state, payload)
-        case readOneError:
-          return readOneErrorReducer(state, payload)
 
         // Update
         case updateStart:
@@ -325,32 +344,41 @@ const buildList = ({
     },
 
     selector: state => ({
-      head: () => get([name, "items", 0])(state),
+      /**
+       * @param {object} props
+       * @param {string} props.status
+       *
+       * @returns {Array}
+       */
+      items: ({ status } = {}) =>
+        get([name, is(status) ? `items_${status}` : "items"], [], state),
 
-      byId: (id, notFoundDefault) =>
-        pipe(get([name, "items"]), findWith({ id }, notFoundDefault))(state),
+      /**
+       * @param {object} props
+       * @param {string} props.id
+       * @param {string} props.status
+       *
+       * @returns {boolean}
+       */
+      is: ({ id, status = "reading" } = {}) =>
+        pipe(
+          get([name, `items_${status}`], []),
+          when(() => is(id), hasWith({ id }), not(isEmpty))
+        )(state),
 
-      items: () => get([name, "items"])(state),
-      creating: () => get([name, "creating"])(state),
-      updating: () => get([name, "updating"])(state),
-      removing: () => get([name, "removing"])(state),
-      error: action => get([name, "errors", action])(state),
+      has: id => pipe(get([name, "items"]), hasWith({ id }))(state),
 
-      hasWithId: id => pipe(get([name, "items"]), hasWith({ id }))(state),
-      isCreating: () => !pipe(get([name, "creating"]), isEmpty)(state),
-      isRemoving: id => {
-        const removing = get([name, "removing"])(state)
+      logs: ({ type } = {}) =>
+        pipe(
+          get([name, "logs"], null),
+          when(() => is(type), filterWith({ type }), i)
+        )(state),
 
-        return is(id) ? hasWith({ id }, removing) : !isEmpty(removing)
-      },
-      isUpdating: id => {
-        const updating = get([name, "updating"])(state)
-
-        return is(id) ? hasWith({ id }, updating) : !isEmpty(updating)
-      },
-      isLoading: () => get([name, "isLoading"])(state),
-      isLoadingOne: () => get([name, "isLoadingOne"])(state),
-      isLoaded: () => pipe(get([name, "loadDate"]), is)(state),
+      errors: ({ type }) =>
+        pipe(
+          get([name, "errors"], null),
+          when(() => is(type), filterWith({ type }), i)
+        )(state),
     }),
   }
 }

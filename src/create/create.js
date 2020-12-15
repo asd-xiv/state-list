@@ -13,15 +13,11 @@ const debug = require("debug")("JustAList:CreateAction")
  *
  * @returns {Promise<object<error, result>>}
  */
-export const createAction = ({
-  listName,
-  dispatch,
-  api,
-  hasDispatchStart,
-  hasDispatchEnd,
-  onChange,
-}) => (data, ...rest) => {
-  if (hasDispatchStart) {
+export const createAction = ({ listName, dispatch, api, onChange }) => (
+  data,
+  { isSilent, ...options }
+) => {
+  if (!isSilent) {
     dispatch({
       type: `${listName}_CREATE_START`,
       payload: {
@@ -32,18 +28,16 @@ export const createAction = ({
   }
 
   return Promise.resolve()
-    .then(() => api(data, ...rest))
+    .then(() => api(data, options))
     .then(result => {
-      if (hasDispatchEnd) {
-        dispatch({
-          type: `${listName}_CREATE_END`,
-          payload: {
-            listName,
-            items: Array.isArray(result) ? result : [result],
-            onChange,
-          },
-        })
-      }
+      dispatch({
+        type: `${listName}_CREATE_END`,
+        payload: {
+          listName,
+          items: Array.isArray(result) ? result : [result],
+          onChange,
+        },
+      })
 
       return { result }
     })

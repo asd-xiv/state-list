@@ -44,7 +44,7 @@ test("Create - error", async t => {
 
   {
     const { error: apiError } = await todos.create({ id: 1, name: "throw" })
-    const createError = todos.selector(store.getState()).error("create")
+    const createError = todos.selector(store.getState()).errors("create")
 
     t.deepEquals(
       apiError,
@@ -70,7 +70,7 @@ test("Create - error", async t => {
       id: 2,
       name: "dont throw",
     })
-    const createError = todos.selector(store.getState()).error("create")
+    const createError = todos.selector(store.getState()).errors("create")
 
     t.equals(
       createError,

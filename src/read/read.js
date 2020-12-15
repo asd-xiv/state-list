@@ -1,16 +1,17 @@
-const debug = require("debug")("JustAList:ReadAction")
+const debug = require("debug")("JustAList:ReadOneAction")
+
+import { hasKey, isEmpty } from "@asd14/m"
 
 /**
- * Call list.read method to set slice.items array
+ * Call list.readOne method to add/update item in slice.items
  *
- * @param {Function} dispatch        Redux dispatch
- * @param {Function} api             API method
- * @param {Function} onChange        Appy on items array before changing state
+ * @param {string}        listName Slice name - for error messages
+ * @param {Function}      dispatch Redux dispatch
+ * @param {Function}      api      API method
+ * @param {Function}      onChange Appy on items array before changing state
  *
- * @param {object}   query           Control/Filter attributes
- * @param {boolean}  opt.shouldClear If true, method result will replace existing items.
- * Otherwise, merge both arrays by id
- * @param {object}   opt.rest        Other options passed when calling list instance .read
+ * @param {string|number} id       Id of item to update or add
+ * @param {Array}         rest     Other paramaters passed when calling list instance .readOne
  *
  * @returns {Promise<object<error, result>>}
  */
@@ -21,22 +22,33 @@ export const readAction = ({
   hasDispatchStart,
   hasDispatchEnd,
   onChange,
-}) => (query = {}, { shouldClear = true, ...rest } = {}) => {
+}) => (id, ...args) => {
+  if (isEmpty(id)) {
+    throw new TypeError(
+      `JustAList: "${listName}".readOne ID param missing. Expected something, got "${JSON.stringify(
+        id
+      )}"`
+    )
+  }
+
   if (hasDispatchStart) {
     dispatch({
       type: `${listName}_READ_START`,
+      payload: id,
     })
   }
 
   return Promise.resolve()
-    .then(() => api(query, { shouldClear, ...rest }))
+    .then(() => api(id, ...args))
     .then(result => {
       if (hasDispatchEnd) {
         dispatch({
           type: `${listName}_READ_END`,
           payload: {
-            items: Array.isArray(result) ? result : [result],
-            shouldClear,
+            item: {
+              ...result,
+              id: hasKey("id")(result) ? result.id : id,
+            },
             onChange,
           },
         })
