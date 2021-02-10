@@ -20,7 +20,7 @@
     "react"
   ],
   "main": "dist/index.js",
-  "license": "MIT",
+  "license": "BSD-3-Clause",
   "scripts": {
     "----UTILS": "",
     "setup": "rm -rf ./node_modules && npm i && npm audit fix",
