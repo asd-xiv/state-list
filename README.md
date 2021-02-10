@@ -150,7 +150,7 @@ const TodosContainer = ({ projectId }) => {
 ```bash
 git clone git@github.com:asd-xiv/state-list.git && \
   cd state-list && \
-  npm run setup
+  npm install 
 ```
 
 Run all `*.test.js` in `src` folder
