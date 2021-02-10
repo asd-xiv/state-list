@@ -5,7 +5,7 @@
 [![dev-badge](https://david-dm.org/asd-xiv/state-list.svg)](https://david-dm.org/asd-xiv/state-list)
 [![Coverage Status](https://coveralls.io/repos/github/asd-xiv/state-list/badge.svg)](https://coveralls.io/github/asd-xiv/state-list)
 
-# redux-list
+# state-list
 
 <!-- vim-markdown-toc GFM -->
 
@@ -42,7 +42,7 @@ export const TodosList = buildList({
    * Define CRUD actions and map the internal items to one or more data sources
    * (local storage, 3rd party APIs or own API).
    *
-   * Only 5 actions can be defined: `create`, `read`, `readOne`, `update` and
+   * Five actions can be defined: `create`, `read`, `readOne`, `update` and
    * `remove`.
    */
   create: data =>
