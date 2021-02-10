@@ -1,9 +1,9 @@
 <!-- markdownlint-disable first-line-h1 line-length -->
 
-[![CircleCI](https://circleci.com/gh/andreidmt/just-a-list.redux.svg?style=svg)](https://circleci.com/gh/andreidmt/just-a-list.redux)
-[![npm version](https://badge.fury.io/js/just-a-list.redux.svg)](https://badge.fury.io/js/just-a-list.redux)
-[![dev-badge](https://david-dm.org/andreidmt/just-a-list.redux.svg)](https://david-dm.org/andreidmt/just-a-list.redux)
-[![Coverage Status](https://coveralls.io/repos/github/andreidmt/just-a-list.redux/badge.svg)](https://coveralls.io/github/andreidmt/just-a-list.redux)
+[![CircleCI](https://circleci.com/gh/asd-xiv/state-list.svg?style=svg)](https://circleci.com/gh/asd-xiv/state-list)
+[![npm version](https://badge.fury.io/js/%40asd14%2Fstate-list.svg)](https://badge.fury.io/js/%40asd14%2Fstate-list)
+[![dev-badge](https://david-dm.org/asd-xiv/state-list.svg)](https://david-dm.org/asd-xiv/state-list)
+[![Coverage Status](https://coveralls.io/repos/github/asd-xiv/state-list/badge.svg)](https://coveralls.io/github/asd-xiv/state-list)
 
 # redux-list
 
@@ -19,7 +19,7 @@
 ## Install
 
 ```bash
-npm install just-a-list.redux
+npm install @asd14/state-list
 ```
 
 ## Example
@@ -29,13 +29,12 @@ Get Todo items from API and list them in React component.
 `src/todos.list.js`
 
 ```js
-import { buildList } from "just-a-list.redux"
+import { buildList } from "@asd14/state-list"
 
 export const TodosList = buildList({
   /**
-   * Unique name used as Redux store key. If multiple lists use the same
-   * name, an error will be thrown. List is added on the root level of the
-   * Redux store.
+   * Unique name used as Redux store key. Will throw if multiple lists use the 
+   * same name. Slice is added on the root level of the Redux store.
    */
   name: "PAGE.SECTION.TODOS",
 
@@ -44,7 +43,7 @@ export const TodosList = buildList({
    * (local storage, 3rd party APIs or own API).
    *
    * Only 5 actions can be defined: `create`, `read`, `readOne`, `update` and
-   * `remove`. These have internaly 3 reducers each: onStart, onEnd and onError.
+   * `remove`.
    */
   create: data =>
     POST("/todos", data),
@@ -67,9 +66,8 @@ export const TodosList = buildList({
     DELETE(`/todos/${id}`),
 
   /**
-   * Transformer function applyed on all list items before reducers update
-   * state. Triggered on all method calls (create, read, readOne, update and
-   * remove).
+   * Transformer function applyed on all list items before any reducers update
+   * state (create, read, readOne, update or remove).
    *
    * Use for enforcing common transformations on external data, sorting,
    * JSON Schema checks etc.
@@ -150,8 +148,8 @@ const TodosContainer = ({ projectId }) => {
 ## Develop
 
 ```bash
-git clone git@github.com:andreidmt/just-a-list.redux.git && \
-  cd just-a-list.redux && \
+git clone git@github.com:asd-xiv/state-list.git && \
+  cd state-list && \
   npm run setup
 ```
 
@@ -169,4 +167,4 @@ npm run tdd
 
 ## Changelog
 
-See the [releases section](https://github.com/andreidmt/just-a-list.redux/releases) for details.
+See the [releases section](https://github.com/asd-xiv/state-list/releases) for details.
