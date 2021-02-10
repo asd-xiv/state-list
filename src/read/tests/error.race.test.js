@@ -1,7 +1,7 @@
 import test from "tape"
 import { createStore, combineReducers } from "redux"
 
-import { buildList } from ".."
+import { buildList } from "../.."
 
 test("Read - race conditions", async t => {
   let callCount = 0

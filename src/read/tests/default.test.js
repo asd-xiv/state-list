@@ -2,7 +2,7 @@ import test from "tape"
 import { createStore, combineReducers } from "redux"
 import { sortWith, map, pluck } from "@asd14/m"
 
-import { buildList } from ".."
+import { buildList } from "../.."
 
 test("Read", async t => {
   // WHAT TO TEST

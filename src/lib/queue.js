@@ -4,18 +4,17 @@ import isDeepEqual from "fast-deep-equal"
 /**
  * Unique, sequential, promise based queue
  *
- * @example
  * const queue = buildQueue()
  *
  * queue.enqueue(Users.login, {
- *  args:{
- *    body: {email: "lorem@test.com", password: "secret"}
- *  }
+ * args:{
+ * body: {email: "lorem@test.com", password: "secret"}
+ * }
  * })
- *   .then(...)
- *   .catch(...)
+ * .then(...)
+ * .catch(...)
  *
- * @returns {object<enqueue, dequeue>}
+ * @returns {Object<enqueue, dequeue>}
  */
 export const buildQueue = () => {
   const jobsList = []

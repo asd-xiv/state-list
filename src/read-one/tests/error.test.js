@@ -1,7 +1,7 @@
 import test from "tape"
 import { createStore, combineReducers } from "redux"
 
-import { buildList } from ".."
+import { buildList } from "../.."
 
 // Dummy Error with api data inside
 class RequestError extends Error {

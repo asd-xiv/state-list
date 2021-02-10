@@ -1,7 +1,7 @@
 import test from "tape"
 import { createStore, combineReducers } from "redux"
 
-import { buildList } from ".."
+import { buildList } from "../.."
 
 test("Remove - id not in response", async t => {
   // WHAT TO TEST

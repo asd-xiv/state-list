@@ -1,14 +1,14 @@
 import test from "tape"
 import { createStore, combineReducers } from "redux"
 
-import { buildList } from ".."
+import { buildList } from "../.."
 
-test("Remove, isOptimist = false", async t => {
+test("Update, isOptimist = false", async t => {
   // WHAT TO TEST
   const todos = buildList({
-    name: "REMOVE-OPTIMIST-FALSE_TODOS",
-    read: () => [{ id: 1, foo: "bar" }, { id: 2 }],
-    remove: id => ({ id }),
+    name: "UPDATE-OPTIMIST-FALSE_TODOS",
+    read: () => [{ id: 1, foo: "bar" }],
+    update: (id, data) => ({ id, ...data }),
   })
 
   // Redux store
@@ -23,31 +23,31 @@ test("Remove, isOptimist = false", async t => {
   await todos.read()
 
   //
-  const updatePromise = todos.remove(1)
+  const updatePromise = todos.update(1, { lorem: "ipsum" })
 
-  // t.deepEquals(
-  //   todos.selector(store.getState()).items(),
-  //   [{ id: 1, foo: "bar" }, { id: 2 }],
-  //   "Item not deleted before remove promise finished"
-  // )
+  t.deepEquals(
+    todos.selector(store.getState()).items(),
+    [{ id: 1, foo: "bar" }],
+    "Item not changed before update promise finished"
+  )
 
   return updatePromise.then(() => {
     t.deepEquals(
       todos.selector(store.getState()).items(),
-      [{ id: 2 }],
-      "Item deleted after remove promise finished"
+      [{ id: 1, foo: "bar", lorem: "ipsum" }],
+      "Item remains changed after update promise finished"
     )
 
     t.end()
   })
 })
 
-test("Remove, isOptimist = true", async t => {
+test("Update, isOptimist = true", async t => {
   // WHAT TO TEST
   const todos = buildList({
-    name: "REMOVE-OPTIMIST-TRUE_TODOS",
-    read: () => [{ id: 1, foo: "bar" }, { id: 2 }],
-    remove: id => ({ id }),
+    name: "UPDATE-OPTIMIST-TRUE_TODOS",
+    read: () => [{ id: 1, foo: "bar" }],
+    update: (id, data) => ({ id, ...data }),
   })
 
   // Redux store
@@ -62,31 +62,35 @@ test("Remove, isOptimist = true", async t => {
   await todos.read()
 
   //
-  const updatePromise = todos.remove(1, { isOptimist: true })
+  const updatePromise = todos.update(
+    1,
+    { lorem: "ipsum" },
+    { isOptimist: true }
+  )
 
   // t.deepEquals(
   //   todos.selector(store.getState()).items(),
-  //   [{ id: 2 }],
-  //   "Item deleted before remove promise finished"
+  //   [{ id: 1, foo: "bar", lorem: "ipsum" }],
+  //   "Item changed before update promise finished"
   // )
 
   return updatePromise.then(() => {
     t.deepEquals(
       todos.selector(store.getState()).items(),
-      [{ id: 2 }],
-      "Item remains deleted after remove promise finished"
+      [{ id: 1, foo: "bar", lorem: "ipsum" }],
+      "Item remains changed after update promise finished"
     )
 
     t.end()
   })
 })
 
-test("Remove, isOptimist = true with error", async t => {
+test("Update, isOptimist = true with error", async t => {
   // WHAT TO TEST
   const todos = buildList({
-    name: "REMOVE-OPTIMIST-TRUE-ERROR_TODOS",
-    read: () => [{ id: 1, foo: "bar" }, { id: 2 }],
-    remove: () => {
+    name: "UPDATE-OPTIMIST-TRUE-ERROR_TODOS",
+    read: () => [{ id: 1, foo: "bar" }],
+    update: () => {
       throw new Error("Some error")
     },
   })
@@ -103,18 +107,22 @@ test("Remove, isOptimist = true with error", async t => {
   await todos.read()
 
   //
-  const updatePromise = todos.remove(1, { isOptimist: true })
+  const updatePromise = todos.update(
+    1,
+    { lorem: "ipsum" },
+    { isOptimist: true }
+  )
 
   // t.deepEquals(
   //   todos.selector(store.getState()).items(),
-  //   [{ id: 2 }],
+  //   [{ id: 1, foo: "bar", lorem: "ipsum" }],
   //   "Item changed before update promise finished"
   // )
 
   return updatePromise.then(() => {
     t.deepEquals(
       todos.selector(store.getState()).items(),
-      [{ id: 2 }, { id: 1, foo: "bar" }],
+      [{ id: 1, foo: "bar" }],
       "Item reverted to initial value after promised finished with error"
     )
 

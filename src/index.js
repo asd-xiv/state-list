@@ -44,10 +44,10 @@ const collections = Object.create(null)
 /**
  * Construct a set of actions and reducers to manage a state slice as an array
  *
- * @param {string}   name     Unique list name
- * @param {Function} onChange Function triggered on every list change
+ * @param   {string}   name     Unique list name
+ * @param   {Function} onChange Function triggered on every list change
  *
- * @returns {object}
+ * @returns {Object}
  */
 const buildList = ({
   name,

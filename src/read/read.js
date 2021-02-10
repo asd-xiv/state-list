@@ -3,16 +3,15 @@ const debug = require("debug")("JustAList:ReadAction")
 /**
  * Call list.read method to set slice.items array
  *
- * @param {Function} dispatch        Redux dispatch
- * @param {Function} api             API method
- * @param {Function} onChange        Appy on items array before changing state
+ * @param   {Function}                       dispatch        Redux dispatch
+ * @param   {Function}                       api             API method
+ * @param   {Function}                       onChange        Appy on items array before changing state
  *
- * @param {object}   query           Control/Filter attributes
- * @param {boolean}  opt.shouldClear If true, method result will replace existing items.
- * Otherwise, merge both arrays by id
- * @param {object}   opt.rest        Other options passed when calling list instance .read
+ * @param   {Object}                         query           Control/Filter attributes
+ * @param   {boolean}                        opt.shouldClear If true, method result will replace existing items. Otherwise, merge both arrays by id
+ * @param   {Object}                         opt.rest        Other options passed when calling list instance .read
  *
- * @returns {Promise<object<error, result>>}
+ * @returns {Promise<Object<error, result>>}
  */
 export const readAction = ({
   listName,

@@ -1,14 +1,14 @@
 import test from "tape"
 import { createStore, combineReducers } from "redux"
 
-import { buildList } from ".."
+import { buildList } from "../.."
 
-test("Update - different id in response", async t => {
+test("Update - id not in response", async t => {
   // WHAT TO TEST
   const todos = buildList({
-    name: "UPDATE-ERROR-DIFFERENT-ID_TODOS",
+    name: "UPDATE-ERROR-NO-ID_TODOS",
     read: () => [{ id: 1, name: "build gdpr startup" }, { id: 2 }],
-    update: () => Promise.resolve({ id: 1, name: "updated different element" }),
+    update: (id, data) => data,
   })
 
   // Redux store
@@ -21,14 +21,14 @@ test("Update - different id in response", async t => {
   todos.set({ dispatch: store.dispatch })
 
   await todos.read()
-  await todos.update(2, { name: "random" })
+  await todos.update(1, { name: "updated" })
 
   const { items } = todos.selector(store.getState())
 
   t.deepEquals(
     items(),
-    [{ id: 1, name: "updated different element" }, { id: 2 }],
-    "Update should be done on the element with the id returned by .update, not the id that .update was called with"
+    [{ id: 1, name: "updated" }, { id: 2 }],
+    "Update should be done on the element with the id parameter .update was called with if there is no id field in the response"
   )
 
   t.end()

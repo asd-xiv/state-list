@@ -2,7 +2,7 @@ import test from "tape"
 import { createStore, combineReducers } from "redux"
 import { map } from "@asd14/m"
 
-import { buildList } from ".."
+import { buildList } from "../.."
 
 test("Create", async t => {
   // WHAT TO TEST

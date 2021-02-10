@@ -2,7 +2,7 @@ import test from "tape"
 import { createStore, combineReducers } from "redux"
 import { map, concat, is } from "@asd14/m"
 
-import { buildList } from ".."
+import { buildList } from "../.."
 
 test("Update", async t => {
   // WHAT TO TEST
