@@ -11,6 +11,9 @@
     }
   },
   "rules": {
+    // disable until upstream issues fixed
+    "jsdoc/check-line-alignment": "off",
+
     "newline-after-var": "off"
   },
 }

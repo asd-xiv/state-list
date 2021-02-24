@@ -30,7 +30,7 @@ export const endReducer = (state, { listName, items = [], onChange = i }) => {
     // reset error after successfull action
     errors: {
       ...state.errors,
-      create: null,
+      create: undefined,
     },
     creating: [],
   }

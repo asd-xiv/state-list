@@ -5,15 +5,15 @@ import { hasKey, isEmpty } from "@asd14/m"
 /**
  * Call list.readOne method to add/update item in slice.items
  *
- * @param   {string}                         listName Slice name - for error messages
- * @param   {Function}                       dispatch Redux dispatch
- * @param   {Function}                       api      API method
- * @param   {Function}                       onChange Appy on items array before changing state
+ * @param {string}   listName Slice name - for error messages
+ * @param {Function} dispatch Redux dispatch
+ * @param {Function} api      API method
+ * @param {Function} onChange Appy on items array before changing state
  *
- * @param   {string|number}                  id       Id of item to update or add
- * @param   {Array}                          rest     Other paramaters passed when calling list instance .readOne
+ * @param {string|number} id       Id of item to update or add
+ * @param {Array}         rest     Other paramaters passed when calling list instance .readOne
  *
- * @returns {Promise<Object<error, result>>}
+ * @returns {Promise<{error, result}>}
  */
 export const readOneAction = ({
   listName,
@@ -22,7 +22,7 @@ export const readOneAction = ({
   hasDispatchStart,
   hasDispatchEnd,
   onChange,
-}) => (id, ...args) => {
+}) => (id, ...params) => {
   if (isEmpty(id)) {
     throw new TypeError(
       `JustAList: "${listName}".readOne ID param missing. Expected something, got "${JSON.stringify(
@@ -39,7 +39,7 @@ export const readOneAction = ({
   }
 
   return Promise.resolve()
-    .then(() => api(id, ...args))
+    .then(() => api(id, ...params))
     .then(result => {
       if (hasDispatchEnd) {
         dispatch({

@@ -29,7 +29,7 @@ export const endReducer = (
   // reset error after successfull action
   errors: {
     ...state.errors,
-    read: null,
+    read: undefined,
   },
   loadDate: new Date(),
   isLoading: false,

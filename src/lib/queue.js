@@ -14,7 +14,7 @@ import isDeepEqual from "fast-deep-equal"
  * .then(...)
  * .catch(...)
  *
- * @returns {Object<enqueue, dequeue>}
+ * @returns {{enqueue, dequeue}}
  */
 export const buildQueue = () => {
   const jobsList = []
@@ -31,8 +31,9 @@ export const buildQueue = () => {
         return runningJob.fnPromise
       }
 
-      let deferredResolve = null
-      let deferredReject = null
+      let deferredResolve
+      let deferredReject
+
       const fnResultPromise = new Promise((resolve, reject) => {
         deferredResolve = resolve
         deferredReject = reject
@@ -63,7 +64,7 @@ export const buildQueue = () => {
       const shouldStartRunningJobs = !isProcessing && !isEmpty(jobsList)
 
       if (!shouldStartRunningJobs) {
-        return undefined
+        return
       }
 
       const { fn, args, onResolve, onReject } = last(jobsList)

@@ -57,18 +57,18 @@ export const endReducer = (state, { item, onMerge = merge, onChange = i }) => {
     updating: removeWith({ id: item.id }, state.updating),
     errors: {
       ...state.errors,
-      update: null,
+      update: undefined,
     },
   }
 }
 
 export const errorReducer = (state, { id, error, isOptimist }) => {
-  const prevItem = findWith({ id }, {}, state.optimistItems)
+  const previousItem = findWith({ id }, {}, state.optimistItems)
 
   return {
     ...state,
     items: isOptimist
-      ? replaceWith({ id }, prevItem)(state.items)
+      ? replaceWith({ id }, previousItem)(state.items)
       : state.items,
     optimistItems: isOptimist
       ? removeWith({ id }, state.optimistItems)

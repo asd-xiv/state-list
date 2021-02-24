@@ -74,7 +74,7 @@ test("Create - error", async t => {
 
     t.equals(
       createError,
-      null,
+      undefined,
       "State error is set to null after successfull create"
     )
 

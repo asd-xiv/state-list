@@ -25,9 +25,9 @@ export const endReducer = (state, { item, onChange = i }) => ({
   // reset error after successfull action
   errors: {
     ...state.errors,
-    readOne: null,
+    readOne: undefined,
   },
-  reading: null,
+  reading: undefined,
 })
 
 export const errorReducer = (state, error) => ({
@@ -36,5 +36,5 @@ export const errorReducer = (state, error) => ({
     ...state.errors,
     readOne: error,
   },
-  reading: null,
+  reading: undefined,
 })

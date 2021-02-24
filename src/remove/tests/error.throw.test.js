@@ -85,7 +85,7 @@ test("Remove - error", async t => {
 
     t.equals(
       todos.selector(store.getState()).error("remove"),
-      null,
+      undefined,
       "State error is set to null after successfull delete"
     )
   }

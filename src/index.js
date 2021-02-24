@@ -44,8 +44,8 @@ const collections = Object.create(null)
 /**
  * Construct a set of actions and reducers to manage a state slice as an array
  *
- * @param   {string}   name     Unique list name
- * @param   {Function} onChange Function triggered on every list change
+ * @param {string}   name     Unique list name
+ * @param {Function} onChange Function triggered on every list change
  *
  * @returns {Object}
  */
@@ -77,7 +77,7 @@ const buildList = ({
   collections[name] = true
 
   let props = {
-    dispatch: null,
+    dispatch: undefined,
     createHasDispatchStart: true,
     createHasDispatchEnd: true,
     readHasDispatchStart: true,
@@ -106,6 +106,31 @@ const buildList = ({
   const removeStart = `${name}_REMOVE_START`
   const removeEnd = `${name}_REMOVE_END`
   const removeError = `${name}_REMOVE_ERROR`
+
+  const defaultState = {
+    listName: name,
+    items: [],
+    optimistItems: [],
+    creating: [],
+    reading: undefined,
+    updating: [],
+    removing: [],
+
+    errors: {
+      read: undefined,
+      readOne: undefined,
+      create: undefined,
+      update: undefined,
+      remove: undefined,
+    },
+
+    loadDate: undefined,
+    isCreating: false,
+    isLoading: false,
+    isLoadingOne: false,
+    isUpdating: false,
+    isRemoving: false,
+  }
 
   return {
     name,
@@ -284,33 +309,7 @@ const buildList = ({
       return Promise.resolve([])
     },
 
-    reducer: (
-      state = {
-        listName: name,
-        items: [],
-        optimistItems: [],
-        creating: [],
-        reading: null,
-        updating: [],
-        removing: [],
-
-        errors: {
-          read: null,
-          readOne: null,
-          create: null,
-          update: null,
-          remove: null,
-        },
-
-        loadDate: null,
-        isCreating: false,
-        isLoading: false,
-        isLoadingOne: false,
-        isUpdating: false,
-        isRemoving: false,
-      },
-      { type, payload }
-    ) => {
+    reducer: (state = defaultState, { type, payload }) => {
       switch (type) {
         // Create
         case createStart:

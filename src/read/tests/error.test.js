@@ -66,7 +66,7 @@ test("Read - error", async t => {
 
     t.equals(
       todos.selector(store.getState()).error("read"),
-      null,
+      undefined,
       "State error is set to null after successfull read"
     )
 
