@@ -1,13 +1,13 @@
 {
   "root": true,
-  "parser": "babel-eslint",
+  "parser": "@babel/eslint-parser",
   "extends": [
     "@asd14/eslint-config/targets/node"
   ],
   "settings": {
     // Recommended if you use eslint_d
     "import/cache": {
-      "lifetime": 5,
+      "lifetime": 5
     }
   },
   "rules": {
@@ -15,5 +15,5 @@
     "jsdoc/check-line-alignment": "off",
 
     "newline-after-var": "off"
-  },
+  }
 }
